@@ -1,6 +1,8 @@
 package com.yrek.ifstd.glulx;
 
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -60,29 +62,111 @@ class State {
         }
     }
 
-    void readSave(InputStream in, int protectStart, int protectLength) throws IOException {
-        throw new RuntimeException("unimplemented");
+    void readSave(InputStream story, InputStream save, int protectStart, int protectLength) throws IOException {
+        readFile(story, protectStart, protectLength);
+        DataInputStream in = new DataInputStream(save);
+        byte[] protect = null;
+        if (protectLength > 0) {
+            protect = new byte[protectLength];
+            System.arraycopy(memory, protectStart, protect, 0, protectLength);
+        }
+        int id = in.readInt();
+        if (id != 0x464f524d) {
+            throw new IllegalArgumentException("Bad magic");
+        }
+
+        int length = in.readInt();
+        id = in.readInt();
+        if (id != 0x49465a53) {
+            throw new IllegalArgumentException("Bad magic");
+        }
+        int count = 4;
+        boolean gotIFhd = false;
+        while (count < length) {
+            id = in.readInt();
+            int size = in.readInt();
+            count += 8 + size;
+            switch (id) {
+            case 0x49466864: // IFhd
+                gotIFhd = true;
+                if (size != 128) {
+                    throw new IllegalArgumentException("IFhd length not 128");
+                }
+                byte[] hd = new byte[128];
+                readBytes(in, hd, 0, 128);
+                for (int i = 0; i < 128; i++) {
+                    if (hd[i] != memory[i]) {
+                        throw new IllegalArgumentException("IFhd mismatch");
+                    }
+                }
+                break;
+            case 0x434d656d: // CMem
+                if (!gotIFhd) {
+                    throw new IllegalArgumentException("No IFhd");
+                }
+                int index = load32(8);
+                for (int i = 0; i < size; i++) {
+                    int b = in.read();
+                    if (b < 0) {
+                        throw new EOFException();
+                    } else if (b != 0) {
+                        memory[index] ^= (byte) b;
+                        index++;
+                    } else {
+                        i++;
+                        if (i >= size) {
+                            break;
+                        }
+                        b = in.read();
+                        if (b < 0) {
+                            throw new EOFException();
+                        }
+                        index += b + 1;
+                    }
+                }
+                break;
+            case 0x554d656d: // UMem
+                if (!gotIFhd) {
+                    throw new IllegalArgumentException("No IFhd");
+                }
+                readBytes(in, memory, load32(8), size);
+                break;
+            case 0x53746b73: //Stks
+                if (!gotIFhd) {
+                    throw new IllegalArgumentException("No IFhd");
+                }
+                sp = size;
+                readBytes(in, stack, 0, size);
+                break;
+            default:
+                in.skip((long) size);
+                break;
+            }
+        }
+        if (protect != null) {
+            System.arraycopy(protect, 0, memory, protectStart, protectLength);
+        }
     }
 
-    void writeSave(OutputStream out, int destType, int destAddr) throws IOException {
-        DataOutputStream dout = new DataOutputStream(out);
-        dout.writeInt(0x464f524d); // FORM
+    void writeSave(OutputStream save, int destType, int destAddr) throws IOException {
+        DataOutputStream out = new DataOutputStream(save);
+        out.writeInt(0x464f524d); // FORM
         int length = 0;
         length += 4; // IFZS
         length += 4 + 4 + 128; // IFhd
         length += 4 + 4 + memory.length - load32(8); // UMem
         length += 4 + 4 + sp; // Stks
-        dout.writeInt(length);
-        dout.writeInt(0x49465a53); // IFZS
-        dout.writeInt(0x49466864); //IFhd
-        dout.writeInt(128);
-        dout.write(memory, 0, 128);
-        dout.writeInt(0x554d656d); // UMem
-        dout.writeInt(memory.length - load32(8));
-        dout.write(memory, load32(8), memory.length - load32(8));
-        dout.writeInt(0x53746b73); // Stks
-        dout.writeInt(sp);
-        dout.write(stack, 0, sp);
+        out.writeInt(length);
+        out.writeInt(0x49465a53); // IFZS
+        out.writeInt(0x49466864); //IFhd
+        out.writeInt(128);
+        out.write(memory, 0, 128);
+        out.writeInt(0x554d656d); // UMem
+        out.writeInt(memory.length - load32(8));
+        out.write(memory, load32(8), memory.length - load32(8));
+        out.writeInt(0x53746b73); // Stks
+        out.writeInt(sp);
+        out.write(stack, 0, sp);
     }
 
     State copyTo(State saveState) {
