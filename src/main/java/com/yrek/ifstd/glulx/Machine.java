@@ -2,7 +2,7 @@ package com.yrek.ifstd.glulx;
 
 import java.util.Random;
 
-import com.yrek.ifstd.glk.Glk;
+import com.yrek.ifstd.glk.GlkDispatch;
 
 class Machine {
     State state = new State();
@@ -15,7 +15,7 @@ class Machine {
     int stringTable = 0;
     OutputState outputState = null;
     int outputIndex = 0;
-    Glk glk = null;
+    GlkDispatch glk = null;
 
     enum OutputState {
         Latin1, Compressed, Unicode, Number;

@@ -36,7 +36,7 @@ public interface Glk {
     public static final int gestaltResourceStream = 22;
 
     public int gestalt(int selector, int value);
-    public int gestaltExt(int selector, int value, GlkArg arg);
+    public int gestaltExt(int selector, int value, GlkArg array, int length);
 
     public static final int winTypeAll = 0;
     public static final int winTypePair = 1;
@@ -63,12 +63,12 @@ public interface Glk {
     public void setWindow(GlkWindow window);
 
     public GlkStream streamOpenFile(GlkFile file, int mode, int rock);
-    public GlkStream streamOpenMemory(GlkArg arg, int length, int mode, int rock);
+    public GlkStream streamOpenMemory(GlkArg memory, int length, int mode, int rock);
     public void streamSetCurrent(GlkStream stream);
     public GlkStream streamGetCurrent();
     public void putChar(int ch);
     public void putString(GlkArg string);
-    public void putBuffer(GlkArg buffer);
+    public void putBuffer(GlkArg buffer, int length);
 
     public void styleHintSet(int winType, int style, int hint, int value);
     public void styleHintClear(int winType, int style, int hint);

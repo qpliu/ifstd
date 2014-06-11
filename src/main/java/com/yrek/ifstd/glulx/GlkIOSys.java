@@ -1,11 +1,11 @@
 package com.yrek.ifstd.glulx;
 
-import com.yrek.ifstd.glk.Glk;
+import com.yrek.ifstd.glk.GlkDispatch;
 
 class GlkIOSys extends IOSys {
-    final Glk glk;
+    final GlkDispatch glk;
 
-    GlkIOSys(Glk glk, int rock) {
+    GlkIOSys(GlkDispatch glk, int rock) {
         super(rock);
         this.glk = glk;
     }

@@ -2,6 +2,8 @@ package com.yrek.ifstd.glulx;
 
 import java.util.Arrays;
 
+import com.yrek.ifstd.glk.GlkArg;
+
 abstract class Instruction {
     private static final Instruction[] table = new Instruction[0x1ca];
     private final Operands operands;
@@ -743,7 +745,14 @@ abstract class Instruction {
         };
         new Instruction(0x130, Operands.L2S) { // glk
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
-                throw new RuntimeException("unimplemented");
+                int a1 = arg1.load32(machine.state);
+                int a2 = arg2.load32(machine.state);
+                GlkArg[] args = new GlkArg[a2];
+                for (int i = 0; i < a2; i++) {
+                    args[i] = new GlkArgument(machine, machine.state.pop32());
+                }
+                arg3.store32(machine.state, machine.glk.dispatch(a1, args));
+                return Result.Continue;
             }
         };
         new Instruction(0x140, Operands.S) { // getstringtbl

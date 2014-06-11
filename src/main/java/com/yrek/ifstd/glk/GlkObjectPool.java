@@ -5,39 +5,53 @@ import java.util.ArrayList;
 public class GlkObjectPool<T extends GlkObject> {
     private final ArrayList<T> pool = new ArrayList<T>();
 
-    public void add(T obj) {
+    public int add(T obj) {
+        if (obj == null) {
+            return 0;
+        }
         for (int i = 0; i < pool.size(); i++) {
             T elt = pool.get(i);
             if (elt == null || elt.isDestroyed()) {
                 obj.setPointer(i+1);
                 pool.set(i, obj);
+                return i+1;
             }
         }
         obj.setPointer(pool.size());
         pool.add(obj);
+        return pool.size();
     }
 
     public T iterate(T obj) {
-        for (int i = obj == null ? 0 : obj.getPointer(); i < pool.size(); i++) {
+        int pointer = iterate(obj == null || obj.isDestroyed() ? 0 : obj.getPointer());
+        return get(pointer);
+    }
+
+    public int iterate(int start) {
+        for (int i = start; i < pool.size(); i++) {
             T elt = pool.get(i);
             if (elt != null) {
                 if (!elt.isDestroyed()) {
-                    return elt;
+                    return i + 1;
                 } else {
                     pool.set(i, null);
                 }
             }
         }
-        return null;
+        return 0;
     }
 
     public T get(int pointer) {
-        return pool.get(pointer-1);
+        return pointer == 0 ? null : pool.get(pointer-1);
     }
 
     public void destroy(int pointer) {
         T obj = pool.get(pointer-1);
         obj.destroy();
         pool.set(pointer-1, null);
+    }
+
+    public int getPointer(T obj) {
+        return obj == null || obj.isDestroyed() ? 0 : obj.getPointer();
     }
 }
