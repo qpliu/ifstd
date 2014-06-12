@@ -2,7 +2,7 @@ package com.yrek.ifstd.glk;
 
 public abstract class GlkObject {
     private final int rock;
-    private int pointer;
+    private int pointer = 0;
     private boolean destroyed = false;
 
     protected GlkObject(int rock) {

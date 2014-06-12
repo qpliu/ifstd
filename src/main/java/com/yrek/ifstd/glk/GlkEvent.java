@@ -1,16 +1,16 @@
 package com.yrek.ifstd.glk;
 
 public class GlkEvent {
-    public static final int None = 0;
-    public static final int Timer = 1;
-    public static final int CharInput = 2;
-    public static final int LineInput = 3;
-    public static final int MouseInput = 4;
-    public static final int Arrange = 5;
-    public static final int Redraw = 6;
-    public static final int SoundNotify = 7;
-    public static final int Hyperlink = 8;
-    public static final int VolumeNotify = 9;
+    public static final int typeNone = 0;
+    public static final int typeTimer = 1;
+    public static final int typeCharInput = 2;
+    public static final int typeLineInput = 3;
+    public static final int typeMouseInput = 4;
+    public static final int typeArrange = 5;
+    public static final int typeRedraw = 6;
+    public static final int typeSoundNotify = 7;
+    public static final int typeHyperlink = 8;
+    public static final int typeVolumeNotify = 9;
 
     public final int type;
     public final GlkWindow window;

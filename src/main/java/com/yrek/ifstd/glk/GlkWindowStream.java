@@ -34,18 +34,18 @@ public class GlkWindowStream extends GlkStream {
     }
 
     @Override
-    public void putString(GlkArg string) {
+    public void putString(GlkByteArray string) {
         windowStream.putString(string);
         if (echoStream != null) {
-            echoStream.putString(string);
+            throw new RuntimeException("unimplemented");
         }
     }
 
     @Override
-    public void putBuffer(GlkArg buffer) {
+    public void putBuffer(GlkByteArray buffer) {
         windowStream.putBuffer(buffer);
         if (echoStream != null) {
-            echoStream.putBuffer(buffer);
+            throw new RuntimeException("unimplemented");
         }
     }
 
@@ -63,23 +63,22 @@ public class GlkWindowStream extends GlkStream {
     }
 
     @Override
-    public int getLine(GlkArg buffer) {
+    public int getLine(GlkByteArray buffer) {
         return windowStream.getLine(buffer);
     }
 
     @Override
-    public int getBuffer(GlkArg buffer) {
+    public int getBuffer(GlkByteArray buffer) {
         return windowStream.getBuffer(buffer);
     }
 
-    
     @Override
-    public InputStream getInputStream() {
-        return null;
+    public void setPosition(int position, int seekMode) {
+        windowStream.setPosition(position, seekMode);
     }
 
     @Override
-    public OutputStream getOutputStream() {
-        return null;
+    public int getPosition() {
+        return windowStream.getPosition();
     }
 }

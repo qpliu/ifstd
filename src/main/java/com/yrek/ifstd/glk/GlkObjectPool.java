@@ -6,8 +6,11 @@ public class GlkObjectPool<T extends GlkObject> {
     private final ArrayList<T> pool = new ArrayList<T>();
 
     public int add(T obj) {
-        if (obj == null) {
+        if (obj == null || obj.isDestroyed()) {
             return 0;
+        }
+        if (obj.getPointer() != 0) {
+            return obj.getPointer();
         }
         for (int i = 0; i < pool.size(); i++) {
             T elt = pool.get(i);
@@ -52,6 +55,6 @@ public class GlkObjectPool<T extends GlkObject> {
     }
 
     public int getPointer(T obj) {
-        return obj == null || obj.isDestroyed() ? 0 : obj.getPointer();
+        return add(obj);
     }
 }

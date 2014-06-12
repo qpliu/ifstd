@@ -50,6 +50,9 @@ class State {
         if (protect != null) {
             System.arraycopy(protect, 0, memory, protectStart, protectLength);
         }
+        pc = 0;
+        sp = 0;
+        fp = 0;
     }
 
     private void readBytes(InputStream in, byte[] buffer, int start, int count) throws IOException {

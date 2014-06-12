@@ -2,7 +2,7 @@ package com.yrek.ifstd.glulx;
 
 import java.util.Arrays;
 
-import com.yrek.ifstd.glk.GlkArg;
+import com.yrek.ifstd.glk.GlkDispatchArgument;
 
 abstract class Instruction {
     private static final Instruction[] table = new Instruction[0x1ca];
@@ -599,54 +599,50 @@ abstract class Instruction {
                 int a1 = arg1.load32(machine.state);
                 int a2 = arg2.load32(machine.state);
                 switch (a1) {
-                case 0:
-                    arg3.store32(machine.state, 0x00030102); // Glulx version 3.1.2
+                case Gestalt.GlulxVersion:
+                    arg3.store32(machine.state, Glulx.GlulxVersion);
                     break;
-                case 1:
-                    arg3.store32(machine.state, 0x00000000); // com.yrek.ifstd.glulx version 0.0.0
+                case Gestalt.TerpVersion:
+                    arg3.store32(machine.state, Glulx.TerpVersion);
                     break;
-                case 2:
-                    arg3.store32(machine.state, 0); // ResizeMem
+                case Gestalt.ResizeMem:
+                    arg3.store32(machine.state, 0);
                     break;
-                case 3:
-                    arg3.store32(machine.state, 1); // Undo
+                case Gestalt.Undo:
+                    arg3.store32(machine.state, 1);
                     break;
-                case 4:
+                case Gestalt.IOSystem:
                     switch (a2) {
-                    case 0:
-                        arg3.store32(machine.state, 1); // IOSystem null
-                        break;
-                    case 1:
-                        arg3.store32(machine.state, 1); // IOSystem filter
-                        break;
-                    case 2:
-                        arg3.store32(machine.state, 1); // IOSystem Glk
+                    case Gestalt.IOSystem_null:
+                    case Gestalt.IOSystem_filter:
+                    case Gestalt.IOSystem_Glk:
+                        arg3.store32(machine.state, 1);
                         break;
                     default:
-                        arg3.store32(machine.state, 0); // IOSystem
+                        arg3.store32(machine.state, 0);
                         break;
                     }
                     break;
-                case 5:
-                    arg3.store32(machine.state, 1); // Unicode
+                case Gestalt.Unicode:
+                    arg3.store32(machine.state, 1);
                     break;
-                case 6:
-                    arg3.store32(machine.state, 1); // MemCopy
+                case Gestalt.MemCopy:
+                    arg3.store32(machine.state, 1);
                     break;
-                case 7:
-                    arg3.store32(machine.state, 0); // MAlloc
+                case Gestalt.MAlloc:
+                    arg3.store32(machine.state, 0);
                     break;
-                case 8:
-                    arg3.store32(machine.state, 0); // MAllocHeap
+                case Gestalt.MAllocHeap:
+                    arg3.store32(machine.state, 0);
                     break;
-                case 9:
-                    arg3.store32(machine.state, 1); // Acceleration
+                case Gestalt.Acceleration:
+                    arg3.store32(machine.state, 1);
                     break;
-                case 10:
-                    arg3.store32(machine.state, 0); // AccelFunc
+                case Gestalt.AccelFunc:
+                    arg3.store32(machine.state, 0);
                     break;
-                case 11:
-                    arg3.store32(machine.state, 1); // Float
+                case Gestalt.Float:
+                    arg3.store32(machine.state, 1);
                     break;
                 default:
                     arg3.store32(machine.state, 0);
@@ -703,7 +699,12 @@ abstract class Instruction {
         };
         new Instruction(0x122, Operands.Z) { // restart
             @Override protected Result execute(Machine machine) {
-                throw new RuntimeException("unimplemented");
+                try {
+                    machine.state.readFile(machine.getData(), machine.protectStart, machine.protectLength);
+                } catch (Exception e) {
+                    throw new AssertionError(e);
+                }
+                return Result.Continue;
             }
         };
         new Instruction(0x123, Operands.LS) { // save
@@ -747,7 +748,7 @@ abstract class Instruction {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 int a1 = arg1.load32(machine.state);
                 int a2 = arg2.load32(machine.state);
-                GlkArg[] args = new GlkArg[a2];
+                GlkDispatchArgument[] args = new GlkDispatchArgument[a2];
                 for (int i = 0; i < a2; i++) {
                     args[i] = new GlkArgument(machine, machine.state.pop32());
                 }
@@ -1372,14 +1373,14 @@ abstract class Instruction {
         }
     }
 
-    private static void pushCallStub(State state, int destType, int destAddr) {
+    static void pushCallStub(State state, int destType, int destAddr) {
         state.push32(destType);
         state.push32(destAddr);
         state.push32(state.pc);
         state.push32(state.fp);
     }
 
-    private static void call(State state, int addr, int[] args) {
+    static void call(State state, int addr, int[] args) {
         state.fp = state.sp;
         boolean pushArgs;
         switch (state.load8(addr)) {

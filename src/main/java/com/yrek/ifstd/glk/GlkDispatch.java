@@ -11,7 +11,7 @@ public class GlkDispatch {
         this.glk = glk;
     }
 
-    public int dispatch(int selector, GlkArg[] args) {
+    public int dispatch(int selector, GlkDispatchArgument[] args) {
         switch (selector) {
         case 0x0001: // exit
             glk.exit();
@@ -25,30 +25,38 @@ public class GlkDispatch {
         case 0x0004: // gestalt
             return glk.gestalt(args[0].getInt(), args[1].getInt());
         case 0x0005: // gestaltExt
-            throw new RuntimeException("unimplemented");
+            return glk.gestaltExt(args[0].getInt(), args[1].getInt(), withLength(args[2].getIntArray(), args[3].getInt()));
         case 0x0020: // windowIterate
             return windows.iterate(args[0].getInt());
         case 0x0021: // windowGetRock
             return windows.get(args[0].getInt()).getRock();
         case 0x0022: // windowGetRoot
-            throw new RuntimeException("unimplemented");
+            return windows.getPointer(glk.windowGetRoot());
         case 0x0023: // windowOpen
-            throw new RuntimeException("unimplemented");
+            return windows.getPointer(glk.windowOpen(windows.get(args[0].getInt()), args[1].getInt(), args[2].getInt(), args[3].getInt(), args[4].getInt()));
         case 0x0024: // windowClose
             int pointer = args[0].getInt();
-            GlkWindow win = windows.get(pointer);
-            args[1].setStreamResult(win.close());
-            streams.destroy(win.getStream().getPointer());
+            GlkWindow window = windows.get(pointer);
+            setStreamResult(args[1], window.close());
+            streams.destroy(window.getStream().getPointer());
             windows.destroy(pointer);
             return 0;
         case 0x0025: // windowGetSize
-            throw new RuntimeException("unimplemented");
+            GlkWindowSize windowSize = windows.get(args[0].getInt()).getSize();
+            args[1].setInt(windowSize.width);
+            args[2].setInt(windowSize.height);
+            return 0;
         case 0x0026: // windowSetArrangement
-            throw new RuntimeException("unimplemented");
+            windows.get(args[0].getInt()).setArrangement(args[1].getInt(), args[2].getInt(), windows.get(args[3].getInt()));
+            return 0;
         case 0x0027: // windowGetArrangement
-            throw new RuntimeException("unimplemented");
+            GlkWindowArrangement windowArrangement = windows.get(args[0].getInt()).getArrangement();
+            args[1].setInt(windowArrangement.method);
+            args[2].setInt(windowArrangement.size);
+            args[3].setInt(windows.getPointer(windowArrangement.key));
+            return 0;
         case 0x0028: // windowGetType
-            throw new RuntimeException("unimplemented");
+            return windows.get(args[0].getInt()).getType();
         case 0x0029: // windowGetParent
             return windows.getPointer(windows.get(args[0].getInt()).getParent());
         case 0x002a: // windowClear
@@ -76,17 +84,18 @@ public class GlkDispatch {
         case 0x0042: // streamOpenFile
             return streams.add(glk.streamOpenFile(files.get(args[0].getInt()), args[1].getInt(), args[2].getInt()));
         case 0x0043: // streamOpenMemory
-            throw new RuntimeException("unimplemented");
+            return streams.add(glk.streamOpenMemory(withLength(args[0].getByteArray(), args[1].getInt()), args[2].getInt(), args[3].getInt()));
         case 0x0044: // streamClose
             pointer = args[0].getInt();
             GlkStream str = streams.get(pointer);
-            args[1].setStreamResult(str.close());
+            setStreamResult(args[1], str.close());
             streams.destroy(pointer);
             return 0;
         case 0x0045: // streamSetPosition
-            throw new RuntimeException("unimplemented");
+            streams.get(args[0].getInt()).setPosition(args[1].getInt(), args[2].getInt());
+            return 0;
         case 0x0046: // streamGetPosition
-            throw new RuntimeException("unimplemented");
+            return streams.get(args[0].getInt()).getPosition();
         case 0x0047: // streamSetCurrent
             glk.streamSetCurrent(streams.get(args[0].getInt()));
             return 0;
@@ -97,7 +106,7 @@ public class GlkDispatch {
         case 0x0060: // filerefCreateTemp
             return files.add(glk.fileCreateTemp(args[0].getInt(), args[1].getInt()));
         case 0x0061: // filerefCreateByName
-            return files.add(glk.fileCreateByName(args[0].getInt(), args[1], args[2].getInt()));
+            return files.add(glk.fileCreateByName(args[0].getInt(), args[1].getString(), args[2].getInt()));
         case 0x0062: // filerefCreateByPrompt
             return files.add(glk.fileCreateByPrompt(args[0].getInt(), args[1].getInt(), args[2].getInt()));
         case 0x0063: // filerefDestroy
@@ -117,57 +126,82 @@ public class GlkDispatch {
         case 0x0068: // filerefCreateFromFileref
             return files.add(glk.fileCreateFromFile(args[0].getInt(), files.get(args[1].getInt()), args[2].getInt()));
         case 0x0080: // putChar
-            throw new RuntimeException("unimplemented");
+            glk.putChar(args[0].getInt());
+            return 0;
         case 0x0081: // putCharStream
-            throw new RuntimeException("unimplemented");
+            streams.get(args[0].getInt()).putChar(args[1].getInt());
+            return 0;
         case 0x0082: // putString
-            throw new RuntimeException("unimplemented");
+            glk.putString(args[0].getString());
+            return 0;
         case 0x0083: // putStringStream
-            throw new RuntimeException("unimplemented");
+            streams.get(args[0].getInt()).putString(args[1].getString());
+            return 0;
         case 0x0084: // putBuffer
-            throw new RuntimeException("unimplemented");
+            glk.putBuffer(withLength(args[0].getByteArray(), args[1].getInt()));
+            return 0;
         case 0x0085: // putBufferStream
-            throw new RuntimeException("unimplemented");
+            streams.get(args[0].getInt()).putBuffer(withLength(args[1].getByteArray(), args[2].getInt()));
+            return 0;
         case 0x0086: // setStyle
-            throw new RuntimeException("unimplemented");
+            glk.setStyle(args[0].getInt());
+            return 0;
         case 0x0087: // setStyleStream
-            throw new RuntimeException("unimplemented");
+            streams.get(args[0].getInt()).setStyle(args[1].getInt());
+            return 0;
         case 0x0090: // getCharStream
-            throw new RuntimeException("unimplemented");
+            return streams.get(args[0].getInt()).getChar();
         case 0x0091: // getLineStream
-            throw new RuntimeException("unimplemented");
+            return streams.get(args[0].getInt()).getLine(withLength(args[1].getByteArray(), args[2].getInt()));
         case 0x0092: // getBufferStream
-            throw new RuntimeException("unimplemented");
+            return streams.get(args[0].getInt()).getBuffer(withLength(args[1].getByteArray(), args[2].getInt()));
         case 0x00a0: // charToLower
-            throw new RuntimeException("unimplemented");
+            return Character.toLowerCase(args[0].getInt() & 255) & 255;
         case 0x00a1: // charToUpper
-            throw new RuntimeException("unimplemented");
+            return Character.toUpperCase(args[0].getInt() & 255) & 255;
         case 0x00b0: // stylehintSet
-            throw new RuntimeException("unimplemented");
+            glk.styleHintSet(args[0].getInt(), args[1].getInt(), args[2].getInt(), args[3].getInt());
+            return 0;
         case 0x00b1: // stylehintClear
-            throw new RuntimeException("unimplemented");
+            glk.styleHintClear(args[0].getInt(), args[1].getInt(), args[2].getInt());
+            return 0;
         case 0x00b2: // styleDistinguish
-            throw new RuntimeException("unimplemented");
+            return windows.get(args[0].getInt()).styleDistinguish(args[1].getInt(), args[2].getInt()) ? 1 : 0;
         case 0x00b3: // styleMeasure
-            throw new RuntimeException("unimplemented");
+            Integer integer = windows.get(args[0].getInt()).styleMeasure(args[1].getInt(), args[2].getInt());
+            if (integer == null) {
+                return 0;
+            } else {
+                args[3].setInt(integer);
+                return 1;
+            }
         case 0x00c0: // select
-            throw new RuntimeException("unimplemented");
+            setEvent(args[0], glk.select());
+            return 0;
         case 0x00c1: // selectPoll
-            throw new RuntimeException("unimplemented");
+            setEvent(args[0], glk.selectPoll());
+            return 0;
         case 0x00d0: // requestLineEvent
-            throw new RuntimeException("unimplemented");
+            windows.get(args[0].getInt()).requestLineEvent(withLength(args[1].getByteArray(), args[2].getInt()), args[3].getInt());
+            return 0;
         case 0x00d1: // cancelLineEvent
-            throw new RuntimeException("unimplemented");
+            setEvent(args[1], windows.get(args[0].getInt()).cancelLineEvent());
+            return 0;
         case 0x00d2: // requestCharEvent
-            throw new RuntimeException("unimplemented");
+            windows.get(args[0].getInt()).requestCharEvent();
+            return 0;
         case 0x00d3: // cancelCharEvent
-            throw new RuntimeException("unimplemented");
+            windows.get(args[0].getInt()).cancelCharEvent();
+            return 0;
         case 0x00d4: // requestMouseEvent
-            throw new RuntimeException("unimplemented");
+            windows.get(args[0].getInt()).requestMouseEvent();
+            return 0;
         case 0x00d5: // cancelMouseEvent
-            throw new RuntimeException("unimplemented");
+            windows.get(args[0].getInt()).cancelMouseEvent();
+            return 0;
         case 0x00d6: // requestTimerEvents
-            throw new RuntimeException("unimplemented");
+            glk.requestTimerEvents(args[0].getInt());
+            return 0;
         case 0x00e0: // imageGetInfo
             throw new RuntimeException("unimplemented");
         case 0x00e1: // imageDraw
@@ -282,6 +316,38 @@ public class GlkDispatch {
             throw new RuntimeException("unimplemented");
         default:
             throw new IllegalArgumentException("Unrecognized glk selector");
+        }
+    }
+
+    private static GlkByteArray withLength(GlkByteArray arg, int length) {
+        if (arg != null) {
+            arg.setArrayLength(length);
+        }
+        return arg;
+    }
+
+    private static GlkIntArray withLength(GlkIntArray arg, int length) {
+        if (arg != null) {
+            arg.setArrayLength(length);
+        }
+        return arg;
+    }
+
+    private static void setStreamResult(GlkDispatchArgument arg, GlkStreamResult streamResult) {
+        GlkIntArray intArray = arg.getIntArray();
+        if (intArray != null) {
+            intArray.setIntElement(streamResult.readCount);
+            intArray.setIntElement(streamResult.writeCount);
+        }
+    }
+
+    private void setEvent(GlkDispatchArgument arg, GlkEvent event) {
+        GlkIntArray intArray = arg.getIntArray();
+        if (intArray != null) {
+            intArray.setIntElement(event.type);
+            intArray.setIntElement(windows.getPointer(event.window));
+            intArray.setIntElement(event.val1);
+            intArray.setIntElement(event.val2);
         }
     }
 }
