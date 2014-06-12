@@ -1383,7 +1383,7 @@ abstract class Instruction {
     static void call(State state, int addr, int[] args) {
         state.fp = state.sp;
         boolean pushArgs;
-        switch (state.load8(addr)) {
+        switch (state.load8(addr) & 255) {
         case 0xc0: pushArgs = true; break;
         case 0xc1: pushArgs = false; break;
         default: throw new IllegalArgumentException("Invalid call target");
@@ -1392,11 +1392,12 @@ abstract class Instruction {
         int localsSize = 0;
         loop:
         for (int i = 1;; i += 2) {
-            int localType = state.load8(addr + i);
-            int localCount = state.load8(addr + i + 1);
+            int localType = state.load8(addr + i) & 255;
+            int localCount = state.load8(addr + i + 1) & 255;
             localsPos += 2;
             switch (localType) {
             case 1: case 2: case 4:
+                localsSize = align(localsSize, localType);
                 localsSize += localType * localCount;
                 break;
             case 0:
@@ -1413,7 +1414,109 @@ abstract class Instruction {
         localsSize = align(localsSize, 4);
         state.push32(localsPos + localsSize);
         state.push32(localsPos);
-        throw new RuntimeException("unimplemented");
+        int argIndex = 0;
+        int index = 0;
+        int local = 0;
+        loop2:
+        for (int i = 1;; i += 2) {
+            int localType = state.load8(addr + i) & 255;
+            int localCount = state.load8(addr + 1 + i) & 255;
+            switch (localType) {
+            case 1:
+                for (int j = 0; j < localCount; j++) {
+                    switch (index%4) {
+                    case 0:
+                        if (!pushArgs && argIndex < args.length) {
+                            local = args[argIndex] << 24;
+                            argIndex++;
+                        } else {
+                            local = 0;
+                        }
+                        break;
+                    case 1: case 2:
+                        if (!pushArgs && argIndex < args.length) {
+                            local |= (args[argIndex] & 255) << (24 - 8*(index%4));
+                            argIndex++;
+                        }
+                        break;
+                    case 3:
+                        if (!pushArgs && argIndex < args.length) {
+                            local |= args[argIndex] & 255;
+                            argIndex++;
+                        }
+                        state.push32(local);
+                        break;
+                    default:
+                        throw new AssertionError();
+                    }
+                    index++;
+                }
+                break;
+            case 2:
+                if (index%4 == 3) {
+                    state.push32(local);
+                }
+                if (index%2 == 1) {
+                    index++;
+                }
+                for (int j = 0; j < localCount; j++) {
+                    switch (index%4) {
+                    case 0:
+                        if (!pushArgs && argIndex < args.length) {
+                            local = args[argIndex] << 16;
+                            argIndex++;
+                        } else {
+                            local = 0;
+                        }
+                        break;
+                    case 2:
+                        if (!pushArgs && argIndex < args.length) {
+                            local |= args[argIndex] & 65535;
+                            argIndex++;
+                        }
+                        state.push32(local);
+                        break;
+                    default:
+                        throw new AssertionError();
+                    }
+                    index += 2;
+                }
+                break;
+            case 4:
+                if (index%4 != 0) {
+                    state.push32(local);
+                    while (index%4 != 0) {
+                        index++;
+                    }
+                }
+                for (int j = 0; j < localCount; j++) {
+                    if (!pushArgs && argIndex < args.length) {
+                        state.push32(args[argIndex]);
+                        argIndex++;
+                    } else {
+                        state.push32(0);
+                    }
+                    index += 4;
+                }
+                break;
+            case 0:
+                if (index%4 != 0) {
+                    state.push32(local);
+                    while (index%4 != 0) {
+                        index++;
+                    }
+                }
+                assert index == localsSize;
+                break loop2;
+            default:
+                throw new AssertionError();
+            }
+        }
+        if (pushArgs) {
+            for (int i = args.length - 1; i >= 0; i--) {
+                state.push32(args[i]);
+            }
+        }
     }
 
     static void returnValue(Machine machine, int value) {
