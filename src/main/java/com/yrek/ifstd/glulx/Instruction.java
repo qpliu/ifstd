@@ -1414,10 +1414,11 @@ abstract class Instruction {
         localsSize = align(localsSize, 4);
         state.push32(localsPos + localsSize);
         state.push32(localsPos);
+        assert localsPos >= 12;
         for (int i = 0; i < localsPos - 12; i += 4) {
             state.push32(state.load32(addr + 1 + i));
         }
-        state.push32(state.load32(addr + 1 + localsPos - 8) & 0xffff0000);
+        state.push32(state.load32(addr + 1 + localsPos - 12) & 0xffff0000);
         int argIndex = 0;
         int index = 0;
         int local = 0;
