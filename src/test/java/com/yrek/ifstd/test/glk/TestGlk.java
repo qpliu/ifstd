@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.ArrayDeque;
+import java.util.Iterator;
 
 import com.yrek.ifstd.glk.Glk;
 import com.yrek.ifstd.glk.GlkByteArray;
@@ -19,10 +21,13 @@ public class TestGlk implements Glk {
     final Reader reader;
     private final Writer writer;
     TestGlkWindow rootWindow = null;
-    TestGlkStream currentStream = null;
+    GlkStream currentStream = null;
     final ArrayList<String> outputQueue = new ArrayList<String>();
-    final ArrayList<TestGlkEventRequest> eventRequestQueue = new ArrayList<TestGlkEventRequest>();
+    final ArrayDeque<TestGlkEventRequest> eventRequestQueue = new ArrayDeque<TestGlkEventRequest>();
     private int nameCounter = 0;
+    private int timerInterval = 0;
+    private long lastTimer = 0L;
+    private boolean writeNewlines = false;
 
     public TestGlk(Reader reader, Writer writer) {
         this.reader = reader;
@@ -47,6 +52,10 @@ public class TestGlk implements Glk {
         }
         writeOutputQueue();
         writer.append("</test>");
+        if (writeNewlines) {
+            writer.append('\n');
+        }
+        writer.flush();
     }
 
     private void writeOutputQueue() throws IOException {
@@ -59,6 +68,9 @@ public class TestGlk implements Glk {
         }
         for (String s : outputQueue) {
             writer.append(s);
+            if (writeNewlines) {
+                writer.append('\n');
+            }
         }
         writer.flush();
         outputQueue.clear();
@@ -83,7 +95,7 @@ public class TestGlk implements Glk {
         case GlkGestalt.Version:
             return Glk.GlkVersion;
         case GlkGestalt.CharInput:
-            return 0;
+            return 1;
         case GlkGestalt.LineInput:
             return 1;
         case GlkGestalt.CharOutput:
@@ -116,6 +128,13 @@ public class TestGlk implements Glk {
     public int gestaltExt(int selector, int value, GlkIntArray array) {
         switch (selector) {
         case GlkGestalt.CharOutput:
+            if (value < 256 && (value == 10 || !Character.isISOControl(value))) {
+                array.setIntElement(1);
+                return GlkGestalt.CharOutput_ExactPrint;
+            } else {
+                array.setIntElement(0);
+                return GlkGestalt.CharOutput_CannotPrint;
+            }
         default:
             return gestalt(selector, value);
         }
@@ -167,7 +186,7 @@ public class TestGlk implements Glk {
 
     @Override
     public void streamSetCurrent(GlkStream stream) {
-        currentStream = (TestGlkStream) stream;
+        currentStream = stream;
     }
 
     @Override
@@ -225,16 +244,71 @@ public class TestGlk implements Glk {
     @Override
     public GlkEvent select() throws IOException {
         writeOutputQueue();
-        throw new RuntimeException("unimplemented");
+        for (;;) {
+            GlkEvent event = selectTimer();
+            if (event != null) {
+                return outputEvent(event);
+            }
+            for (Iterator<TestGlkEventRequest> i = eventRequestQueue.iterator(); i.hasNext(); ) {
+                TestGlkEventRequest eventRequest = i.next();
+                event = eventRequest.select();
+                if (event != null) {
+                    i.remove();
+                    return outputEvent(event);
+                }
+            }
+            if (timerInterval > 0) {
+                try {
+                    Thread.sleep(Math.max(1L, lastTimer + timerInterval - System.currentTimeMillis()));
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                throw new IllegalArgumentException("No requested events");
+            }
+        }
     }
 
     @Override
     public GlkEvent selectPoll() throws IOException {
-        throw new RuntimeException("unimplemented");
+        GlkEvent event = selectTimer();
+        if (event != null) {
+            return outputEvent(event);
+        }
+        for (Iterator<TestGlkEventRequest> i = eventRequestQueue.iterator(); i.hasNext(); ) {
+            TestGlkEventRequest eventRequest = i.next();
+            event = eventRequest.poll();
+            if (event != null) {
+                i.remove();
+                return outputEvent(event);
+            }
+        }
+        return outputEvent(new GlkEvent(GlkEvent.TypeNone, null, 0, 0));
+    }
+
+    private GlkEvent selectTimer() {
+        if (timerInterval <= 0) {
+            return null;
+        }
+        long now = System.currentTimeMillis();
+        if (now < lastTimer + timerInterval) {
+            return null;
+        }
+        lastTimer = now;
+        return new GlkEvent(GlkEvent.TypeTimer, null, 0, 0);
+    }
+
+    private GlkEvent outputEvent(GlkEvent event) {
+        outputQueue.add("<event t=\""+event.type+"\""+(event.window==null?"":" w=\""+((TestGlkWindow) event.window).name+"\"")+" val1=\""+event.val1+"\" val2=\""+event.val2+"\"/>");
+        return event;
     }
 
     @Override
     public void requestTimerEvents(int millisecs) {
-        throw new RuntimeException("unimplemented");
+        timerInterval = millisecs;
+    }
+
+    public void setWriteNewlines(boolean writeNewlines) {
+        this.writeNewlines = writeNewlines;
     }
 }

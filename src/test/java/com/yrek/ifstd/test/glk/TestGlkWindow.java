@@ -1,5 +1,6 @@
 package com.yrek.ifstd.test.glk;
 
+import java.io.EOFException;
 import java.io.IOException;
 
 import com.yrek.ifstd.glk.GlkByteArray;
@@ -140,15 +141,55 @@ public class TestGlkWindow extends GlkWindow {
     }
 
     @Override
-    public void requestLineEvent(GlkByteArray buffer, int initLength) {
+    public void requestLineEvent(final GlkByteArray buffer, final int initLength) {
         assert eventRequest == null;
-        throw new RuntimeException("unimplemented");
+        eventRequest = new TestGlkEventRequest() {
+            @Override public GlkEvent select() throws IOException {
+                eventRequest = null;
+                int count = 0;
+                for (;;) {
+                    int ch = glk.reader.read();
+                    if (ch < 0) {
+                        if (count == 0) {
+                            throw new EOFException();
+                        }
+                        break;
+                    } else if (ch == 10) {
+                        break;
+                    }
+                    if (count < buffer.getArrayLength()) {
+                        buffer.setByteElementAt(count, ch);
+                    }
+                    count++;
+                }
+                return new GlkEvent(GlkEvent.TypeLineInput, TestGlkWindow.this, Math.min(count, buffer.getArrayLength()), 0);
+            }
+
+            @Override public GlkEvent poll() {
+                return null;
+            }
+        };
+        glk.eventRequestQueue.add(eventRequest);
     }
 
     @Override
     public void requestCharEvent() {
         assert eventRequest == null;
-        throw new RuntimeException("unimplemented");
+        eventRequest = new TestGlkEventRequest() {
+            @Override public GlkEvent select() throws IOException {
+                eventRequest = null;
+                int ch = glk.reader.read();
+                if (ch < 0) {
+                    throw new EOFException();
+                }
+                return new GlkEvent(GlkEvent.TypeCharInput, TestGlkWindow.this, ch & 255, 0);
+            }
+
+            @Override public GlkEvent poll() {
+                return null;
+            }
+        };
+        glk.eventRequestQueue.add(eventRequest);
     }
 
     @Override
