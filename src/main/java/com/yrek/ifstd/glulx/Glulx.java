@@ -21,6 +21,7 @@ public class Glulx implements Runnable {
         machine = new Machine(null, fileData, new GlkDispatch(glk));
     }
 
+    @Override
     public void run() {
         for (;;) {
             switch (Instruction.executeNext(machine)) {

@@ -1,6 +1,7 @@
 package com.yrek.ifstd.glk;
 
 import java.io.InputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 
 public class GlkWindowStream extends GlkStream {
@@ -21,12 +22,12 @@ public class GlkWindowStream extends GlkStream {
     }
 
     @Override
-    public GlkStreamResult close() {
+    public GlkStreamResult close() throws IOException {
         return windowStream.close();
     }
 
     @Override
-    public void putChar(int ch) {
+    public void putChar(int ch) throws IOException {
         windowStream.putChar(ch);
         if (echoStream != null) {
             echoStream.putChar(ch);
@@ -34,7 +35,7 @@ public class GlkWindowStream extends GlkStream {
     }
 
     @Override
-    public void putString(GlkByteArray string) {
+    public void putString(GlkByteArray string) throws IOException {
         windowStream.putString(string);
         if (echoStream != null) {
             throw new RuntimeException("unimplemented");
@@ -42,7 +43,7 @@ public class GlkWindowStream extends GlkStream {
     }
 
     @Override
-    public void putBuffer(GlkByteArray buffer) {
+    public void putBuffer(GlkByteArray buffer) throws IOException {
         windowStream.putBuffer(buffer);
         if (echoStream != null) {
             throw new RuntimeException("unimplemented");
@@ -58,27 +59,27 @@ public class GlkWindowStream extends GlkStream {
     }
 
     @Override
-    public int getChar() {
+    public int getChar() throws IOException {
         return windowStream.getChar();
     }
 
     @Override
-    public int getLine(GlkByteArray buffer) {
+    public int getLine(GlkByteArray buffer) throws IOException {
         return windowStream.getLine(buffer);
     }
 
     @Override
-    public int getBuffer(GlkByteArray buffer) {
+    public int getBuffer(GlkByteArray buffer) throws IOException {
         return windowStream.getBuffer(buffer);
     }
 
     @Override
-    public void setPosition(int position, int seekMode) {
+    public void setPosition(int position, int seekMode) throws IOException {
         windowStream.setPosition(position, seekMode);
     }
 
     @Override
-    public int getPosition() {
+    public int getPosition() throws IOException {
         return windowStream.getPosition();
     }
 }

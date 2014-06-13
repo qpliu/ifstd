@@ -1,5 +1,6 @@
 package com.yrek.ifstd.glulx;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 import com.yrek.ifstd.glk.GlkDispatchArgument;
@@ -752,8 +753,12 @@ abstract class Instruction {
                 for (int i = 0; i < a2; i++) {
                     args[i] = new GlkArgument(machine, machine.state.pop32());
                 }
-                arg3.store32(machine.state, machine.glk.dispatch(a1, args));
-                return Result.Continue;
+                try {
+                    arg3.store32(machine.state, machine.glk.dispatch(a1, args));
+                    return Result.Continue;
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
         };
         new Instruction(0x140, Operands.S) { // getstringtbl

@@ -1,5 +1,7 @@
 package com.yrek.ifstd.glk;
 
+import java.io.IOException;
+
 public class GlkDispatch {
     public final Glk glk;
     private final GlkObjectPool<GlkWindow> windows = new GlkObjectPool<GlkWindow>();
@@ -11,7 +13,7 @@ public class GlkDispatch {
         this.glk = glk;
     }
 
-    public int dispatch(int selector, GlkDispatchArgument[] args) {
+    public int dispatch(int selector, GlkDispatchArgument[] args) throws IOException {
         switch (selector) {
         case 0x0001: // exit
             glk.exit();

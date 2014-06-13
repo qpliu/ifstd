@@ -108,6 +108,23 @@ class GlkArgument implements GlkDispatchArgument, GlkByteArray, GlkIntArray {
     }
 
     @Override
+    public int getByteElementAt(int index) {
+        int result;
+        if (value == -1) {
+            throw new IllegalArgumentException("Random access of stack");
+        }
+        return machine.state.load8(value + arrayOffset + index);
+    }
+
+    @Override
+    public void setByteElementAt(int index, int element) {
+        if (value == -1) {
+            throw new IllegalArgumentException("Random access of stack");
+        }
+        machine.state.store8(value + arrayOffset + index, element);
+    }
+
+    @Override
     public int getIntElement() {
         int result;
         if (value == -1) {
@@ -127,6 +144,23 @@ class GlkArgument implements GlkDispatchArgument, GlkByteArray, GlkIntArray {
             machine.state.store32(value + arrayOffset + 4*writeArrayIndex, element);
         }
         writeArrayIndex++;
+    }
+
+    @Override
+    public int getIntElementAt(int index) {
+        int result;
+        if (value == -1) {
+            throw new IllegalArgumentException("Random access of stack");
+        }
+        return machine.state.load32(value + arrayOffset + 4*index);
+    }
+
+    @Override
+    public void setIntElementAt(int index, int element) {
+        if (value == -1) {
+            throw new IllegalArgumentException("Random access of stack");
+        }
+        machine.state.store32(value + arrayOffset + 4*index, element);
     }
 
     @Override

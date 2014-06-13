@@ -4,6 +4,8 @@ package com.yrek.ifstd.glk;
 public interface GlkIntArray {
     public int getIntElement();
     public void setIntElement(int element);
+    public int getIntElementAt(int index);
+    public void setIntElementAt(int index, int element);
     public int getReadArrayIndex();
     public int setReadArrayIndex(int index);
     public int getWriteArrayIndex();

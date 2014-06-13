@@ -1,7 +1,12 @@
 package com.yrek.ifstd.glk;
 
+import java.io.IOException;
+
 // Implemented by the Glk provider, called by the Glk user
 public interface Glk {
+    public static final int GlkVersion = 0x00000704;
+
+    public void main(Runnable main) throws IOException;
     public void exit();
     public void setInterruptHandler(Runnable handler);
     public void tick();
@@ -14,25 +19,25 @@ public interface Glk {
 
     public void setWindow(GlkWindow window);
 
-    public GlkStream streamOpenFile(GlkFile file, int mode, int rock);
+    public GlkStream streamOpenFile(GlkFile file, int mode, int rock) throws IOException;
     public GlkStream streamOpenMemory(GlkByteArray memory, int mode, int rock);
     public void streamSetCurrent(GlkStream stream);
     public GlkStream streamGetCurrent();
-    public void putChar(int ch);
-    public void putString(GlkByteArray string);
-    public void putBuffer(GlkByteArray buffer);
+    public void putChar(int ch) throws IOException;
+    public void putString(GlkByteArray string) throws IOException;
+    public void putBuffer(GlkByteArray buffer) throws IOException;
     public void setStyle(int style);
 
     public void styleHintSet(int winType, int style, int hint, int value);
     public void styleHintClear(int winType, int style, int hint);
 
-    public GlkFile fileCreateTemp(int usage, int rock);
-    public GlkFile fileCreateByName(int usage, GlkByteArray name, int rock);
-    public GlkFile fileCreateByPrompt(int usage, int mode, int rock);
-    public GlkFile fileCreateFromFile(int usage, GlkFile file, int rock);
+    public GlkFile fileCreateTemp(int usage, int rock) throws IOException;
+    public GlkFile fileCreateByName(int usage, GlkByteArray name, int rock) throws IOException;
+    public GlkFile fileCreateByPrompt(int usage, int mode, int rock) throws IOException;
+    public GlkFile fileCreateFromFile(int usage, GlkFile file, int rock) throws IOException;
 
-    public GlkEvent select();
-    public GlkEvent selectPoll();
+    public GlkEvent select() throws IOException;
+    public GlkEvent selectPoll() throws IOException;
 
     public void requestTimerEvents(int millisecs);
 }

@@ -21,7 +21,7 @@ public abstract class GlkObject {
         this.pointer = pointer;
     }
 
-    boolean isDestroyed() {
+    public boolean isDestroyed() {
         return destroyed;
     }
 

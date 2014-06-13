@@ -1,5 +1,7 @@
 package com.yrek.ifstd.glk;
 
+import java.io.IOException;
+
 public abstract class GlkStream extends GlkObject {
     public static final int seekModeStart = 0;
     public static final int seekModeCurrent = 1;
@@ -21,14 +23,14 @@ public abstract class GlkStream extends GlkObject {
         super(rock);
     }
 
-    public abstract GlkStreamResult close();
-    public abstract void putChar(int ch);
-    public abstract void putString(GlkByteArray string);
-    public abstract void putBuffer(GlkByteArray buffer);
+    public abstract GlkStreamResult close() throws IOException;
+    public abstract void putChar(int ch) throws IOException;
+    public abstract void putString(GlkByteArray string) throws IOException;
+    public abstract void putBuffer(GlkByteArray buffer) throws IOException;
     public abstract void setStyle(int style);
-    public abstract int getChar();
-    public abstract int getLine(GlkByteArray buffer);
-    public abstract int getBuffer(GlkByteArray buffer);
-    public abstract void setPosition(int position, int seekMode);
-    public abstract int getPosition();
+    public abstract int getChar() throws IOException;
+    public abstract int getLine(GlkByteArray buffer) throws IOException;
+    public abstract int getBuffer(GlkByteArray buffer) throws IOException;
+    public abstract void setPosition(int position, int seekMode) throws IOException;
+    public abstract int getPosition() throws IOException;
 }
