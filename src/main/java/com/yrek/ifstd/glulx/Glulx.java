@@ -12,6 +12,7 @@ public class Glulx implements Runnable {
     public static final int TerpVersion = 0x00000000;
 
     private final Machine machine;
+    private transient boolean suspend = false;
 
     public Glulx(byte[] byteData, Glk glk) throws IOException {
         machine = new Machine(byteData, null, new GlkDispatch(glk));
@@ -23,6 +24,7 @@ public class Glulx implements Runnable {
 
     @Override
     public void run() {
+        suspend = false;
         for (;;) {
             switch (Instruction.executeNext(machine)) {
             case Continue:
@@ -33,6 +35,13 @@ public class Glulx implements Runnable {
             case Quit:
                 return;
             }
+            if (suspend) {
+                return;
+            }
         }
+    }
+
+    public void suspend() {
+        suspend = true;
     }
 }

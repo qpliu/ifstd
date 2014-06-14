@@ -7,10 +7,12 @@ import com.yrek.ifstd.glk.GlkDispatchArgument;
 
 abstract class Instruction {
     private static final Instruction[] table = new Instruction[0x1ca];
+    private final String name;
     private final Operands operands;
 
-    Instruction(int opcode, Operands operands) {
+    Instruction(int opcode, String name, Operands operands) {
         table[opcode] = this;
+        this.name = name;
         this.operands = operands;
     }
 
@@ -94,60 +96,89 @@ abstract class Instruction {
             return insn.execute(machine, arg1);
         case L2: case LS: case SL: case S2:
             modes = machine.state.advancePC8();
-            arg1 = readOperand(machine, modes&15);
-            Operand arg2 = readOperand(machine, (modes>>4)&15);
+            int mode1 = modes&15;
+            int mode2 = (modes>>4)&15;
+            arg1 = readOperand(machine, mode1);
+            Operand arg2 = readOperand(machine, mode2);
             return insn.execute(machine, arg1, arg2);
         case L3: case L2S:
             modes = machine.state.advancePC8();
-            arg1 = readOperand(machine, modes&15);
-            arg2 = readOperand(machine, (modes>>4)&15);
+            mode1 = modes&15;
+            mode2 = (modes>>4)&15;
             modes = machine.state.advancePC8();
-            Operand arg3 = readOperand(machine, modes&15);
+            int mode3 = modes&15;
+            arg1 = readOperand(machine, mode1);
+            arg2 = readOperand(machine, mode2);
+            Operand arg3 = readOperand(machine, mode3);
             return insn.execute(machine, arg1, arg2, arg3);
         case L4: case L3S: case L2S2:
             modes = machine.state.advancePC8();
-            arg1 = readOperand(machine, modes&15);
-            arg2 = readOperand(machine, (modes>>4)&15);
+            mode1 = modes&15;
+            mode2 = (modes>>4)&15;
             modes = machine.state.advancePC8();
-            arg3 = readOperand(machine, modes&15);
-            Operand arg4 = readOperand(machine, (modes>>4)&15);
+            mode3 = modes&15;
+            int mode4 = (modes>>4)&15;
+            arg1 = readOperand(machine, mode1);
+            arg2 = readOperand(machine, mode2);
+            arg3 = readOperand(machine, mode3);
+            Operand arg4 = readOperand(machine, mode4);
             return insn.execute(machine, arg1, arg2, arg3, arg4);
         case L4S:
             modes = machine.state.advancePC8();
-            arg1 = readOperand(machine, modes&15);
-            arg2 = readOperand(machine, (modes>>4)&15);
+            mode1 = modes&15;
+            mode2 = (modes>>4)&15;
             modes = machine.state.advancePC8();
-            arg3 = readOperand(machine, modes&15);
-            arg4 = readOperand(machine, (modes>>4)&15);
+            mode3 = modes&15;
+            mode4 = (modes>>4)&15;
             modes = machine.state.advancePC8();
-            Operand arg5 = readOperand(machine, modes&15);
+            int mode5 = modes&15;
+            arg1 = readOperand(machine, mode1);
+            arg2 = readOperand(machine, mode2);
+            arg3 = readOperand(machine, mode3);
+            arg4 = readOperand(machine, mode4);
+            Operand arg5 = readOperand(machine, mode5);
             return insn.execute(machine, arg1, arg2, arg3, arg4, arg5);
         case L6S:
             modes = machine.state.advancePC8();
-            arg1 = readOperand(machine, modes&15);
-            arg2 = readOperand(machine, (modes>>4)&15);
+            mode1 = modes&15;
+            mode2 = (modes>>4)&15;
             modes = machine.state.advancePC8();
-            arg3 = readOperand(machine, modes&15);
-            arg4 = readOperand(machine, (modes>>4)&15);
+            mode3 = modes&15;
+            mode4 = (modes>>4)&15;
             modes = machine.state.advancePC8();
-            arg5 = readOperand(machine, modes&15);
-            Operand arg6 = readOperand(machine, (modes>>4)&15);
+            mode5 = modes&15;
+            int mode6 = (modes>>4)&15;
             modes = machine.state.advancePC8();
-            Operand arg7 = readOperand(machine, modes&15);
+            int mode7 = modes&15;
+            arg1 = readOperand(machine, mode1);
+            arg2 = readOperand(machine, mode2);
+            arg3 = readOperand(machine, mode3);
+            arg4 = readOperand(machine, mode4);
+            arg5 = readOperand(machine, mode5);
+            Operand arg6 = readOperand(machine, mode6);
+            Operand arg7 = readOperand(machine, mode7);
             return insn.execute(machine, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
         case L7S:
             modes = machine.state.advancePC8();
-            arg1 = readOperand(machine, modes&15);
-            arg2 = readOperand(machine, (modes>>4)&15);
+            mode1 = modes&15;
+            mode2 = (modes>>4)&15;
             modes = machine.state.advancePC8();
-            arg3 = readOperand(machine, modes&15);
-            arg4 = readOperand(machine, (modes>>4)&15);
+            mode3 = modes&15;
+            mode4 = (modes>>4)&15;
             modes = machine.state.advancePC8();
-            arg5 = readOperand(machine, modes&15);
-            arg6 = readOperand(machine, (modes>>4)&15);
+            mode5 = modes&15;
+            mode6 = (modes>>4)&15;
             modes = machine.state.advancePC8();
-            arg7 = readOperand(machine, modes&15);
-            Operand arg8 = readOperand(machine, (modes>>4)&15);
+            mode7 = modes&15;
+            int mode8 = (modes>>4)&15;
+            arg1 = readOperand(machine, mode1);
+            arg2 = readOperand(machine, mode2);
+            arg3 = readOperand(machine, mode3);
+            arg4 = readOperand(machine, mode4);
+            arg5 = readOperand(machine, mode5);
+            arg6 = readOperand(machine, mode6);
+            arg7 = readOperand(machine, mode7);
+            Operand arg8 = readOperand(machine, mode8);
             return insn.execute(machine, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
         }
         throw new AssertionError();
@@ -155,95 +186,95 @@ abstract class Instruction {
 
     static {
         // arguments MUST be executed in order (due to stack addressing modes)
-        new Instruction(0x00, Operands.Z) { // nop
+        new Instruction(0x00, "nop", Operands.Z) {
             @Override protected Result execute(Machine machine) {
                 return Result.Continue;
             }
         };
-        new Instruction(0x10, Operands.L2S) { // add
+        new Instruction(0x10, "add", Operands.L2S) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 arg3.store32(machine.state, arg1.load32(machine.state) + arg2.load32(machine.state));
                 return Result.Continue;
             }
         };
-        new Instruction(0x11, Operands.L2S) { // sub
+        new Instruction(0x11, "sub", Operands.L2S) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 arg3.store32(machine.state, arg1.load32(machine.state) - arg2.load32(machine.state));
                 return Result.Continue;
             }
         };
-        new Instruction(0x12, Operands.L2S) { // mul
+        new Instruction(0x12, "mul", Operands.L2S) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 arg3.store32(machine.state, arg1.load32(machine.state) * arg2.load32(machine.state));
                 return Result.Continue;
             }
         };
-        new Instruction(0x13, Operands.L2S) { // div
+        new Instruction(0x13, "div", Operands.L2S) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 arg3.store32(machine.state, arg1.load32(machine.state) / arg2.load32(machine.state));
                 return Result.Continue;
             }
         };
-        new Instruction(0x14, Operands.L2S) { // mod
+        new Instruction(0x14, "mod", Operands.L2S) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 arg3.store32(machine.state, arg1.load32(machine.state) % arg2.load32(machine.state));
                 return Result.Continue;
             }
         };
-        new Instruction(0x15, Operands.LS) { // neg
+        new Instruction(0x15, "neg", Operands.LS) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 arg2.store32(machine.state, -arg1.load32(machine.state));
                 return Result.Continue;
             }
         };
-        new Instruction(0x18, Operands.L2S) { // bitand
+        new Instruction(0x18, "bitand", Operands.L2S) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 arg3.store32(machine.state, arg1.load32(machine.state) & arg2.load32(machine.state));
                 return Result.Continue;
             }
         };
-        new Instruction(0x19, Operands.L2S) { // bitor
+        new Instruction(0x19, "bitor", Operands.L2S) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 arg3.store32(machine.state, arg1.load32(machine.state) | arg2.load32(machine.state));
                 return Result.Continue;
             }
         };
-        new Instruction(0x1A, Operands.L2S) { // bitxor
+        new Instruction(0x1A, "bitxor", Operands.L2S) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 arg3.store32(machine.state, arg1.load32(machine.state) ^ arg2.load32(machine.state));
                 return Result.Continue;
             }
         };
-        new Instruction(0x1B, Operands.LS) { // bitnot
+        new Instruction(0x1B, "bitnot", Operands.LS) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 arg2.store32(machine.state, ~arg1.load32(machine.state));
                 return Result.Continue;
             }
         };
-        new Instruction(0x1C, Operands.L2S) { // shiftl
+        new Instruction(0x1C, "shiftl", Operands.L2S) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 arg3.store32(machine.state, arg1.load32(machine.state) << arg2.load32(machine.state));
                 return Result.Continue;
             }
         };
-        new Instruction(0x1D, Operands.L2S) { // sshiftr
+        new Instruction(0x1D, "sshiftr", Operands.L2S) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 arg3.store32(machine.state, arg1.load32(machine.state) >> arg2.load32(machine.state));
                 return Result.Continue;
             }
         };
-        new Instruction(0x1E, Operands.L2S) { // ushiftr
+        new Instruction(0x1E, "ushiftr", Operands.L2S) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 arg3.store32(machine.state, arg1.load32(machine.state) >>> arg2.load32(machine.state));
                 return Result.Continue;
             }
         };
-        new Instruction(0x20, Operands.L) { // jump
+        new Instruction(0x20, "jump", Operands.L) {
             @Override protected Result execute(Machine machine, Operand arg1) {
                 return branch(machine, arg1.load32(machine.state));
             }
         };
-        new Instruction(0x22, Operands.L2) { // jz
+        new Instruction(0x22, "jz", Operands.L2) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 int a1 = arg1.load32(machine.state);
                 int a2 = arg2.load32(machine.state);
@@ -253,7 +284,7 @@ abstract class Instruction {
                 return Result.Tick;
             }
         };
-        new Instruction(0x23, Operands.L2) { // jnz
+        new Instruction(0x23, "jnz", Operands.L2) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 int a1 = arg1.load32(machine.state);
                 int a2 = arg2.load32(machine.state);
@@ -263,7 +294,7 @@ abstract class Instruction {
                 return Result.Tick;
             }
         };
-        new Instruction(0x24, Operands.L3) { // jeq
+        new Instruction(0x24, "jeq", Operands.L3) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 int a1 = arg1.load32(machine.state);
                 int a2 = arg2.load32(machine.state);
@@ -274,7 +305,7 @@ abstract class Instruction {
                 return Result.Tick;
             }
         };
-        new Instruction(0x25, Operands.L3) { // jne
+        new Instruction(0x25, "jne", Operands.L3) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 int a1 = arg1.load32(machine.state);
                 int a2 = arg2.load32(machine.state);
@@ -285,7 +316,7 @@ abstract class Instruction {
                 return Result.Tick;
             }
         };
-        new Instruction(0x26, Operands.L3) { // jlt
+        new Instruction(0x26, "jlt", Operands.L3) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 int a1 = arg1.load32(machine.state);
                 int a2 = arg2.load32(machine.state);
@@ -296,7 +327,7 @@ abstract class Instruction {
                 return Result.Tick;
             }
         };
-        new Instruction(0x27, Operands.L3) { // jge
+        new Instruction(0x27, "jge", Operands.L3) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 int a1 = arg1.load32(machine.state);
                 int a2 = arg2.load32(machine.state);
@@ -307,7 +338,7 @@ abstract class Instruction {
                 return Result.Tick;
             }
         };
-        new Instruction(0x28, Operands.L3) { // jgt
+        new Instruction(0x28, "jgt", Operands.L3) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 int a1 = arg1.load32(machine.state);
                 int a2 = arg2.load32(machine.state);
@@ -318,7 +349,7 @@ abstract class Instruction {
                 return Result.Tick;
             }
         };
-        new Instruction(0x29, Operands.L3) { // jle
+        new Instruction(0x29, "jle", Operands.L3) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 int a1 = arg1.load32(machine.state);
                 int a2 = arg2.load32(machine.state);
@@ -329,7 +360,7 @@ abstract class Instruction {
                 return Result.Tick;
             }
         };
-        new Instruction(0x2A, Operands.L3) { // jltu
+        new Instruction(0x2A, "jltu", Operands.L3) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 long a1 = arg1.load32(machine.state) & 0xffffffffL;
                 long a2 = arg2.load32(machine.state) & 0xffffffffL;
@@ -340,7 +371,7 @@ abstract class Instruction {
                 return Result.Tick;
             }
         };
-        new Instruction(0x2B, Operands.L3) { // jgeu
+        new Instruction(0x2B, "jgeu", Operands.L3) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 long a1 = arg1.load32(machine.state) & 0xffffffffL;
                 long a2 = arg2.load32(machine.state) & 0xffffffffL;
@@ -351,7 +382,7 @@ abstract class Instruction {
                 return Result.Tick;
             }
         };
-        new Instruction(0x2C, Operands.L3) { // jgtu
+        new Instruction(0x2C, "jgtu", Operands.L3) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 long a1 = arg1.load32(machine.state) & 0xffffffffL;
                 long a2 = arg2.load32(machine.state) & 0xffffffffL;
@@ -362,7 +393,7 @@ abstract class Instruction {
                 return Result.Tick;
             }
         };
-        new Instruction(0x2D, Operands.L3) { // jleu
+        new Instruction(0x2D, "jleu", Operands.L3) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 long a1 = arg1.load32(machine.state) & 0xffffffffL;
                 long a2 = arg2.load32(machine.state) & 0xffffffffL;
@@ -373,7 +404,7 @@ abstract class Instruction {
                 return Result.Tick;
             }
         };
-        new Instruction(0x30, Operands.L2S) { // call
+        new Instruction(0x30, "call", Operands.L2S) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 int a1 = arg1.load32(machine.state);
                 int a2 = arg2.load32(machine.state);
@@ -386,24 +417,25 @@ abstract class Instruction {
                 return Result.Tick;
             }
         };
-        new Instruction(0x31, Operands.L) { // return
+        new Instruction(0x31, "return", Operands.L) {
             @Override protected Result execute(Machine machine, Operand arg1) {
                 if (machine.state.fp == 0) {
                     return Result.Quit;
                 }
                 machine.state.sp = machine.state.fp;
-                returnValue(machine, arg1.load32(machine.state));
+                int a1 = arg1.load32(machine.state);
+                returnValue(machine, a1);
                 return Result.Tick;
             }
         };
-        new Instruction(0x32, Operands.SL) { // catch
+        new Instruction(0x32, "catch", Operands.SL) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 pushCallStub(machine.state, arg1.getDestType(), arg1.getDestAddr());
                 arg1.store32(machine.state, machine.state.sp);
                 return branch(machine, arg2.load32(machine.state));
             }
         };
-        new Instruction(0x33, Operands.L2) { // throw
+        new Instruction(0x33, "throw", Operands.L2) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 int a1 = arg1.load32(machine.state);
                 machine.state.sp = arg2.load32(machine.state);
@@ -411,7 +443,7 @@ abstract class Instruction {
                 return Result.Tick;
             }
         };
-        new Instruction(0x34, Operands.L2) { // tailcall
+        new Instruction(0x34, "tailcall", Operands.L2) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 int a1 = arg1.load32(machine.state);
                 int a2 = arg2.load32(machine.state);
@@ -424,25 +456,26 @@ abstract class Instruction {
                 return Result.Tick;
             }
         };
-        new Instruction(0x40, Operands.LS) { // copy
+        new Instruction(0x40, "copy", Operands.LS) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
-                arg2.store32(machine.state, arg1.load32(machine.state));
+                int a1 = arg1.load32(machine.state);
+                arg2.store32(machine.state, a1);
                 return Result.Continue;
             }
         };
-        new Instruction(0x41, Operands.LS) { // copys
+        new Instruction(0x41, "copys", Operands.LS) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 arg2.store16(machine.state, arg1.load16(machine.state));
                 return Result.Continue;
             }
         };
-        new Instruction(0x42, Operands.LS) { // copyb
+        new Instruction(0x42, "copyb", Operands.LS) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 arg2.store8(machine.state, arg1.load8(machine.state));
                 return Result.Continue;
             }
         };
-        new Instruction(0x44, Operands.LS) { // sexs
+        new Instruction(0x44, "sexs", Operands.LS) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 int arg = arg1.load32(machine.state);
                 if ((arg & 0x8000) == 0) {
@@ -454,7 +487,7 @@ abstract class Instruction {
                 return Result.Continue;
             }
         };
-        new Instruction(0x45, Operands.LS) { // sexb
+        new Instruction(0x45, "sexb", Operands.LS) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 int arg = arg1.load32(machine.state);
                 if ((arg & 0x80) == 0) {
@@ -466,25 +499,25 @@ abstract class Instruction {
                 return Result.Continue;
             }
         };
-        new Instruction(0x48, Operands.L2S) { // aload
+        new Instruction(0x48, "aload", Operands.L2S) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 arg3.store32(machine.state, machine.state.load32(arg1.load32(machine.state) + 4*arg2.load32(machine.state)));
                 return Result.Continue;
             }
         };
-        new Instruction(0x49, Operands.L2S) { // aloads
+        new Instruction(0x49, "aloads", Operands.L2S) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 arg3.store32(machine.state, machine.state.load16(arg1.load32(machine.state) + 2*arg2.load32(machine.state)) & 65535);
                 return Result.Continue;
             }
         };
-        new Instruction(0x4A, Operands.L2S) { // aloadb
+        new Instruction(0x4A, "aloadb", Operands.L2S) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 arg3.store32(machine.state, machine.state.load8(arg1.load32(machine.state) + arg2.load32(machine.state)) & 255);
                 return Result.Continue;
             }
         };
-        new Instruction(0x4B, Operands.L2S) { // aloadbit
+        new Instruction(0x4B, "aloadbit", Operands.L2S) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 int a1 = arg1.load32(machine.state);
                 int a2 = arg2.load32(machine.state);
@@ -500,25 +533,25 @@ abstract class Instruction {
                 return Result.Continue;
             }
         };
-        new Instruction(0x4C, Operands.L3) { // astore
+        new Instruction(0x4C, "astore", Operands.L3) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 machine.state.store32(arg1.load32(machine.state) + 4*arg2.load32(machine.state), arg3.load32(machine.state));
                 return Result.Continue;
             }
         };
-        new Instruction(0x4D, Operands.L3) { // astores
+        new Instruction(0x4D, "astores", Operands.L3) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 machine.state.store16(arg1.load32(machine.state) + 2*arg2.load32(machine.state), arg3.load32(machine.state));
                 return Result.Continue;
             }
         };
-        new Instruction(0x4E, Operands.L3) { // astoreb
+        new Instruction(0x4E, "astoreb", Operands.L3) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 machine.state.store8(arg1.load32(machine.state) + arg2.load32(machine.state), arg3.load32(machine.state));
                 return Result.Continue;
             }
         };
-        new Instruction(0x4F, Operands.L3) { // astorebit
+        new Instruction(0x4F, "astorebit", Operands.L3) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 int a1 = arg1.load32(machine.state);
                 int a2 = arg2.load32(machine.state);
@@ -540,31 +573,31 @@ abstract class Instruction {
                 return Result.Continue;
             }
         };
-        new Instruction(0x50, Operands.S) { // stkcount
+        new Instruction(0x50, "stkcount", Operands.S) {
             @Override protected Result execute(Machine machine, Operand arg1) {
                 arg1.store32(machine.state, (machine.state.sp - machine.state.fp - machine.state.sload32(machine.state.fp))/4);
                 return Result.Continue;
             }
         };
-        new Instruction(0x51, Operands.LS) { // stkpeek
+        new Instruction(0x51, "stkpeek", Operands.LS) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 arg2.store32(machine.state, machine.state.sload32(machine.state.sp - 4 - 4*arg1.load32(machine.state)));
                 return Result.Continue;
             }
         };
-        new Instruction(0x52, Operands.Z) { // stkswap
+        new Instruction(0x52, "stkswap", Operands.Z) {
             @Override protected Result execute(Machine machine) {
                 machine.state.roll(2, 1);
                 return Result.Continue;
             }
         };
-        new Instruction(0x53, Operands.L2) { // stkroll
+        new Instruction(0x53, "stkroll", Operands.L2) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 machine.state.roll(arg1.load32(machine.state), arg2.load32(machine.state));
                 return Result.Continue;
             }
         };
-        new Instruction(0x54, Operands.L) { // stkcopy
+        new Instruction(0x54, "stkcopy", Operands.L) {
             @Override protected Result execute(Machine machine, Operand arg1) {
                 int n = arg1.load32(machine.state);
                 int addr = machine.state.sp - 4*n;
@@ -575,27 +608,31 @@ abstract class Instruction {
                 return Result.Continue;
             }
         };
-        new Instruction(0x70, Operands.L) { // streamchar
+        new Instruction(0x70, "streamchar", Operands.L) {
             @Override protected Result execute(Machine machine, Operand arg1) {
-                throw new RuntimeException("unimplemented");
+                machine.ioSys.streamChar(arg1.load32(machine.state)&255);
+                return Result.Continue;
             }
         };
-        new Instruction(0x71, Operands.L) { // streamnum
+        new Instruction(0x71, "streamnum", Operands.L) {
             @Override protected Result execute(Machine machine, Operand arg1) {
-                throw new RuntimeException("unimplemented");
+                machine.ioSys.streamNum(arg1.load32(machine.state));
+                return Result.Continue;
             }
         };
-        new Instruction(0x72, Operands.L) { // streamstr
+        new Instruction(0x72, "streamstr", Operands.L) {
             @Override protected Result execute(Machine machine, Operand arg1) {
-                throw new RuntimeException("unimplemented");
+                machine.ioSys.streamStr(machine, arg1.load32(machine.state));
+                return Result.Continue;
             }
         };
-        new Instruction(0x73, Operands.L) { // streamunichar
+        new Instruction(0x73, "streamunichar", Operands.L) {
             @Override protected Result execute(Machine machine, Operand arg1) {
-                throw new RuntimeException("unimplemented");
+                machine.ioSys.streamUnichar(arg1.load32(machine.state));
+                return Result.Continue;
             }
         };
-        new Instruction(0x100, Operands.L2S) { // gestalt
+        new Instruction(0x100, "gestalt", Operands.L2S) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 int a1 = arg1.load32(machine.state);
                 int a2 = arg2.load32(machine.state);
@@ -652,53 +689,53 @@ abstract class Instruction {
                 return Result.Continue;
             }
         };
-        new Instruction(0x101, Operands.L) { // debugtrap
+        new Instruction(0x101, "debugtrap", Operands.L) {
             @Override protected Result execute(Machine machine, Operand arg1) {
                 throw new IllegalArgumentException("debugtrap instruction");
             }
         };
-        new Instruction(0x102, Operands.S) { // getmemsize
+        new Instruction(0x102, "getmemsize", Operands.S) {
             @Override protected Result execute(Machine machine, Operand arg1) {
                 arg1.store32(machine.state, machine.state.memorySize());
                 return Result.Continue;
             }
         };
-        new Instruction(0x103, Operands.LS) { // setmemsize
+        new Instruction(0x103, "setmemsize", Operands.LS) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 arg2.store32(machine.state, 0);
                 return Result.Continue;
             }
         };
-        new Instruction(0x104, Operands.L) { // jumpabs
+        new Instruction(0x104, "jumpabs", Operands.L) {
             @Override protected Result execute(Machine machine, Operand arg1) {
                 machine.state.pc = arg1.load32(machine.state);
                 return Result.Tick;
             }
         };
-        new Instruction(0x110, Operands.LS) { // random
+        new Instruction(0x110, "random", Operands.LS) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 arg2.store32(machine.state, machine.random.nextInt(arg1.load32(machine.state)));
                 return Result.Continue;
             }
         };
-        new Instruction(0x111, Operands.L) { // setrandom
+        new Instruction(0x111, "setrandom", Operands.L) {
             @Override protected Result execute(Machine machine, Operand arg1) {
                 machine.random.setSeed((long) arg1.load32(machine.state));
                 return Result.Continue;
             }
         };
-        new Instruction(0x120, Operands.Z) { // quit
+        new Instruction(0x120, "quit", Operands.Z) {
             @Override protected Result execute(Machine machine) {
                 return Result.Quit;
             }
         };
-        new Instruction(0x121, Operands.S) { // verify
+        new Instruction(0x121, "verify", Operands.S) {
             @Override protected Result execute(Machine machine, Operand arg1) {
                 arg1.store32(machine.state, machine.state.verify() ? 0 : 1);
                 return Result.Continue;
             }
         };
-        new Instruction(0x122, Operands.Z) { // restart
+        new Instruction(0x122, "restart", Operands.Z) {
             @Override protected Result execute(Machine machine) {
                 try {
                     machine.state.readFile(machine.getData(), machine.protectStart, machine.protectLength);
@@ -708,19 +745,19 @@ abstract class Instruction {
                 return Result.Continue;
             }
         };
-        new Instruction(0x123, Operands.LS) { // save
+        new Instruction(0x123, "save", Operands.LS) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 int a1 = arg1.load32(machine.state);
                 pushCallStub(machine.state, arg2.getDestType(), arg2.getDestAddr());
                 throw new RuntimeException("unimplemented");
             }
         };
-        new Instruction(0x124, Operands.LS) { // restore
+        new Instruction(0x124, "restore", Operands.LS) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 throw new RuntimeException("unimplemented");
             }
         };
-        new Instruction(0x125, Operands.S) { // saveundo
+        new Instruction(0x125, "saveundo", Operands.S) {
             @Override protected Result execute(Machine machine, Operand arg1) {
                 machine.saveUndo = machine.state.copyTo(machine.saveUndo);
                 arg1.store32(machine.state, 0);
@@ -728,7 +765,7 @@ abstract class Instruction {
                 return Result.Tick;
             }
         };
-        new Instruction(0x126, Operands.S) { // restoreundo
+        new Instruction(0x126, "restoreundo", Operands.S) {
             @Override protected Result execute(Machine machine, Operand arg1) {
                 if (machine.saveUndo == null) {
                     arg1.store32(machine.state, 1);
@@ -738,14 +775,14 @@ abstract class Instruction {
                 return Result.Tick;
             }
         };
-        new Instruction(0x127, Operands.L2) { // protect
+        new Instruction(0x127, "protect", Operands.L2) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 machine.protectStart = arg1.load32(machine.state);
                 machine.protectLength = arg2.load32(machine.state);
                 return Result.Continue;
             }
         };
-        new Instruction(0x130, Operands.L2S) { // glk
+        new Instruction(0x130, "glk", Operands.L2S) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 int a1 = arg1.load32(machine.state);
                 int a2 = arg2.load32(machine.state);
@@ -761,26 +798,26 @@ abstract class Instruction {
                 }
             }
         };
-        new Instruction(0x140, Operands.S) { // getstringtbl
+        new Instruction(0x140, "getstringtbl", Operands.S) {
             @Override protected Result execute(Machine machine, Operand arg1) {
                 arg1.store32(machine.state, machine.stringTable);
                 return Result.Continue;
             }
         };
-        new Instruction(0x141, Operands.L) { // setstringtbl
+        new Instruction(0x141, "setstringtbl", Operands.L) {
             @Override protected Result execute(Machine machine, Operand arg1) {
                 machine.stringTable = arg1.load32(machine.state);
                 return Result.Continue;
             }
         };
-        new Instruction(0x148, Operands.S2) { // getiosys
+        new Instruction(0x148, "getiosys", Operands.S2) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 arg1.store32(machine.state, machine.ioSys.getMode());
                 arg2.store32(machine.state, machine.ioSys.getRock());
                 return Result.Continue;
             }
         };
-        new Instruction(0x149, Operands.L2) { // setiosys
+        new Instruction(0x149, "setiosys", Operands.L2) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 int a1 = arg1.load32(machine.state);
                 int a2 = arg2.load32(machine.state);
@@ -793,7 +830,7 @@ abstract class Instruction {
                 return Result.Continue;
             }
         };
-        new Instruction(0x150, Operands.L7S) { // linearsearch
+        new Instruction(0x150, "linearsearch", Operands.L7S) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3, Operand arg4, Operand arg5, Operand arg6, Operand arg7, Operand arg8) {
                 int key = arg1.load32(machine.state);
                 int keySize = arg2.load32(machine.state);
@@ -817,7 +854,7 @@ abstract class Instruction {
                 return Result.Continue;
             }
         };
-        new Instruction(0x151, Operands.L7S) { // binarysearch
+        new Instruction(0x151, "binarysearch", Operands.L7S) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3, Operand arg4, Operand arg5, Operand arg6, Operand arg7, Operand arg8) {
                 int key = arg1.load32(machine.state);
                 int keySize = arg2.load32(machine.state);
@@ -849,7 +886,7 @@ abstract class Instruction {
                 }
             }
         };
-        new Instruction(0x152, Operands.L6S) { // linkedsearch
+        new Instruction(0x152, "linkedsearch", Operands.L6S) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3, Operand arg4, Operand arg5, Operand arg6, Operand arg7) {
                 int key = arg1.load32(machine.state);
                 int keySize = arg2.load32(machine.state);
@@ -874,7 +911,7 @@ abstract class Instruction {
                 }
             }
         };
-        new Instruction(0x160, Operands.LS) { // callf
+        new Instruction(0x160, "callf", Operands.LS) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 int a1 = arg1.load32(machine.state);
                 int[] args = new int[0];
@@ -883,7 +920,7 @@ abstract class Instruction {
                 return Result.Tick;
             }
         };
-        new Instruction(0x161, Operands.L2S) { // callfi
+        new Instruction(0x161, "callfi", Operands.L2S) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 int a1 = arg1.load32(machine.state);
                 int[] args = new int[] {
@@ -894,7 +931,7 @@ abstract class Instruction {
                 return Result.Tick;
             }
         };
-        new Instruction(0x162, Operands.L3S) { // callfii
+        new Instruction(0x162, "callfii", Operands.L3S) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3, Operand arg4) {
                 int a1 = arg1.load32(machine.state);
                 int[] args = new int[] {
@@ -906,7 +943,7 @@ abstract class Instruction {
                 return Result.Tick;
             }
         };
-        new Instruction(0x163, Operands.L4S) { // callfiii
+        new Instruction(0x163, "callfiii", Operands.L4S) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3, Operand arg4, Operand arg5) {
                 int a1 = arg1.load32(machine.state);
                 int[] args = new int[] {
@@ -919,7 +956,7 @@ abstract class Instruction {
                 return Result.Tick;
             }
         };
-        new Instruction(0x170, Operands.L2) { // mzero
+        new Instruction(0x170, "mzero", Operands.L2) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 int a1 = arg1.load32(machine.state);
                 int a2 = arg2.load32(machine.state);
@@ -927,7 +964,7 @@ abstract class Instruction {
                 return Result.Continue;
             }
         };
-        new Instruction(0x171, Operands.L3) { // mcopy
+        new Instruction(0x171, "mcopy", Operands.L3) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 int a1 = arg1.load32(machine.state);
                 int a2 = arg2.load32(machine.state);
@@ -936,88 +973,88 @@ abstract class Instruction {
                 return Result.Continue;
             }
         };
-        new Instruction(0x178, Operands.LS) { // malloc
+        new Instruction(0x178, "malloc", Operands.LS) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 arg2.store32(machine.state, 0);
                 return Result.Continue;
             }
         };
-        new Instruction(0x179, Operands.L) { // mfree
+        new Instruction(0x179, "mfree", Operands.L) {
             @Override protected Result execute(Machine machine, Operand arg1) {
                 arg1.store32(machine.state, 0);
                 return Result.Continue;
             }
         };
-        new Instruction(0x180, Operands.L2) { // accelfunc
+        new Instruction(0x180, "accelfunc", Operands.L2) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 arg1.load32(machine.state);
                 arg2.load32(machine.state);
                 return Result.Continue;
             }
         };
-        new Instruction(0x181, Operands.L2) { // accelparam
+        new Instruction(0x181, "accelparam", Operands.L2) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 arg1.load32(machine.state);
                 arg2.load32(machine.state);
                 return Result.Continue;
             }
         };
-        new Instruction(0x190, Operands.LS) { // numtof
+        new Instruction(0x190, "numtof", Operands.LS) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 arg2.store32(machine.state, Float.floatToIntBits((float) arg1.load32(machine.state)));
                 return Result.Continue;
             }
         };
-        new Instruction(0x191, Operands.LS) { // ftonumz
+        new Instruction(0x191, "ftonumz", Operands.LS) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 float arg = Float.intBitsToFloat(arg1.load32(machine.state));
                 arg2.store32(machine.state, Math.round(Math.copySign((float) Math.floor(Math.abs(arg)), arg)));
                 return Result.Continue;
             }
         };
-        new Instruction(0x192, Operands.LS) { // ftonumn
+        new Instruction(0x192, "ftonumn", Operands.LS) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 arg2.store32(machine.state, Math.round(Float.intBitsToFloat(arg1.load32(machine.state))));
                 return Result.Continue;
             }
         };
-        new Instruction(0x198, Operands.LS) { // ceil
+        new Instruction(0x198, "ceil", Operands.LS) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 arg2.store32(machine.state, Float.floatToIntBits((float) Math.ceil((double) Float.intBitsToFloat(arg1.load32(machine.state)))));
                 return Result.Continue;
             }
         };
-        new Instruction(0x199, Operands.LS) { // floor
+        new Instruction(0x199, "floor", Operands.LS) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 arg2.store32(machine.state, Float.floatToIntBits((float) Math.floor((double) Float.intBitsToFloat(arg1.load32(machine.state)))));
                 return Result.Continue;
             }
         };
-        new Instruction(0x1A0, Operands.L2S) { // fadd
+        new Instruction(0x1A0, "fadd", Operands.L2S) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 arg3.store32(machine.state, Float.floatToIntBits(Float.intBitsToFloat(arg1.load32(machine.state)) + Float.intBitsToFloat(arg2.load32(machine.state))));
                 return Result.Continue;
             }
         };
-        new Instruction(0x1A1, Operands.L2S) { // fsub
+        new Instruction(0x1A1, "fsub", Operands.L2S) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 arg3.store32(machine.state, Float.floatToIntBits(Float.intBitsToFloat(arg1.load32(machine.state)) - Float.intBitsToFloat(arg2.load32(machine.state))));
                 return Result.Continue;
             }
         };
-        new Instruction(0x1A2, Operands.L2S) { // fmul
+        new Instruction(0x1A2, "fmul", Operands.L2S) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 arg3.store32(machine.state, Float.floatToIntBits(Float.intBitsToFloat(arg1.load32(machine.state)) * Float.intBitsToFloat(arg2.load32(machine.state))));
                 return Result.Continue;
             }
         };
-        new Instruction(0x1A3, Operands.L2S) { // fdiv
+        new Instruction(0x1A3, "fdiv", Operands.L2S) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 arg3.store32(machine.state, Float.floatToIntBits(Float.intBitsToFloat(arg1.load32(machine.state)) / Float.intBitsToFloat(arg2.load32(machine.state))));
                 return Result.Continue;
             }
         };
-        new Instruction(0x1A4, Operands.L2S2) { // fmod
+        new Instruction(0x1A4, "fmod", Operands.L2S2) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3, Operand arg4) {
                 float a1 = Float.intBitsToFloat(arg1.load32(machine.state));
                 float a2 = Float.intBitsToFloat(arg1.load32(machine.state));
@@ -1028,73 +1065,73 @@ abstract class Instruction {
                 return Result.Continue;
             }
         };
-        new Instruction(0x1A8, Operands.LS) { // sqrt
+        new Instruction(0x1A8, "sqrt", Operands.LS) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 arg2.store32(machine.state, Float.floatToIntBits((float) Math.sqrt((double) Float.intBitsToFloat(arg1.load32(machine.state)))));
                 return Result.Continue;
             }
         };
-        new Instruction(0x1A9, Operands.LS) { // exp
+        new Instruction(0x1A9, "exp", Operands.LS) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 arg2.store32(machine.state, Float.floatToIntBits((float) Math.exp((double) Float.intBitsToFloat(arg1.load32(machine.state)))));
                 return Result.Continue;
             }
         };
-        new Instruction(0x1AA, Operands.LS) { // log
+        new Instruction(0x1AA, "log", Operands.LS) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 arg2.store32(machine.state, Float.floatToIntBits((float) Math.log((double) Float.intBitsToFloat(arg1.load32(machine.state)))));
                 return Result.Continue;
             }
         };
-        new Instruction(0x1AB, Operands.L2S) { // pow
+        new Instruction(0x1AB, "pow", Operands.L2S) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 arg3.store32(machine.state, Float.floatToIntBits((float) Math.pow((double) Float.intBitsToFloat(arg1.load32(machine.state)), (double) Float.intBitsToFloat(arg2.load32(machine.state)))));
                 return Result.Continue;
             }
         };
-        new Instruction(0x1B0, Operands.LS) { // sin
+        new Instruction(0x1B0, "sin", Operands.LS) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 arg2.store32(machine.state, Float.floatToIntBits((float) Math.sin((double) Float.intBitsToFloat(arg1.load32(machine.state)))));
                 return Result.Continue;
             }
         };
-        new Instruction(0x1B1, Operands.LS) { // cos
+        new Instruction(0x1B1, "cos", Operands.LS) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 arg2.store32(machine.state, Float.floatToIntBits((float) Math.cos((double) Float.intBitsToFloat(arg1.load32(machine.state)))));
                 return Result.Continue;
             }
         };
-        new Instruction(0x1B2, Operands.LS) { // tan
+        new Instruction(0x1B2, "tan", Operands.LS) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 arg2.store32(machine.state, Float.floatToIntBits((float) Math.tan((double) Float.intBitsToFloat(arg1.load32(machine.state)))));
                 return Result.Continue;
             }
         };
-        new Instruction(0x1B3, Operands.LS) { // asin
+        new Instruction(0x1B3, "asin", Operands.LS) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 arg2.store32(machine.state, Float.floatToIntBits((float) Math.asin((double) Float.intBitsToFloat(arg1.load32(machine.state)))));
                 return Result.Continue;
             }
         };
-        new Instruction(0x1B4, Operands.LS) { // acos
+        new Instruction(0x1B4, "acos", Operands.LS) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 arg2.store32(machine.state, Float.floatToIntBits((float) Math.acos((double) Float.intBitsToFloat(arg1.load32(machine.state)))));
                 return Result.Continue;
             }
         };
-        new Instruction(0x1B5, Operands.LS) { // atan
+        new Instruction(0x1B5, "atan", Operands.LS) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 arg2.store32(machine.state, Float.floatToIntBits((float) Math.atan((double) Float.intBitsToFloat(arg1.load32(machine.state)))));
                 return Result.Continue;
             }
         };
-        new Instruction(0x1B6, Operands.L2S) { // atan2
+        new Instruction(0x1B6, "atan2", Operands.L2S) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 arg3.store32(machine.state, Float.floatToIntBits((float) Math.atan2((double) Float.intBitsToFloat(arg1.load32(machine.state)), (double) Float.intBitsToFloat(arg2.load32(machine.state)))));
                 return Result.Continue;
             }
         };
-        new Instruction(0x1C0, Operands.L4) { // jfeq
+        new Instruction(0x1C0, "jfeq", Operands.L4) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3, Operand arg4) {
                 float a1 = Float.intBitsToFloat(arg1.load32(machine.state));
                 float a2 = Float.intBitsToFloat(arg2.load32(machine.state));
@@ -1106,7 +1143,7 @@ abstract class Instruction {
                 return Result.Tick;
             }
         };
-        new Instruction(0x1C1, Operands.L4) { // jfne
+        new Instruction(0x1C1, "jfne", Operands.L4) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3, Operand arg4) {
                 float a1 = Float.intBitsToFloat(arg1.load32(machine.state));
                 float a2 = Float.intBitsToFloat(arg2.load32(machine.state));
@@ -1118,7 +1155,7 @@ abstract class Instruction {
                 return Result.Tick;
             }
         };
-        new Instruction(0x1C2, Operands.L3) { // jflt
+        new Instruction(0x1C2, "jflt", Operands.L3) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 float a1 = Float.intBitsToFloat(arg1.load32(machine.state));
                 float a2 = Float.intBitsToFloat(arg2.load32(machine.state));
@@ -1129,7 +1166,7 @@ abstract class Instruction {
                 return Result.Tick;
             }
         };
-        new Instruction(0x1C3, Operands.L3) { // jfle
+        new Instruction(0x1C3, "jfle", Operands.L3) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 float a1 = Float.intBitsToFloat(arg1.load32(machine.state));
                 float a2 = Float.intBitsToFloat(arg2.load32(machine.state));
@@ -1140,7 +1177,7 @@ abstract class Instruction {
                 return Result.Tick;
             }
         };
-        new Instruction(0x1C4, Operands.L3) { // jfgt
+        new Instruction(0x1C4, "jfgt", Operands.L3) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 float a1 = Float.intBitsToFloat(arg1.load32(machine.state));
                 float a2 = Float.intBitsToFloat(arg2.load32(machine.state));
@@ -1151,7 +1188,7 @@ abstract class Instruction {
                 return Result.Tick;
             }
         };
-        new Instruction(0x1C5, Operands.L3) { // jfge
+        new Instruction(0x1C5, "jfge", Operands.L3) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
                 float a1 = Float.intBitsToFloat(arg1.load32(machine.state));
                 float a2 = Float.intBitsToFloat(arg2.load32(machine.state));
@@ -1162,7 +1199,7 @@ abstract class Instruction {
                 return Result.Tick;
             }
         };
-        new Instruction(0x1C8, Operands.L2) { // jisnan
+        new Instruction(0x1C8, "jisnan", Operands.L2) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 float a1 = Float.intBitsToFloat(arg1.load32(machine.state));
                 int a2 = arg2.load32(machine.state);
@@ -1172,7 +1209,7 @@ abstract class Instruction {
                 return Result.Tick;
             }
         };
-        new Instruction(0x1C9, Operands.L2) { // jisinf
+        new Instruction(0x1C9, "jisinf", Operands.L2) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 float a1 = Float.intBitsToFloat(arg1.load32(machine.state));
                 int a2 = arg2.load32(machine.state);
@@ -1214,6 +1251,7 @@ abstract class Instruction {
         @Override public void store32(State state, int value) {}
         @Override public int getDestType() { return 0; }
         @Override public int getDestAddr() { return 0; }
+        @Override public String toString() { return "zero"; }
     };
 
     private static class ConstantOperand implements Operand {
@@ -1239,6 +1277,7 @@ abstract class Instruction {
         @Override public int getDestAddr() {
             throw new IllegalArgumentException("Illegal store addressing mode");
         }
+        @Override public String toString() { return Integer.toHexString(value); }
     };
 
     private static class MemoryOperand implements Operand {
@@ -1266,6 +1305,7 @@ abstract class Instruction {
         }
         @Override public int getDestType() { return 1; }
         @Override public int getDestAddr() { return addr; }
+        @Override public String toString() { return "M:"+Integer.toHexString(addr); }
     };
 
     private static final Operand operand8 = new Operand() {
@@ -1289,6 +1329,7 @@ abstract class Instruction {
         }
         @Override public int getDestType() { return 3; }
         @Override public int getDestAddr() { return 0; }
+        @Override public String toString() { return "stack"; }
     };
 
     private static class LocalOperand implements Operand {
@@ -1322,45 +1363,62 @@ abstract class Instruction {
         }
         @Override public int getDestType() { return 2; }
         @Override public int getDestAddr() { return addr; }
+        @Override public String toString() { return "L:"+Integer.toHexString(addr); }
     };
 
     private static Operand readOperand(Machine machine, int mode) {
+        Operand result;
         switch (mode) {
         case 0:
-            return operand0;
+            result = operand0;
+            break;
         case 1:
-            return new ConstantOperand(machine.state.advancePC8());
+            result = new ConstantOperand(machine.state.advancePC8());
+            break;
         case 2:
-            return new ConstantOperand(machine.state.advancePC16());
+            result = new ConstantOperand(machine.state.advancePC16());
+            break;
         case 3:
-            return new ConstantOperand(machine.state.advancePC32());
+            result = new ConstantOperand(machine.state.advancePC32());
+            break;
         case 4:
             throw new IllegalArgumentException("Unrecognized addressing mode");
         case 5:
-            return new MemoryOperand(machine.state.advancePC8() & 255);
+            result = new MemoryOperand(machine.state.advancePC8() & 255);
+            break;
         case 6:
-            return new MemoryOperand(machine.state.advancePC16() & 65535);
+            result = new MemoryOperand(machine.state.advancePC16() & 65535);
+            break;
         case 7:
-            return new MemoryOperand(machine.state.advancePC32());
+            result = new MemoryOperand(machine.state.advancePC32());
+            break;
         case 8:
-            return operand8;
+            result = operand8;
+            break;
         case 9:
-            return new LocalOperand(machine.state.advancePC8() & 255);
+            result = new LocalOperand(machine.state.advancePC8() & 255);
+            break;
         case 10:
-            return new LocalOperand(machine.state.advancePC16() & 65535);
+            result = new LocalOperand(machine.state.advancePC16() & 65535);
+            break;
         case 11:
-            return new LocalOperand(machine.state.advancePC32());
+            result = new LocalOperand(machine.state.advancePC32());
+            break;
         case 12:
             throw new IllegalArgumentException("Unrecognized addressing mode");
         case 13:
-            return new MemoryOperand(machine.RAMStart + (machine.state.advancePC8() & 255));
+            result = new MemoryOperand(machine.RAMStart + (machine.state.advancePC8() & 255));
+            break;
         case 14:
-            return new MemoryOperand(machine.RAMStart + (machine.state.advancePC16() & 65535));
+            result = new MemoryOperand(machine.RAMStart + (machine.state.advancePC16() & 65535));
+            break;
         case 15:
-            return new MemoryOperand(machine.RAMStart + machine.state.advancePC16());
+            result = new MemoryOperand(machine.RAMStart + machine.state.advancePC16());
+            break;
         default:
             throw new AssertionError();
         }
+        return result;
     }
 
     private static Result branch(Machine machine, int offset) {

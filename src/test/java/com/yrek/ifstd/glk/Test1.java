@@ -82,7 +82,7 @@ public class Test1 {
                     }
                 }
             });
-            Assert.assertEquals("<test><out s=\"windowStream2\" v=\"0\"/><windows/></test>", out.toString());
+            Assert.assertEquals("<test><out s=\"windowStream2\" style=\"0\" v=\"0\"/><windows/></test>", out.toString());
         }
 
         {
@@ -100,7 +100,7 @@ public class Test1 {
                     }
                 }
             });
-            Assert.assertEquals("<test><out s=\"windowStream2\" v=\"test\"/><windows/></test>", out.toString());
+            Assert.assertEquals("<test><out s=\"windowStream2\" style=\"0\" v=\"test\"/><windows/></test>", out.toString());
         }
     }
 
@@ -135,6 +135,6 @@ public class Test1 {
                 }
             }
         });
-        Assert.assertEquals("<test><out s=\"windowStream2\" v=\"0\"/><windows><leaf w=\"window1\"/></windows><event t=\"2\" w=\"window1\" val1=\"48\" val2=\"0\"/><windows><leaf w=\"window1\"/></windows><event t=\"3\" w=\"window1\" val1=\"4\" val2=\"0\"/><windows/></test>", out.toString());
+        Assert.assertEquals("<test><out s=\"windowStream2\" style=\"0\" v=\"0\"/><windows><leaf w=\"window1\"/></windows><event t=\"2\" w=\"window1\" val1=\"48\" val2=\"0\"/><windows><leaf w=\"window1\"/></windows><event t=\"3\" w=\"window1\" val1=\"4\" val2=\"0\"/><windows/></test>", out.toString());
     }
 }

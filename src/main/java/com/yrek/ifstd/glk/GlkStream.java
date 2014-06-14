@@ -3,21 +3,21 @@ package com.yrek.ifstd.glk;
 import java.io.IOException;
 
 public abstract class GlkStream extends GlkObject {
-    public static final int seekModeStart = 0;
-    public static final int seekModeCurrent = 1;
-    public static final int seekModeEnd = 2;
+    public static final int SeekModeStart = 0;
+    public static final int SeekModeCurrent = 1;
+    public static final int SeekModeEnd = 2;
 
-    public static final int styleNormal = 0;
-    public static final int styleEmphasized = 1;
-    public static final int stylePreformatted = 2;
-    public static final int styleHeader = 3;
-    public static final int styleSubheader = 4;
-    public static final int styleAlert = 5;
-    public static final int styleNote = 6;
-    public static final int styleBlockQuote = 7;
-    public static final int styleInput = 8;
-    public static final int styleUser1 = 9;
-    public static final int styleUser2 = 10;
+    public static final int StyleNormal = 0;
+    public static final int StyleEmphasized = 1;
+    public static final int StylePreformatted = 2;
+    public static final int StyleHeader = 3;
+    public static final int StyleSubheader = 4;
+    public static final int StyleAlert = 5;
+    public static final int StyleNote = 6;
+    public static final int StyleBlockQuote = 7;
+    public static final int StyleInput = 8;
+    public static final int StyleUser1 = 9;
+    public static final int StyleUser2 = 10;
 
     protected GlkStream(int rock) {
         super(rock);

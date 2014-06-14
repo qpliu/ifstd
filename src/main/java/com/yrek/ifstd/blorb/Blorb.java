@@ -19,6 +19,7 @@ public abstract class Blorb implements Closeable {
     public static final int PNG  = 0x504e4720;
     public static final int JPEG = 0x4a504547;
     public static final int ZCOD = 0x5a434f44;
+    public static final int GLUL = 0x474c554c;
     public static final int IFmd = 0x49466d64;
     public static final int Fspc = 0x46737063;
 

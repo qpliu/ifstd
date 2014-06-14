@@ -207,7 +207,7 @@ class State {
 
     int advancePC32() {
         pc += 4;
-        return load32(memory, pc - 2);
+        return load32(memory, pc - 4);
     }
 
     int load8(int addr) {
@@ -236,6 +236,7 @@ class State {
 
     int pop32() {
         sp -= 4;
+        assert sp >= fp + load32(fp);
         return load32(stack, sp);
     }
 
@@ -315,10 +316,7 @@ class State {
         int checksum = load32(32);
         int sum = 0;
         for (int i = 0; i + 3 < memory.length; i += 4) {
-            sum += memory[i] << 24
-                + ((memory[i+1] & 255) << 16)
-                + ((memory[i+2] & 255) << 8)
-                + (memory[i+3] & 255);
+            sum += load32(i);
         }
         return sum - checksum == checksum;
     }

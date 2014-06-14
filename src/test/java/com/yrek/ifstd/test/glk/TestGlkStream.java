@@ -10,6 +10,7 @@ import com.yrek.ifstd.glk.GlkStreamResult;
 public class TestGlkStream extends GlkStream {
     final TestGlk glk;
     final String name;
+    private int style = 0;
     int inputCount = 0;
     int outputCount = 0;
 
@@ -46,7 +47,7 @@ public class TestGlkStream extends GlkStream {
 
     @Override
     public void setStyle(int style) {
-        throw new RuntimeException("unimplemented");
+        this.style = style;
     }
 
     @Override
@@ -75,7 +76,7 @@ public class TestGlkStream extends GlkStream {
     }
 
     private void output(String value) {
-        glk.outputQueue.add("<out s=\""+name+"\" v=\""+value+"\"/>");
+        glk.outputQueue.add("<out s=\""+name+"\" style=\""+style+"\" v=\""+value+"\"/>");
     }
 
     private String escapeCh(int ch) {
