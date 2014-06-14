@@ -1588,10 +1588,11 @@ abstract class Instruction {
     }
 
     static void returnValue(Machine machine, int value) {
-        int fp = machine.state.pop32();
-        int pc = machine.state.pop32();
-        int destAddr = machine.state.pop32();
-        int destType = machine.state.pop32();
+        int fp = machine.state.sload32(machine.state.sp-4);
+        int pc = machine.state.sload32(machine.state.sp-8);
+        int destAddr = machine.state.sload32(machine.state.sp-12);
+        int destType = machine.state.sload32(machine.state.sp-16);
+        machine.state.sp -= 16;
         switch (destType) {
         case 0:
             machine.state.fp = fp;
