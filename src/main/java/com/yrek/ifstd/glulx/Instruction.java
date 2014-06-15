@@ -1,11 +1,14 @@
 package com.yrek.ifstd.glulx;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.Arrays;
 
 import com.yrek.ifstd.glk.GlkDispatchArgument;
 
 abstract class Instruction {
+    private static final boolean TRACE = false;
+
     private static final Instruction[] table = new Instruction[0x1ca];
     private final String name;
     private final Operands operands;
@@ -87,6 +90,16 @@ abstract class Instruction {
             throw new AssertionError();
         }
         Instruction insn = table[opcode];
+        if (TRACE && Glulx.trace != null) {
+            Glulx.trace.println();
+            Glulx.trace.print(String.format("fp:%04x sp:%04x:",machine.state.fp,machine.state.sp));
+            Glulx.trace.println();
+            for (int i = machine.state.fp; i < machine.state.sp; i += 4) {
+                Glulx.trace.print(String.format(" %x",machine.state.sload32(i)));
+                Glulx.trace.println();
+                Glulx.trace.print(String.format("pc:%06x %04x %15s",machine.state.pc,opcode,insn==null?"null":insn.name));
+            }
+        }
         switch (insn.operands) {
         case Z:
             return insn.execute(machine);
@@ -1418,6 +1431,9 @@ abstract class Instruction {
         default:
             throw new AssertionError();
         }
+        if (TRACE && Glulx.trace != null) {
+            Glulx.trace.print(" "+result);
+        }
         return result;
     }
 
@@ -1437,6 +1453,10 @@ abstract class Instruction {
     }
 
     static void pushCallStub(State state, int destType, int destAddr) {
+        if (TRACE && Glulx.trace != null) {
+            Glulx.trace.println();
+            Glulx.trace.print(String.format("call stub:%08x %08x pc=%08x fp=%08x sp=%08x",destType,destAddr, state.pc, state.fp,state.sp));
+        }
         state.push32(destType);
         state.push32(destAddr);
         state.push32(state.pc);
@@ -1475,6 +1495,10 @@ abstract class Instruction {
         }
         localsPos = align(localsPos, 4);
         localsSize = align(localsSize, 4);
+        if (TRACE && Glulx.trace != null) {
+            Glulx.trace.println();
+            Glulx.trace.print(String.format("function %08x %s args localsSize:%d",addr,pushArgs?"stack":"local",localsSize));
+        }
         state.push32(localsPos + localsSize);
         state.push32(localsPos);
         assert localsPos >= 12;

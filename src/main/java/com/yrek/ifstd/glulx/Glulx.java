@@ -3,6 +3,7 @@ package com.yrek.ifstd.glulx;
 import java.io.File;
 
 import java.io.IOException;
+import java.io.PrintStream;
 
 import com.yrek.ifstd.glk.Glk;
 import com.yrek.ifstd.glk.GlkDispatch;
@@ -10,6 +11,8 @@ import com.yrek.ifstd.glk.GlkDispatch;
 public class Glulx implements Runnable {
     public static final int GlulxVersion = 0x00030102;
     public static final int TerpVersion = 0x00000000;
+
+    public static PrintStream trace = null;
 
     private final Machine machine;
     private transient boolean suspend = false;

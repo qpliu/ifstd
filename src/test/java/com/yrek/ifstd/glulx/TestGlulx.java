@@ -24,12 +24,14 @@ public class TestGlulx {
     @org.junit.Ignore
     @Test
     public void advent() throws Exception {
+        Glulx.trace = System.out;
         System.out.println(testFile("/Advent.ulx", "quit\ny\n"));
     }
 
     @org.junit.Ignore
     @Test
     public void glulxercise() throws Exception {
+        Glulx.trace = System.out;
         System.out.println(testFile("/glulxercise.ulx", "quit\ny\n"));
     }
 }
