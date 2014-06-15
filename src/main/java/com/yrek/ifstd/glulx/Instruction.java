@@ -56,23 +56,6 @@ abstract class Instruction {
     }
 
     public static Result executeNext(Machine machine) {
-        if (machine.outputState == null) {
-            return executeInstruction(machine);
-        }
-        switch (machine.outputState) {
-        case Latin1:
-            throw new RuntimeException("unimplemented");
-        case Compressed:
-            throw new RuntimeException("unimplemented");
-        case Unicode:
-            throw new RuntimeException("unimplemented");
-        case Number:
-            throw new RuntimeException("unimplemented");
-        }
-        throw new AssertionError();
-    }
-
-    private static Result executeInstruction(Machine machine) {
         int opcode;
         switch (machine.state.load8(machine.state.pc) & 0xe0) {
         case 0x00: case 0x20: case 0x40: case 0x60:
@@ -93,12 +76,17 @@ abstract class Instruction {
         if (TRACE && Glulx.trace != null) {
             Glulx.trace.println();
             Glulx.trace.print(String.format("fp:%04x sp:%04x:",machine.state.fp,machine.state.sp));
-            Glulx.trace.println();
             for (int i = machine.state.fp; i < machine.state.sp; i += 4) {
                 Glulx.trace.print(String.format(" %x",machine.state.sload32(i)));
-                Glulx.trace.println();
-                Glulx.trace.print(String.format("pc:%06x %04x %15s",machine.state.pc,opcode,insn==null?"null":insn.name));
+                if (i+4 == machine.state.fp + machine.state.sload32(machine.state.fp+4)) {
+                    Glulx.trace.print(" L:");
+                }
+                if (i+4 == machine.state.fp + machine.state.sload32(machine.state.fp)) {
+                    Glulx.trace.print(" S:");
+                }
             }
+            Glulx.trace.println();
+            Glulx.trace.print(String.format("pc:%06x %04x %15s",machine.state.pc,opcode,insn==null?"null":insn.name));
         }
         switch (insn.operands) {
         case Z:
@@ -623,13 +611,13 @@ abstract class Instruction {
         };
         new Instruction(0x70, "streamchar", Operands.L) {
             @Override protected Result execute(Machine machine, Operand arg1) {
-                machine.ioSys.streamChar(arg1.load32(machine.state)&255);
+                machine.ioSys.streamChar(machine, arg1.load32(machine.state)&255);
                 return Result.Continue;
             }
         };
         new Instruction(0x71, "streamnum", Operands.L) {
             @Override protected Result execute(Machine machine, Operand arg1) {
-                machine.ioSys.streamNum(arg1.load32(machine.state));
+                machine.ioSys.streamNum(machine, arg1.load32(machine.state));
                 return Result.Continue;
             }
         };
@@ -641,7 +629,7 @@ abstract class Instruction {
         };
         new Instruction(0x73, "streamunichar", Operands.L) {
             @Override protected Result execute(Machine machine, Operand arg1) {
-                machine.ioSys.streamUnichar(arg1.load32(machine.state));
+                machine.ioSys.streamUnichar(machine, arg1.load32(machine.state));
                 return Result.Continue;
             }
         };
@@ -813,20 +801,20 @@ abstract class Instruction {
         };
         new Instruction(0x140, "getstringtbl", Operands.S) {
             @Override protected Result execute(Machine machine, Operand arg1) {
-                arg1.store32(machine.state, machine.stringTable);
+                arg1.store32(machine.state, machine.stringTable.table);
                 return Result.Continue;
             }
         };
         new Instruction(0x141, "setstringtbl", Operands.L) {
             @Override protected Result execute(Machine machine, Operand arg1) {
-                machine.stringTable = arg1.load32(machine.state);
+                machine.stringTable = StringTable.create(machine.state, arg1.load32(machine.state));
                 return Result.Continue;
             }
         };
         new Instruction(0x148, "getiosys", Operands.S2) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
-                arg1.store32(machine.state, machine.ioSys.getMode());
-                arg2.store32(machine.state, machine.ioSys.getRock());
+                arg1.store32(machine.state, machine.ioSys.mode);
+                arg2.store32(machine.state, machine.ioSys.rock);
                 return Result.Continue;
             }
         };
@@ -1420,13 +1408,13 @@ abstract class Instruction {
         case 12:
             throw new IllegalArgumentException("Unrecognized addressing mode");
         case 13:
-            result = new MemoryOperand(machine.RAMStart + (machine.state.advancePC8() & 255));
+            result = new MemoryOperand(machine.state.load32(8) + (machine.state.advancePC8() & 255));
             break;
         case 14:
-            result = new MemoryOperand(machine.RAMStart + (machine.state.advancePC16() & 65535));
+            result = new MemoryOperand(machine.state.load32(8) + (machine.state.advancePC16() & 65535));
             break;
         case 15:
-            result = new MemoryOperand(machine.RAMStart + machine.state.advancePC16());
+            result = new MemoryOperand(machine.state.load32(8) + machine.state.advancePC16());
             break;
         default:
             throw new AssertionError();
@@ -1621,48 +1609,37 @@ abstract class Instruction {
         case 0:
             machine.state.fp = fp;
             machine.state.pc = pc;
-            machine.outputState = null;
             break;
         case 1:
             machine.state.fp = fp;
             machine.state.pc = pc;
-            machine.outputState = null;
             machine.state.store32(destAddr, value);
             break;
         case 2:
             machine.state.fp = fp;
             machine.state.pc = pc;
-            machine.outputState = null;
             int localsPos = machine.state.sload32(fp + 4);
             machine.state.sstore32(fp + localsPos + destAddr, value);
             break;
         case 3:
             machine.state.fp = fp;
             machine.state.pc = pc;
-            machine.outputState = null;
             machine.state.push32(value);
             break;
         case 10:
-            machine.state.pc = pc;
-            machine.outputState = Machine.OutputState.Compressed;
-            machine.outputIndex = destAddr;
+            machine.ioSys.resumePrintCompressed(machine, pc, destAddr);
             break;
         case 11:
             machine.state.pc = pc;
-            machine.outputState = null;
             break;
         case 12:
-            machine.state.pc = pc;
-            machine.outputState = Machine.OutputState.Number;
-            machine.outputIndex = destAddr;
+            machine.ioSys.resumePrintNumber(machine, pc, destAddr);
             break;
         case 13:
-            machine.state.pc = pc;
-            machine.outputState = Machine.OutputState.Latin1;
+            machine.ioSys.resumePrint(machine, pc);
             break;
         case 14:
-            machine.state.pc = pc;
-            machine.outputState = Machine.OutputState.Unicode;
+            machine.ioSys.resumePrintUnicode(machine, pc);
             break;
         default:
             throw new IllegalArgumentException("stack corruption");

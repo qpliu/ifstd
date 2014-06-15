@@ -20,17 +20,14 @@ class Machine {
     int protectStart = 0;
     int protectLength = 0;
     IOSys ioSys = new NullIOSys(0);
-    int RAMStart = 256;
-    int stringTable = 0;
-    OutputState outputState = null;
-    int outputIndex = 0;
+    StringTable stringTable;
 
     Machine(byte[] byteData, File fileData, GlkDispatch glk) throws IOException {
         this.byteData = byteData;
         this.fileData = fileData;
         this.glk = glk;
         state = load();
-        stringTable = state.load32(28);
+        stringTable = StringTable.create(state, state.load32(28));
     }
 
     State load() throws IOException {
@@ -46,9 +43,5 @@ class Machine {
         } else {
             return new FileInputStream(fileData);
         }
-    }
-
-    enum OutputState {
-        Latin1, Compressed, Unicode, Number;
     }
 }

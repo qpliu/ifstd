@@ -1,37 +1,43 @@
 package com.yrek.ifstd.glulx;
 
+import java.io.IOException;
+
 import com.yrek.ifstd.glk.GlkDispatch;
 
 class GlkIOSys extends IOSys {
     final GlkDispatch glk;
 
     GlkIOSys(GlkDispatch glk, int rock) {
-        super(rock);
+        super(2, rock);
         this.glk = glk;
     }
 
     @Override
-    int getMode() {
-        return 2;
+    void streamChar(Machine machine, int ch) {
+        try {
+            glk.glk.putChar(ch);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
-    void streamChar(int ch) {
+    void streamUnichar(Machine machine, int ch) {
         throw new RuntimeException("unimplemented");
     }
 
     @Override
-    void streamUnichar(int ch) {
+    void streamNum(Machine machine, int num) {
         throw new RuntimeException("unimplemented");
     }
 
     @Override
-    void streamNum(int num) {
+    void putString(Machine machine, int addr) {
         throw new RuntimeException("unimplemented");
     }
 
     @Override
-    void streamStr(Machine machine, int addr) {
+    void putStringUnicode(Machine machine, int addr) {
         throw new RuntimeException("unimplemented");
     }
 }

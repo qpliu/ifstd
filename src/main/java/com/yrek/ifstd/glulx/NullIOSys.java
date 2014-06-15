@@ -2,27 +2,26 @@ package com.yrek.ifstd.glulx;
 
 class NullIOSys extends IOSys {
     NullIOSys(int rock) {
-        super(rock);
+        super(0, rock);
     }
 
     @Override
-    int getMode() {
-        return 0;
+    void streamChar(Machine machine, int ch) {
     }
 
     @Override
-    void streamChar(int ch) {
+    void streamUnichar(Machine machine, int ch) {
     }
 
     @Override
-    void streamUnichar(int ch) {
+    void streamNum(Machine machine, int num) {
     }
 
     @Override
-    void streamNum(int num) {
+    void putString(Machine machine, int addr) {
     }
 
     @Override
-    void streamStr(Machine machine, int addr) {
+    void putStringUnicode(Machine machine, int addr) {
     }
 }
