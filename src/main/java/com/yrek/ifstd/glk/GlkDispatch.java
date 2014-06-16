@@ -108,7 +108,7 @@ public class GlkDispatch {
         case 0x0060: // filerefCreateTemp
             return files.add(glk.fileCreateTemp(args[0].getInt(), args[1].getInt()));
         case 0x0061: // filerefCreateByName
-            return files.add(glk.fileCreateByName(args[0].getInt(), args[1].getString(), args[2].getInt()));
+            return files.add(glk.fileCreateByName(args[0].getInt(), new GlkByteArrayString(args[1].getString()), args[2].getInt()));
         case 0x0062: // filerefCreateByPrompt
             return files.add(glk.fileCreateByPrompt(args[0].getInt(), args[1].getInt(), args[2].getInt()));
         case 0x0063: // filerefDestroy
@@ -134,10 +134,10 @@ public class GlkDispatch {
             streams.get(args[0].getInt()).putChar(args[1].getInt());
             return 0;
         case 0x0082: // putString
-            glk.putString(args[0].getString());
+            glk.putString(new GlkByteArrayString(args[0].getString()));
             return 0;
         case 0x0083: // putStringStream
-            streams.get(args[0].getInt()).putString(args[1].getString());
+            streams.get(args[0].getInt()).putString(new GlkByteArrayString(args[1].getString()));
             return 0;
         case 0x0084: // putBuffer
             glk.putBuffer(withLength(args[0].getByteArray(), args[1].getInt()));

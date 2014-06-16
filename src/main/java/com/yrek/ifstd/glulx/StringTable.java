@@ -12,10 +12,10 @@ class StringTable {
     }
 
     void print(Machine machine, int addr, int bit, boolean resuming) {
-        int node = machine.state.load32(table+8);
+        final int root = machine.state.load32(table+8);
+        int node = root;
         int stream = machine.state.load8(addr);
         for (;;) {
-            int type = machine.state.load8(node);
             switch (machine.state.load8(node)) {
             case 0:
                 node = machine.state.load32(node + (((stream>>bit)&1) == 0 ? 1 : 5));
@@ -32,65 +32,92 @@ class StringTable {
                 }
                 return;
             case 2:
-                if (!resuming) {
-                    Instruction.pushCallStub(machine.state, 11, 0);
+                resuming = machine.ioSys.putChar(machine, machine.state.load8(node+1), resuming);
+                if (resuming) {
+                    machine.state.pc = addr;
+                    Instruction.pushCallStub(machine.state, 10, bit);
+                    return;
                 }
-                machine.state.pc = addr;
-                Instruction.pushCallStub(machine.state, 10, bit);
-                machine.ioSys.streamChar(machine, machine.state.load8(node+1));
-                return;
+                node = root;
+                break;
             case 3:
-                if (!resuming) {
-                    Instruction.pushCallStub(machine.state, 11, 0);
+                resuming = machine.ioSys.putString(machine, node+1, resuming);
+                if (resuming) {
+                    machine.state.pc = addr;
+                    Instruction.pushCallStub(machine.state, 10, bit);
+                    return;
                 }
-                machine.state.pc = addr;
-                Instruction.pushCallStub(machine.state, 10, bit);
-                machine.ioSys.putString(machine, node+1);
-                return;
+                node = root;
+                break;
             case 4:
-                if (!resuming) {
-                    Instruction.pushCallStub(machine.state, 11, 0);
+                resuming = machine.ioSys.putCharUnicode(machine, machine.state.load32(node+1), resuming);
+                if (resuming) {
+                    machine.state.pc = addr;
+                    Instruction.pushCallStub(machine.state, 10, bit);
+                    return;
                 }
-                throw new RuntimeException("unimplemented");
+                node = root;
+                break;
             case 5:
-                if (!resuming) {
-                    Instruction.pushCallStub(machine.state, 11, 0);
+                resuming = machine.ioSys.putStringUnicode(machine, node+1, resuming);
+                if (resuming) {
+                    machine.state.pc = addr;
+                    Instruction.pushCallStub(machine.state, 10, bit);
+                    return;
                 }
-                machine.state.pc = addr;
-                Instruction.pushCallStub(machine.state, 10, bit);
-                machine.ioSys.putStringUnicode(machine, node+1);
-                return;
+                node = root;
+                break;
             case 8:
-                if (!resuming) {
-                    Instruction.pushCallStub(machine.state, 11, 0);
+                resuming = indirect(machine, 1, node+1, 0, 0, resuming);
+                if (resuming) {
+                    return;
                 }
-                machine.state.pc = addr;
-                Instruction.pushCallStub(machine.state, 10, bit);
-                throw new RuntimeException("unimplemented");
+                node = root;
+                break;
             case 9:
-                if (!resuming) {
-                    Instruction.pushCallStub(machine.state, 11, 0);
+                resuming = indirect(machine, 2, node+1, 0, 0, resuming);
+                if (resuming) {
+                    return;
                 }
-                machine.state.pc = addr;
-                Instruction.pushCallStub(machine.state, 10, bit);
-                throw new RuntimeException("unimplemented");
+                node = root;
+                break;
             case 10:
-                if (!resuming) {
-                    Instruction.pushCallStub(machine.state, 11, 0);
+                resuming = indirect(machine, 1, node+1, machine.state.load32(node+5), node+9, resuming);
+                if (resuming) {
+                    return;
                 }
-                machine.state.pc = addr;
-                Instruction.pushCallStub(machine.state, 10, bit);
-                throw new RuntimeException("unimplemented");
+                node = root;
+                break;
             case 11:
-                if (!resuming) {
-                    Instruction.pushCallStub(machine.state, 11, 0);
+                resuming = indirect(machine, 2, node+1, machine.state.load32(node+5), node+9, resuming);
+                if (resuming) {
+                    return;
                 }
-                machine.state.pc = addr;
-                Instruction.pushCallStub(machine.state, 10, bit);
-                throw new RuntimeException("unimplemented");
+                node = root;
+                break;
             default:
                 throw new IllegalArgumentException("Invalid string table");
             }
+        }
+    }
+
+    private boolean indirect(Machine machine, int indirectLevel, int addr, int nargs, int argsAddr, boolean resuming) {
+        for (int i = 0; i < indirectLevel; i++) {
+            addr = machine.state.load32(addr);
+        }
+        switch (machine.state.load8(addr)&255) {
+        case 0xc0:
+            throw new RuntimeException("unimplemented");
+        case 0xc1:
+            throw new RuntimeException("unimplemented");
+        case 0xe0:
+            throw new RuntimeException("unimplemented");
+        case 0xe1:
+            throw new RuntimeException("unimplemented");
+        case 0xe2:
+            throw new RuntimeException("unimplemented");
+        default:
+            throw new IllegalArgumentException("Invalid indirect reference");
         }
     }
 }

@@ -60,14 +60,38 @@ class FilterIOSys extends IOSys {
     }
 
     @Override
-    void putString(Machine machine, int addr) {
-        Instruction.pushCallStub(machine.state, 11, 0);
-        resumePrint(machine, addr);
+    boolean putChar(Machine machine, int ch, boolean resuming) {
+        if (!resuming) {
+            Instruction.pushCallStub(machine.state, 11, 0);
+        }
+        streamChar(machine, ch);
+        return true;
     }
 
     @Override
-    void putStringUnicode(Machine machine, int addr) {
-        Instruction.pushCallStub(machine.state, 11, 0);
+    boolean putCharUnicode(Machine machine, int ch, boolean resuming) {
+        if (!resuming) {
+            Instruction.pushCallStub(machine.state, 11, 0);
+        }
+        streamUnichar(machine, ch);
+        return true;
+    }
+
+    @Override
+    boolean putString(Machine machine, int addr, boolean resuming) {
+        if (!resuming) {
+            Instruction.pushCallStub(machine.state, 11, 0);
+        }
+        resumePrint(machine, addr);
+        return true;
+    }
+
+    @Override
+    boolean putStringUnicode(Machine machine, int addr, boolean resuming) {
+        if (!resuming) {
+            Instruction.pushCallStub(machine.state, 11, 0);
+        }
         resumePrintUnicode(machine, addr);
+        return true;
     }
 }

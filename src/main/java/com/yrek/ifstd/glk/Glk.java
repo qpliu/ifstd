@@ -24,7 +24,7 @@ public interface Glk {
     public void streamSetCurrent(GlkStream stream);
     public GlkStream streamGetCurrent();
     public void putChar(int ch) throws IOException;
-    public void putString(GlkByteArray string) throws IOException;
+    public void putString(CharSequence string) throws IOException;
     public void putBuffer(GlkByteArray buffer) throws IOException;
     public void setStyle(int style);
 
@@ -32,7 +32,7 @@ public interface Glk {
     public void styleHintClear(int winType, int style, int hint);
 
     public GlkFile fileCreateTemp(int usage, int rock) throws IOException;
-    public GlkFile fileCreateByName(int usage, GlkByteArray name, int rock) throws IOException;
+    public GlkFile fileCreateByName(int usage, CharSequence name, int rock) throws IOException;
     public GlkFile fileCreateByPrompt(int usage, int mode, int rock) throws IOException;
     public GlkFile fileCreateFromFile(int usage, GlkFile file, int rock) throws IOException;
 

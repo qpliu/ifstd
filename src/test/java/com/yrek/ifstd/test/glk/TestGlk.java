@@ -19,7 +19,8 @@ import com.yrek.ifstd.glk.GlkWindow;
 
 public class TestGlk implements Glk {
     final Reader reader;
-    private final Writer writer;
+    final Writer writer;
+    final Writer output;
     TestGlkWindow rootWindow = null;
     GlkStream currentStream = null;
     final ArrayList<String> outputQueue = new ArrayList<String>();
@@ -29,9 +30,10 @@ public class TestGlk implements Glk {
     private long lastTimer = 0L;
     private boolean writeNewlines = false;
 
-    public TestGlk(Reader reader, Writer writer) {
+    public TestGlk(Reader reader, Writer writer, Writer output) {
         this.reader = reader;
         this.writer = writer;
+        this.output = output;
     }
 
     private class Exit extends RuntimeException {
@@ -51,11 +53,13 @@ public class TestGlk implements Glk {
         } catch (Exit e) {
         }
         writeOutputQueue();
-        writer.append("</test>");
-        if (writeNewlines) {
-            writer.append('\n');
+        if (writer != null) {
+            writer.append("</test>");
+            if (writeNewlines) {
+                writer.append('\n');
+            }
+            writer.flush();
         }
-        writer.flush();
     }
 
     private void writeOutputQueue() throws IOException {
@@ -66,13 +70,15 @@ public class TestGlk implements Glk {
             rootWindow.writeTree();
             outputQueue.add("</windows>");
         }
-        for (String s : outputQueue) {
-            writer.append(s);
-            if (writeNewlines) {
-                writer.append('\n');
+        if (writer != null) {
+            for (String s : outputQueue) {
+                writer.append(s);
+                if (writeNewlines) {
+                    writer.append('\n');
+                }
             }
+            writer.flush();
         }
-        writer.flush();
         outputQueue.clear();
     }
 
@@ -200,7 +206,7 @@ public class TestGlk implements Glk {
     }
 
     @Override
-    public void putString(GlkByteArray string) throws IOException {
+    public void putString(CharSequence string) throws IOException {
         currentStream.putString(string);
     }
 
@@ -227,7 +233,7 @@ public class TestGlk implements Glk {
     }
 
     @Override
-    public GlkFile fileCreateByName(int usage, GlkByteArray name, int rock) throws IOException {
+    public GlkFile fileCreateByName(int usage, CharSequence name, int rock) throws IOException {
         return null;
     }
 

@@ -35,7 +35,7 @@ public class GlkWindowStream extends GlkStream {
     }
 
     @Override
-    public void putString(GlkByteArray string) throws IOException {
+    public void putString(CharSequence string) throws IOException {
         windowStream.putString(string);
         if (echoStream != null) {
             throw new RuntimeException("unimplemented");

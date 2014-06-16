@@ -25,7 +25,7 @@ public abstract class GlkStream extends GlkObject {
 
     public abstract GlkStreamResult close() throws IOException;
     public abstract void putChar(int ch) throws IOException;
-    public abstract void putString(GlkByteArray string) throws IOException;
+    public abstract void putString(CharSequence string) throws IOException;
     public abstract void putBuffer(GlkByteArray buffer) throws IOException;
     public abstract void setStyle(int style);
     public abstract int getChar() throws IOException;

@@ -28,16 +28,40 @@ class GlkIOSys extends IOSys {
 
     @Override
     void streamNum(Machine machine, int num) {
+        try {
+            glk.glk.putString(String.valueOf(num));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    boolean putChar(Machine machine, int ch, boolean resuming) {
+        try {
+            glk.glk.putChar(ch);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return resuming;
+    }
+
+    @Override
+    boolean putCharUnicode(Machine machine, int ch, boolean resuming) {
         throw new RuntimeException("unimplemented");
     }
 
     @Override
-    void putString(Machine machine, int addr) {
-        throw new RuntimeException("unimplemented");
+    boolean putString(Machine machine, int addr, boolean resuming) {
+        try {
+            glk.glk.putString(new CString(machine.state, addr));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return resuming;
     }
 
     @Override
-    void putStringUnicode(Machine machine, int addr) {
+    boolean putStringUnicode(Machine machine, int addr, boolean resuming) {
         throw new RuntimeException("unimplemented");
     }
 }

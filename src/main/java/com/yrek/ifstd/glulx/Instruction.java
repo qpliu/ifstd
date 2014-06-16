@@ -1434,6 +1434,9 @@ abstract class Instruction {
             returnValue(machine, offset);
             return Result.Tick;
         default:
+            if (TRACE && Glulx.trace != null) {
+                Glulx.trace.print(" branch:"+(offset-2));
+            }
             machine.state.pc += offset - 2;
             return Result.Tick;
         }
@@ -1605,6 +1608,10 @@ abstract class Instruction {
         int destAddr = machine.state.sload32(machine.state.sp-12);
         int destType = machine.state.sload32(machine.state.sp-16);
         machine.state.sp -= 16;
+        if (TRACE && Glulx.trace != null) {
+            Glulx.trace.println();
+            Glulx.trace.print(String.format("return %x fp:%04x sp:%04x pc:%08x destAddr:%08x destType:%x", value, fp, machine.state.sp, pc, destAddr, destType));
+        }
         switch (destType) {
         case 0:
             machine.state.fp = fp;

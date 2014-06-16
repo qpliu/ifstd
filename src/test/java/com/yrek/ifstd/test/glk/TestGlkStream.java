@@ -29,13 +29,19 @@ public class TestGlkStream extends GlkStream {
     public void putChar(int ch) throws IOException {
         outputCount++;
         output(escapeChar((char) ch));
+        if (glk.output != null) {
+            glk.output.append((char) ch);
+        }
     }
 
     @Override
-    public void putString(GlkByteArray string) throws IOException {
-        int length = stringLength(string);
+    public void putString(CharSequence string) throws IOException {
+        int length = string.length();
         outputCount += length;
         output(escapeString(string, length));
+        if (glk.output != null) {
+            glk.output.append(string);
+        }
     }
 
     @Override
@@ -43,6 +49,11 @@ public class TestGlkStream extends GlkStream {
         int length = buffer.getArrayLength();
         outputCount += length;
         output(escapeString(buffer, length));
+        if (glk.output != null) {
+            for (int i = 0; i < buffer.getArrayLength(); i++) {
+                glk.output.append((char) (buffer.getByteElementAt(i) & 255));
+            }
+        }
     }
 
     @Override
@@ -112,6 +123,20 @@ public class TestGlkStream extends GlkStream {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < length; i++) {
             int ch = buffer.getByteElementAt(i) & 255;
+            String str = escapeChar(ch);
+            if (str == null) {
+                sb.append((char) ch);
+            } else {
+                sb.append(str);
+            }
+        }
+        return sb.toString();
+    }
+
+    private String escapeString(CharSequence string, int length) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            int ch = string.charAt(i) & 255;
             String str = escapeChar(ch);
             if (str == null) {
                 sb.append((char) ch);

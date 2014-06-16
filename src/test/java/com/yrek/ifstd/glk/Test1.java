@@ -14,7 +14,7 @@ public class Test1 {
     @Test
     public void test() throws Exception {
         StringWriter out = new StringWriter();
-        TestGlk glk = new TestGlk(null, out);
+        TestGlk glk = new TestGlk(null, out, null);
         glk.main(new Runnable() {
             @Override public void run() {
             }
@@ -26,7 +26,7 @@ public class Test1 {
     public void testWindowOpen() throws Exception {
         {
             StringWriter out = new StringWriter();
-            final TestGlk glk = new TestGlk(null, out);
+            final TestGlk glk = new TestGlk(null, out, null);
             glk.main(new Runnable() {
                 @Override public void run() {
                     glk.windowOpen(null, 0, 0, GlkWindow.TypeBlank, 0);
@@ -37,7 +37,7 @@ public class Test1 {
 
         {
             StringWriter out = new StringWriter();
-            final TestGlk glk = new TestGlk(null, out);
+            final TestGlk glk = new TestGlk(null, out, null);
             glk.main(new Runnable() {
                 @Override public void run() {
                     GlkWindow w = glk.windowOpen(null, 0, 0, GlkWindow.TypeBlank, 0);
@@ -51,7 +51,7 @@ public class Test1 {
     @Test
     public void testWindowClose() throws Exception {
         StringWriter out = new StringWriter();
-        final TestGlk glk = new TestGlk(null, out);
+        final TestGlk glk = new TestGlk(null, out, null);
         glk.main(new Runnable() {
             @Override public void run() {
                 try {
@@ -69,7 +69,7 @@ public class Test1 {
     public void testOutput() throws Exception {
         {
             StringWriter out = new StringWriter();
-            final TestGlk glk = new TestGlk(null, out);
+            final TestGlk glk = new TestGlk(null, out, null);
             glk.main(new Runnable() {
                 @Override public void run() {
                     try {
@@ -87,13 +87,13 @@ public class Test1 {
 
         {
             StringWriter out = new StringWriter();
-            final TestGlk glk = new TestGlk(null, out);
+            final TestGlk glk = new TestGlk(null, out, null);
             glk.main(new Runnable() {
                 @Override public void run() {
                     try {
                         GlkWindow w = glk.windowOpen(null, 0, 0, GlkWindow.TypeBlank, 0);
                         glk.setWindow(w);
-                        glk.putString(new TestGlkArray(new int[] { 116, 101, 115, 116, 0 }));
+                        glk.putString("test");
                         w.close();
                     } catch (IOException e) {
                         throw new RuntimeException(e);
@@ -108,7 +108,7 @@ public class Test1 {
     public void testInput() throws Exception {
         StringReader in = new StringReader("0test\n");
         StringWriter out = new StringWriter();
-        final TestGlk glk = new TestGlk(in, out);
+        final TestGlk glk = new TestGlk(in, out, null);
         glk.main(new Runnable() {
             @Override public void run() {
                 try {
