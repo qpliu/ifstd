@@ -236,10 +236,6 @@ class State {
 
     int pop32() {
         sp -= 4;
-        if (sp < fp + sload32(fp)) {
-            sp = fp + sload32(fp);
-            return 0;
-        }
         return load32(stack, sp);
     }
 

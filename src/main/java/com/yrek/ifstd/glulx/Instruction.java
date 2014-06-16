@@ -1596,6 +1596,7 @@ abstract class Instruction {
             for (int i = args.length - 1; i >= 0; i--) {
                 state.push32(args[i]);
             }
+            state.push32(args.length);
         }
     }
 
