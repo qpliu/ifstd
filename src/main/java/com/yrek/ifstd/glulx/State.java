@@ -191,6 +191,11 @@ class State {
             System.arraycopy(saveState.memory, 0, memory, 0, protectStart);
             System.arraycopy(saveState.memory, protectStart + protectLength, memory, protectStart + protectLength, memory.length - protectStart - protectLength);
         }
+        if (stack == null || stack.length != saveState.stack.length) {
+            stack = Arrays.copyOf(saveState.stack, saveState.stack.length);
+        } else {
+            System.arraycopy(saveState.stack, 0, stack, 0, stack.length);
+        }
         pc = saveState.pc;
         sp = saveState.sp;
         fp = saveState.fp;
