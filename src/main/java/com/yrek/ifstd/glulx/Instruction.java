@@ -875,14 +875,13 @@ abstract class Instruction {
                         arg8.store32(machine.state,  returnIndex ? i : start + i*structSize);
                         return Result.Continue;
                     }
-                    if (lo == hi) {
+                    if (c < 0 && i != hi) {
+                        hi = i;
+                    } else if (c > 0 && i != lo) {
+                        lo = i;
+                    } else {
                         arg8.store32(machine.state,  returnIndex ? -1 : 0);
                         return Result.Continue;
-                    }
-                    if (c < 0) {
-                        hi = i;
-                    } else {
-                        lo = i;
                     }
                 }
             }
