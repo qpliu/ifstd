@@ -22,7 +22,7 @@ public class GlkObjectPool<T extends GlkObject> {
         }
         obj.setPointer(pool.size());
         pool.add(obj);
-        return pool.size();
+        return obj.getPointer();
     }
 
     public T iterate(T obj) {
