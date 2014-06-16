@@ -423,8 +423,8 @@ abstract class Instruction {
                 if (machine.state.fp == 0) {
                     return Result.Quit;
                 }
-                machine.state.sp = machine.state.fp;
                 int a1 = arg1.load32(machine.state);
+                machine.state.sp = machine.state.fp;
                 returnValue(machine, a1);
                 return Result.Tick;
             }
