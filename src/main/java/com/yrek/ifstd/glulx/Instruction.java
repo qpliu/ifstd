@@ -530,7 +530,7 @@ abstract class Instruction {
                     a2 -= 8;
                     a1++;
                 }
-                arg3.store32(machine.state, (a1 >> a2) & 1);
+                arg3.store32(machine.state, (machine.state.load8(a1) >> a2) & 1);
                 return Result.Continue;
             }
         };
