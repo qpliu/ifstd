@@ -265,15 +265,19 @@ public class GlkDispatch {
         case 0x0124: // bufferCanonNormalizeUni
             throw new RuntimeException("unimplemented");
         case 0x0128: // putCharUni
-            throw new RuntimeException("unimplemented");
+            glk.putCharUni(args[0].getInt());
+            return 0;
         case 0x0129: // putStringUni
-            throw new RuntimeException("unimplemented");
+            glk.putStringUni(new GlkIntArrayString(args[0].getStringUnicode()));
+            return 0;
         case 0x012a: // putBufferUni
             throw new RuntimeException("unimplemented");
         case 0x012b: // putCharStreamUni
-            throw new RuntimeException("unimplemented");
+            streams.get(args[0].getInt()).putCharUni(args[1].getInt());
+            return 0;
         case 0x012c: // putStringStreamUni
-            throw new RuntimeException("unimplemented");
+            streams.get(args[0].getInt()).putStringUni(new GlkIntArrayString(args[1].getStringUnicode()));
+            return 0;
         case 0x012d: // putBufferStreamUni
             throw new RuntimeException("unimplemented");
         case 0x0130: // getCharStreamUni

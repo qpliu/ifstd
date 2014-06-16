@@ -6,6 +6,7 @@ import com.yrek.ifstd.glk.GlkByteArray;
 import com.yrek.ifstd.glk.GlkIntArray;
 import com.yrek.ifstd.glk.GlkStream;
 import com.yrek.ifstd.glk.GlkStreamResult;
+import com.yrek.ifstd.glk.UnicodeString;
 
 public class TestGlkStream extends GlkStream {
     final TestGlk glk;
@@ -57,6 +58,31 @@ public class TestGlkStream extends GlkStream {
     }
 
     @Override
+    public void putCharUni(int ch) throws IOException {
+        outputCount++;
+        String str = new String(Character.toChars(ch));
+        output(escapeString(str, str.length()));
+        if (glk.output != null) {
+            glk.output.append(str);
+        }
+    }
+
+    @Override
+    public void putStringUni(UnicodeString string) throws IOException {
+        int length = string.codePointCount();
+        outputCount += length;
+        output(escapeString(string, string.length()));
+        if (glk.output != null) {
+            glk.output.append(string);
+        }
+    }
+
+    @Override
+    public void putBufferUni(GlkIntArray buffer) throws IOException {
+        throw new RuntimeException("unimplemented");
+    }
+
+    @Override
     public void setStyle(int style) {
         this.style = style;
     }
@@ -73,6 +99,21 @@ public class TestGlkStream extends GlkStream {
 
     @Override
     public int getBuffer(GlkByteArray buffer) throws IOException {
+        throw new RuntimeException("unimplemented");
+    }
+
+    @Override
+    public int getCharUni() throws IOException {
+        throw new RuntimeException("unimplemented");
+    }
+
+    @Override
+    public int getLineUni(GlkIntArray buffer) throws IOException {
+        throw new RuntimeException("unimplemented");
+    }
+
+    @Override
+    public int getBufferUni(GlkIntArray buffer) throws IOException {
         throw new RuntimeException("unimplemented");
     }
 
@@ -136,7 +177,7 @@ public class TestGlkStream extends GlkStream {
     private String escapeString(CharSequence string, int length) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < length; i++) {
-            int ch = string.charAt(i) & 255;
+            int ch = (int) string.charAt(i);
             String str = escapeChar(ch);
             if (str == null) {
                 sb.append((char) ch);

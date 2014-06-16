@@ -51,6 +51,30 @@ public class GlkWindowStream extends GlkStream {
     }
 
     @Override
+    public void putCharUni(int ch) throws IOException {
+        windowStream.putCharUni(ch);
+        if (echoStream != null) {
+            echoStream.putCharUni(ch);
+        }
+    }
+
+    @Override
+    public void putStringUni(UnicodeString string) throws IOException {
+        windowStream.putStringUni(string);
+        if (echoStream != null) {
+            throw new RuntimeException("unimplemented");
+        }
+    }
+
+    @Override
+    public void putBufferUni(GlkIntArray buffer) throws IOException {
+        windowStream.putBufferUni(buffer);
+        if (echoStream != null) {
+            throw new RuntimeException("unimplemented");
+        }
+    }
+
+    @Override
     public void setStyle(int style) {
         windowStream.setStyle(style);
         if (echoStream != null) {
@@ -71,6 +95,21 @@ public class GlkWindowStream extends GlkStream {
     @Override
     public int getBuffer(GlkByteArray buffer) throws IOException {
         return windowStream.getBuffer(buffer);
+    }
+
+    @Override
+    public int getCharUni() throws IOException {
+        return windowStream.getCharUni();
+    }
+
+    @Override
+    public int getLineUni(GlkIntArray buffer) throws IOException {
+        return windowStream.getLineUni(buffer);
+    }
+
+    @Override
+    public int getBufferUni(GlkIntArray buffer) throws IOException {
+        return windowStream.getBufferUni(buffer);
     }
 
     @Override

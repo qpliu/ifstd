@@ -27,10 +27,16 @@ public abstract class GlkStream extends GlkObject {
     public abstract void putChar(int ch) throws IOException;
     public abstract void putString(CharSequence string) throws IOException;
     public abstract void putBuffer(GlkByteArray buffer) throws IOException;
+    public abstract void putCharUni(int ch) throws IOException;
+    public abstract void putStringUni(UnicodeString string) throws IOException;
+    public abstract void putBufferUni(GlkIntArray buffer) throws IOException;
     public abstract void setStyle(int style);
     public abstract int getChar() throws IOException;
     public abstract int getLine(GlkByteArray buffer) throws IOException;
     public abstract int getBuffer(GlkByteArray buffer) throws IOException;
+    public abstract int getCharUni() throws IOException;
+    public abstract int getLineUni(GlkIntArray buffer) throws IOException;
+    public abstract int getBufferUni(GlkIntArray buffer) throws IOException;
     public abstract void setPosition(int position, int seekMode) throws IOException;
     public abstract int getPosition() throws IOException;
 }

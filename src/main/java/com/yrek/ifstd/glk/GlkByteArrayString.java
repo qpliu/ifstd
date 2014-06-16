@@ -3,15 +3,16 @@ package com.yrek.ifstd.glk;
 public class GlkByteArrayString implements CharSequence {
     public final GlkByteArray byteArray;
     private final int startIndex;
-    private int endIndex;
+    private final int endIndex;
 
     public GlkByteArrayString(GlkByteArray byteArray) {
         this.byteArray = byteArray;
         this.startIndex = 0;
-        this.endIndex = startIndex;
-        while (byteArray.getByteElementAt(endIndex) != 0) {
-            endIndex++;
+        int end = startIndex;
+        while (byteArray.getByteElementAt(end) != 0) {
+            end++;
         }
+        this.endIndex = end;
     }
 
     public GlkByteArrayString(GlkByteArray byteArray, int startIndex, int endIndex) {

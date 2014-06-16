@@ -26,6 +26,9 @@ public interface Glk {
     public void putChar(int ch) throws IOException;
     public void putString(CharSequence string) throws IOException;
     public void putBuffer(GlkByteArray buffer) throws IOException;
+    public void putCharUni(int ch) throws IOException;
+    public void putStringUni(UnicodeString string) throws IOException;
+    public void putBufferUni(GlkIntArray buffer) throws IOException;
     public void setStyle(int style);
 
     public void styleHintSet(int winType, int style, int hint, int value);

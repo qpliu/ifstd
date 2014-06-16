@@ -16,6 +16,7 @@ import com.yrek.ifstd.glk.GlkStream;
 import com.yrek.ifstd.glk.GlkIntArray;
 import com.yrek.ifstd.glk.GlkStream;
 import com.yrek.ifstd.glk.GlkWindow;
+import com.yrek.ifstd.glk.UnicodeString;
 
 public class TestGlk implements Glk {
     final Reader reader;
@@ -213,6 +214,21 @@ public class TestGlk implements Glk {
     @Override
     public void putBuffer(GlkByteArray buffer) throws IOException {
         currentStream.putBuffer(buffer);
+    }
+
+    @Override
+    public void putCharUni(int ch) throws IOException {
+        currentStream.putCharUni(ch);
+    }
+
+    @Override
+    public void putStringUni(UnicodeString string) throws IOException {
+        currentStream.putStringUni(string);
+    }
+
+    @Override
+    public void putBufferUni(GlkIntArray buffer) throws IOException {
+        currentStream.putBufferUni(buffer);
     }
 
     @Override
