@@ -188,7 +188,12 @@ public class TestGlk implements Glk {
 
     @Override
     public GlkStream streamOpenMemory(GlkByteArray memory, int mode, int rock) {
-        throw new RuntimeException("unimplemented");
+        return new TestGlkStreamMemory(memory, rock);
+    }
+
+    @Override
+    public GlkStream streamOpenMemoryUni(GlkIntArray memory, int mode, int rock) {
+        return new TestGlkStreamMemoryUnicode(memory, rock);
     }
 
     @Override

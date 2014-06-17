@@ -289,7 +289,7 @@ public class GlkDispatch {
         case 0x0138: // streamOpenFileUni
             throw new RuntimeException("unimplemented");
         case 0x0139: // streamOpenMemoryUni
-            throw new RuntimeException("unimplemented");
+            return streams.getPointer(glk.streamOpenMemoryUni(withLength(args[0].getIntArray(), args[1].getInt()), args[2].getInt(), args[3].getInt()));
         case 0x013a: // streamOpenResourceUni
             throw new RuntimeException("unimplemented");
         case 0x0140: // requestCharEventUni

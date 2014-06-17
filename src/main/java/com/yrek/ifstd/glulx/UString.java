@@ -20,7 +20,7 @@ class UString implements UnicodeString {
         while (state.load32(end) != 0) {
             end += 4;
         }
-        this.length = end - addr;
+        this.length = (end - addr)/4;
     }
 
     @Override

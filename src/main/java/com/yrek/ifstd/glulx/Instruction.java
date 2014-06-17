@@ -254,19 +254,41 @@ abstract class Instruction {
         };
         new Instruction(0x1C, "shiftl", Operands.L2S) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
-                arg3.store32(machine.state, arg1.load32(machine.state) << arg2.load32(machine.state));
+                int a1 = arg1.load32(machine.state);
+                int a2 = arg2.load32(machine.state);
+                if (a2 < 0 || a2 >= 32) {
+                    arg3.store32(machine.state, 0);
+                } else {
+                    arg3.store32(machine.state, a1 << a2);
+                }
                 return Result.Continue;
             }
         };
         new Instruction(0x1D, "sshiftr", Operands.L2S) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
-                arg3.store32(machine.state, arg1.load32(machine.state) >> arg2.load32(machine.state));
+                int a1 = arg1.load32(machine.state);
+                int a2 = arg2.load32(machine.state);
+                if (a2 < 0 || a2 >= 32) {
+                    if (a1 >= 0) {
+                        arg3.store32(machine.state, 0);
+                    } else {
+                        arg3.store32(machine.state, -1);
+                    }
+                } else {
+                    arg3.store32(machine.state, a1 >> a2);
+                }
                 return Result.Continue;
             }
         };
         new Instruction(0x1E, "ushiftr", Operands.L2S) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
-                arg3.store32(machine.state, arg1.load32(machine.state) >>> arg2.load32(machine.state));
+                int a1 = arg1.load32(machine.state);
+                int a2 = arg2.load32(machine.state);
+                if (a2 < 0 || a2 >= 32) {
+                    arg3.store32(machine.state, 0);
+                } else {
+                    arg3.store32(machine.state, a1 >>> a2);
+                }
                 return Result.Continue;
             }
         };
@@ -431,9 +453,14 @@ abstract class Instruction {
         };
         new Instruction(0x32, "catch", Operands.SL) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
+                // The operand evaluation order is NOT in order in this case:
+                // 1. load(branch offset)
+                // 2. push call stub
+                // 3. store(catch token)
+                int a2 = arg2.load32(machine.state);
                 pushCallStub(machine.state, arg1.getDestType(), arg1.getDestAddr());
                 arg1.store32(machine.state, machine.state.sp);
-                return branch(machine, arg2.load32(machine.state));
+                return branch(machine, a2);
             }
         };
         new Instruction(0x33, "throw", Operands.L2) {
@@ -582,7 +609,8 @@ abstract class Instruction {
         };
         new Instruction(0x51, "stkpeek", Operands.LS) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
-                arg2.store32(machine.state, machine.state.sload32(machine.state.sp - 4 - 4*arg1.load32(machine.state)));
+                int a1 = arg1.load32(machine.state);
+                arg2.store32(machine.state, machine.state.sload32(machine.state.sp - 4 - 4*a1));
                 return Result.Continue;
             }
         };
@@ -703,7 +731,7 @@ abstract class Instruction {
         };
         new Instruction(0x103, "setmemsize", Operands.LS) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
-                arg2.store32(machine.state, 0);
+                arg2.store32(machine.state, 1);
                 return Result.Continue;
             }
         };
@@ -715,13 +743,25 @@ abstract class Instruction {
         };
         new Instruction(0x110, "random", Operands.LS) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
-                arg2.store32(machine.state, machine.random.nextInt(arg1.load32(machine.state)));
+                int a1 = arg1.load32(machine.state);
+                if (a1 == 0) {
+                    arg2.store32(machine.state, machine.random.nextInt());
+                } else if (a1 > 0) {
+                    arg2.store32(machine.state, machine.random.nextInt(a1));
+                } else {
+                    arg2.store32(machine.state, -machine.random.nextInt(-a1));
+                }
                 return Result.Continue;
             }
         };
         new Instruction(0x111, "setrandom", Operands.L) {
             @Override protected Result execute(Machine machine, Operand arg1) {
-                machine.random.setSeed((long) arg1.load32(machine.state));
+                int a1 = arg1.load32(machine.state);
+                if (a1 == 0) {
+                    machine.random.setSeed(System.nanoTime());
+                } else {
+                    machine.random.setSeed((long) a1);
+                }
                 return Result.Continue;
             }
         };
@@ -732,7 +772,7 @@ abstract class Instruction {
         };
         new Instruction(0x121, "verify", Operands.S) {
             @Override protected Result execute(Machine machine, Operand arg1) {
-                arg1.store32(machine.state, machine.state.verify() ? 0 : 1);
+                arg1.store32(machine.state, 0);
                 return Result.Continue;
             }
         };

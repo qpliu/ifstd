@@ -23,7 +23,11 @@ class GlkIOSys extends IOSys {
 
     @Override
     void streamUnichar(Machine machine, int ch) {
-        throw new RuntimeException("unimplemented");
+        try {
+            glk.glk.putCharUni(ch);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -47,7 +51,12 @@ class GlkIOSys extends IOSys {
 
     @Override
     boolean putCharUnicode(Machine machine, int ch, boolean resuming) {
-        throw new RuntimeException("unimplemented");
+        try {
+            glk.glk.putCharUni(ch);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return resuming;
     }
 
     @Override
@@ -62,6 +71,11 @@ class GlkIOSys extends IOSys {
 
     @Override
     boolean putStringUnicode(Machine machine, int addr, boolean resuming) {
-        throw new RuntimeException("unimplemented");
+        try {
+            glk.glk.putStringUni(new UString(machine.state, addr));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return resuming;
     }
 }
