@@ -39,43 +39,22 @@ class GlkIOSys extends IOSys {
         }
     }
 
-    @Override
-    boolean putChar(Machine machine, int ch, boolean resuming) {
-        try {
-            glk.glk.putChar(ch);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return resuming;
-    }
 
     @Override
-    boolean putCharUnicode(Machine machine, int ch, boolean resuming) {
-        try {
-            glk.glk.putCharUni(ch);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return resuming;
-    }
-
-    @Override
-    boolean putString(Machine machine, int addr, boolean resuming) {
+    void streamString(Machine machine, int addr) {
         try {
             glk.glk.putString(new CString(machine.state, addr));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return resuming;
     }
 
     @Override
-    boolean putStringUnicode(Machine machine, int addr, boolean resuming) {
+    void streamStringUnicode(Machine machine, int addr) {
         try {
             glk.glk.putStringUni(new UString(machine.state, addr));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return resuming;
     }
 }

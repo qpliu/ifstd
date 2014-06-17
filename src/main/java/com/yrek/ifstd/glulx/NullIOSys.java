@@ -9,51 +9,36 @@ class NullIOSys extends IOSys {
 
     @Override
     void streamChar(Machine machine, int ch) {
-        if (TRACE) {
-            System.out.print((char) ch);
+        if (TRACE && Glulx.trace != null) {
+            Glulx.trace.print((char) ch);
         }
     }
 
     @Override
     void streamUnichar(Machine machine, int ch) {
-        if (TRACE) {
-            System.out.print((char) ch);
+        if (TRACE && Glulx.trace != null) {
+            Glulx.trace.print((char) ch);
         }
     }
 
     @Override
     void streamNum(Machine machine, int num) {
-        if (TRACE) {
-            System.out.print(num);
+        if (TRACE && Glulx.trace != null) {
+            Glulx.trace.print(num);
         }
     }
 
     @Override
-    boolean putChar(Machine machine, int ch, boolean resuming) {
-        if (TRACE) {
-            System.out.print((char) ch);
+    void streamString(Machine machine, int addr) {
+        if (TRACE && Glulx.trace != null) {
+            Glulx.trace.print(new CString(machine.state, addr));
         }
-        return resuming;
     }
 
     @Override
-    boolean putCharUnicode(Machine machine, int ch, boolean resuming) {
-        if (TRACE) {
-            System.out.print((char) ch);
+    void streamStringUnicode(Machine machine, int addr) {
+        if (TRACE && Glulx.trace != null) {
+            Glulx.trace.print(new UString(machine.state, addr));
         }
-        return resuming;
-    }
-
-    @Override
-    boolean putString(Machine machine, int addr, boolean resuming) {
-        if (TRACE) {
-            System.out.print(new CString(machine.state, addr));
-        }
-        return resuming;
-    }
-
-    @Override
-    boolean putStringUnicode(Machine machine, int addr, boolean resuming) {
-        return resuming;
     }
 }

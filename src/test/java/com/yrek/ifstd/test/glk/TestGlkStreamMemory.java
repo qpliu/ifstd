@@ -36,7 +36,7 @@ public class TestGlkStreamMemory extends GlkStream {
         outputCount += string.length();
         if (memory != null) {
             for (int i = 0; i < string.length() && memory.getWriteArrayIndex() < memory.getArrayLength(); i++) {
-                memory.setByteElement((int) (string.charAt(i) & 255));
+                memory.setByteElement(string.charAt(i) & 255);
             }
         }
     }

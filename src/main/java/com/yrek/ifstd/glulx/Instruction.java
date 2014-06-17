@@ -651,7 +651,7 @@ abstract class Instruction {
         };
         new Instruction(0x72, "streamstr", Operands.L) {
             @Override protected Result execute(Machine machine, Operand arg1) {
-                machine.ioSys.streamStr(machine, arg1.load32(machine.state));
+                machine.ioSys.streamStringObject(machine, arg1.load32(machine.state));
                 return Result.Continue;
             }
         };
@@ -1643,53 +1643,55 @@ abstract class Instruction {
     }
 
     static void returnValue(Machine machine, int value) {
-        int fp = machine.state.sload32(machine.state.sp-4);
-        int pc = machine.state.sload32(machine.state.sp-8);
-        int destAddr = machine.state.sload32(machine.state.sp-12);
-        int destType = machine.state.sload32(machine.state.sp-16);
-        machine.state.sp -= 16;
-        if (TRACE && Glulx.trace != null) {
-            Glulx.trace.println();
-            Glulx.trace.print(String.format("return %x fp:%04x sp:%04x pc:%08x destAddr:%08x destType:%x", value, fp, machine.state.sp, pc, destAddr, destType));
-        }
-        switch (destType) {
-        case 0:
-            machine.state.fp = fp;
-            machine.state.pc = pc;
-            break;
-        case 1:
-            machine.state.fp = fp;
-            machine.state.pc = pc;
-            machine.state.store32(destAddr, value);
-            break;
-        case 2:
-            machine.state.fp = fp;
-            machine.state.pc = pc;
-            int localsPos = machine.state.sload32(fp + 4);
-            machine.state.sstore32(fp + localsPos + destAddr, value);
-            break;
-        case 3:
-            machine.state.fp = fp;
-            machine.state.pc = pc;
-            machine.state.push32(value);
-            break;
-        case 10:
-            machine.ioSys.resumePrintCompressed(machine, pc, destAddr);
-            break;
-        case 11:
-            machine.state.pc = pc;
-            break;
-        case 12:
-            machine.ioSys.resumePrintNumber(machine, pc, destAddr);
-            break;
-        case 13:
-            machine.ioSys.resumePrint(machine, pc);
-            break;
-        case 14:
-            machine.ioSys.resumePrintUnicode(machine, pc);
-            break;
-        default:
-            throw new IllegalArgumentException("stack corruption");
+        for (;;) {
+            int fp = machine.state.sload32(machine.state.sp-4);
+            int pc = machine.state.sload32(machine.state.sp-8);
+            int destAddr = machine.state.sload32(machine.state.sp-12);
+            int destType = machine.state.sload32(machine.state.sp-16);
+            machine.state.sp -= 16;
+            if (TRACE && Glulx.trace != null) {
+                Glulx.trace.println();
+                Glulx.trace.print(String.format("return %x fp:%04x sp:%04x pc:%08x destAddr:%08x destType:%x", value, fp, machine.state.sp, pc, destAddr, destType));
+            }
+            switch (destType) {
+            case 0:
+                machine.state.fp = fp;
+                machine.state.pc = pc;
+                return;
+            case 1:
+                machine.state.fp = fp;
+                machine.state.pc = pc;
+                machine.state.store32(destAddr, value);
+                return;
+            case 2:
+                machine.state.fp = fp;
+                machine.state.pc = pc;
+                int localsPos = machine.state.sload32(fp + 4);
+                machine.state.sstore32(fp + localsPos + destAddr, value);
+                return;
+            case 3:
+                machine.state.fp = fp;
+                machine.state.pc = pc;
+                machine.state.push32(value);
+                return;
+            case 0x10:
+                machine.ioSys.resumePrintCompressed(machine, pc, destAddr);
+                break;
+            case 0x11:
+                machine.state.pc = pc;
+                return;
+            case 0x12:
+                machine.ioSys.resumePrintNumber(machine, pc, destAddr);
+                break;
+            case 0x13:
+                machine.ioSys.resumePrint(machine, pc);
+                break;
+            case 0x14:
+                machine.ioSys.resumePrintUnicode(machine, pc);
+                break;
+            default:
+                throw new IllegalArgumentException("stack corruption");
+            }
         }
     }
 
