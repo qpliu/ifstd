@@ -10,7 +10,15 @@ class StringTable {
     }
 
     static StringTable create(State state, int table) {
-        return new StringTable(table);
+        if (table != 0) {
+            return new StringTable(table);
+        } else {
+            return new StringTable(0) {
+                @Override void print(Machine machine, int addr, int bit, boolean resuming) {
+                    throw new IllegalArgumentException("No string table set");
+                }
+            };
+        }
     }
 
     // If resuming is true, there is a call stub at the top of the stack

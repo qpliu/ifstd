@@ -15,7 +15,7 @@ class Machine {
     final GlkDispatch glk;
 
     State state;
-    State saveUndo = null;
+    State[] saveUndo = new State[3];
     Random random = new Random();
     int protectStart = 0;
     int protectLength = 0;

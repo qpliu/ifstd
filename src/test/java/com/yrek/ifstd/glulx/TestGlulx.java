@@ -855,12 +855,25 @@ public class TestGlulx {
         }, null, null);
     }
 
-    @org.junit.Ignore
     @Test
     public void glulxerciseMultiundo() throws Exception {
         testFile("/glulxercise.ulx", glulxerciseIntro, glulxerciseOutro, new String[][] {
             new String[] { ">", "multiundo\n" },
-
+            new String[] { "Multi-level undo:" },
+            new String[] { "" },
+            new String[] { "Interpreter claims to support undo." },
+            new String[] { "" },
+            new String[] { "Undo 1 saved..." },
+            new String[] { "Undo 2 saved..." },
+            new String[] { "Restoring undo 2..." },
+            new String[] { "Undo 2 succeeded, return value -1." },
+            new String[] { "loc=77 glob=777" },
+            new String[] { "Restoring undo 1..." },
+            new String[] { "Undo 1 succeeded, return value -1." },
+            new String[] { "loc=99 glob=999" },
+            new String[] { "" },
+            new String[] { "Passed." },
+            new String[] { "" },
             new String[] { ">", "quit\n" },
         }, null, null);
     }
@@ -939,12 +952,22 @@ public class TestGlulx {
         }, null, null);
     }
 
-    @org.junit.Ignore
     @Test
     public void glulxerciseUndorestart() throws Exception {
         testFile("/glulxercise.ulx", glulxerciseIntro, glulxerciseOutro, new String[][] {
             new String[] { ">", "undorestart\n" },
-
+            new String[] { "Undo of restart:" },
+            new String[] { "" },
+            new String[] { "Undo saved..." },
+            new String[] { "" },
+            new String[] { "A voice booooms out: You've been here before!" },
+            new String[] { "" },
+            new String[] { "Restoring undo..." },
+            new String[] { "Undo succeeded, return value -1." },
+            new String[] { "Magic number 1234, 3, 1" },
+            new String[] { "" },
+            new String[] { "Passed." },
+            new String[] { "" },
             new String[] { ">", "quit\n" },
         }, null, null);
     }

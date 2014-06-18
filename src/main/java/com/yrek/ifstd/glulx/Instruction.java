@@ -780,9 +780,10 @@ abstract class Instruction {
             @Override protected Result execute(Machine machine) {
                 try {
                     machine.state.readFile(machine.getData(), machine.protectStart, machine.protectLength);
-                } catch (Exception e) {
-                    throw new AssertionError(e);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
+                Instruction.call(machine.state, machine.state.load32(24), new int[0]);
                 return Result.Continue;
             }
         };
@@ -800,20 +801,38 @@ abstract class Instruction {
         };
         new Instruction(0x125, "saveundo", Operands.S) {
             @Override protected Result execute(Machine machine, Operand arg1) {
-                machine.saveUndo = machine.state.copyTo(machine.saveUndo);
+                if (machine.saveUndo[0] == null || machine.saveUndo[0].pc == 0) {
+                    machine.saveUndo[0] = machine.state.copyTo(machine.saveUndo[0]);
+                } else {
+                    State undoState = null;
+                    for (int i = 1; i < machine.saveUndo.length; i++) {
+                        if (machine.saveUndo[i] == null || machine.saveUndo[i].pc == 0) {
+                            undoState = machine.state.copyTo(machine.saveUndo[i]);
+                            System.arraycopy(machine.saveUndo, 0, machine.saveUndo, 1, i-1);
+                        }
+                    }
+                    if (undoState == null) {
+                        undoState = machine.state.copyTo(machine.saveUndo[machine.saveUndo.length-1]);
+                        System.arraycopy(machine.saveUndo, 0, machine.saveUndo, 1, machine.saveUndo.length-1);
+                    }
+                    machine.saveUndo[0] = undoState;
+                }
                 arg1.store32(machine.state, 0);
-                arg1.store32(machine.saveUndo, -1);
-                return Result.Tick;
+                arg1.store32(machine.saveUndo[0], -1);
+                return Result.Continue;
             }
         };
         new Instruction(0x126, "restoreundo", Operands.S) {
             @Override protected Result execute(Machine machine, Operand arg1) {
-                if (machine.saveUndo == null) {
-                    arg1.store32(machine.state, 1);
-                } else {
-                    machine.state.copyFrom(machine.saveUndo, machine.protectStart, machine.protectLength);
+                for (int i = 0; i < machine.saveUndo.length; i++) {
+                    if (machine.saveUndo[i] != null && machine.saveUndo[i].pc != 0) {
+                        machine.state.copyFrom(machine.saveUndo[i], machine.protectStart, machine.protectLength);
+                        machine.saveUndo[i].pc = 0;
+                        return Result.Continue;
+                    }
                 }
-                return Result.Tick;
+                arg1.store32(machine.state, 1);
+                return Result.Continue;
             }
         };
         new Instruction(0x127, "protect", Operands.L2) {

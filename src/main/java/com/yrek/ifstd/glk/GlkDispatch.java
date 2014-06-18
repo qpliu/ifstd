@@ -29,7 +29,9 @@ public class GlkDispatch {
         case 0x0005: // gestaltExt
             return glk.gestaltExt(args[0].getInt(), args[1].getInt(), withLength(args[2].getIntArray(), args[3].getInt()));
         case 0x0020: // windowIterate
-            return windows.iterate(args[0].getInt());
+            int pointer = windows.iterate(args[0].getInt());
+            args[1].setInt(pointer == 0 ? 0 : windows.get(pointer).getRock());
+            return pointer;
         case 0x0021: // windowGetRock
             return windows.get(args[0].getInt()).getRock();
         case 0x0022: // windowGetRoot
@@ -37,7 +39,7 @@ public class GlkDispatch {
         case 0x0023: // windowOpen
             return windows.getPointer(glk.windowOpen(windows.get(args[0].getInt()), args[1].getInt(), args[2].getInt(), args[3].getInt(), args[4].getInt()));
         case 0x0024: // windowClose
-            int pointer = args[0].getInt();
+            pointer = args[0].getInt();
             GlkWindow window = windows.get(pointer);
             setStreamResult(args[1], window.close());
             streams.destroy(window.getStream().getPointer());
@@ -80,7 +82,9 @@ public class GlkDispatch {
         case 0x0030: // windowGetSibling
             return windows.getPointer(windows.get(args[0].getInt()).getSibling());
         case 0x0040: // streamIterate
-            return streams.iterate(args[0].getInt());
+            pointer = streams.iterate(args[0].getInt());
+            args[1].setInt(pointer == 0 ? 0 : streams.get(pointer).getRock());
+            return pointer;
         case 0x0041: // streamGetRock
             return streams.get(args[0].getInt()).getRock();
         case 0x0042: // streamOpenFile
@@ -117,7 +121,9 @@ public class GlkDispatch {
             files.destroy(pointer);
             return 0;
         case 0x0064: // filerefIterate
-            return files.iterate(args[0].getInt());
+            pointer = files.iterate(args[0].getInt());
+            args[1].setInt(pointer == 0 ? 0 : files.get(pointer).getRock());
+            return pointer;
         case 0x0065: // filerefGetRock
             return files.get(args[0].getInt()).getRock();
         case 0x0066: // filerefDeleteFile
