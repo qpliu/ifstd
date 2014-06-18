@@ -34,16 +34,14 @@ abstract class IOSys {
         machine.stringTable.print(machine, addr, bit, true);
     }
 
-    void resumePrintNumber(Machine machine, int number, int pos) {
-        throw new AssertionError();
-    }
+    abstract void resumePrintNumber(Machine machine, int number, int pos);
 
     void resumePrint(Machine machine, int addr) {
-        throw new AssertionError();
+        streamString(machine, addr);
     }
 
     void resumePrintUnicode(Machine machine, int addr) {
-        throw new AssertionError();
+        streamStringUnicode(machine, addr);
     }
 
     abstract void streamChar(Machine machine, int ch);

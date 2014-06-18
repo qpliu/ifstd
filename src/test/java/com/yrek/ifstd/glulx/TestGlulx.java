@@ -634,12 +634,24 @@ public class TestGlulx {
         }, null, null);
     }
 
-    @org.junit.Ignore
     @Test
     public void glulxerciseIosys() throws Exception {
         testFile("/glulxercise.ulx", glulxerciseIntro, glulxerciseOutro, new String[][] {
             new String[] { ">", "iosys\n" },
-
+            new String[] { "I/O mode switching:" },
+            new String[] { "" },
+            new String[] { "\"\" len 0, \"static glk\" len 10, \"=s=t=a=t=i=c= =f=i=l=t=e=r\" len 26" },
+            new String[] { "\"=C= =\u00dc=n=\u00ef=c=o=\u03b4=e= =\u201c=\u30a9=\u201d\" len 26" },
+            new String[] { "\"\" len 0, guard=99" },
+            new String[] { "\"string, chr 0, -100 -2\" len 22, guard=99" },
+            new String[] { "\"<s><t><r><i><n><g><,>< ><c><h><r>< ><0><,>< ><-><1><0><0>< ><-><2>\" len 66, guard=99" },
+            new String[] { "\"<s><t><r><i><n><g><,>< ><c><h><r>< ><0><,>< ><-><1><0><0>< ><-><2>\" len 66, guard=99" },
+            new String[] { "current=2, 0" },
+            new String[] { "current=1, 39469" },
+            new String[] { "Changing in mid-string: current=2, 0, \"<#>.\" len 4, current=2, 0, \"<a>bcde\" len 7, current=2, 0, \"<1>23\" len 5" },
+            new String[] { "" },
+            new String[] { "Passed." },
+            new String[] { "" },
             new String[] { ">", "quit\n" },
         }, null, null);
     }
@@ -659,12 +671,19 @@ public class TestGlulx {
         }, null, null);
     }
 
-    @org.junit.Ignore
     @Test
     public void glulxerciseFilter() throws Exception {
         testFile("/glulxercise.ulx", glulxerciseIntro, glulxerciseOutro, new String[][] {
             new String[] { ">", "filter\n" },
-
+            new String[] { "Filter iosys mode:" },
+            new String[] { "" },
+            new String[] { "Basic strings: \"=h=e=l=l=o\" len 10, \"b=y=e=\" len 6, \"=T=h=i=s= =c=o=n=t=a=i=n=s= =s=e=v=e=r=a=l= =n=o=d=e= =t=y=p=e=s=.=" },
+new String[] { "\" len 68, \"=C= =\u00dc=n=\u00ef=c=o=\u00b4=e= =\u001c=\u00a9=\u001d\" len 26" },
+            new String[] { "References: \"=[=h=e=l=l=o=]\" len 14, \"=[=1= =2=]\" len 10, \"=[=f=o=o= =b=a=r=]\" len 18" },
+            new String[] { "Multiple references: \"={=h=e=l=l=o=.=.=.=b=y=e=.=.=.=C= =s=t=r=i=n=g=.=}\" len 50, \"={<.><.><.><[><h><e><l><l><o><]><.><.><.><[><1>< ><2><]><}>\" len 59, \"={={=1=:=+=0=:=1=}=.=.=.=+=1=.=.=.=b=y=e= =h=e=l=l=o=}\" len 54, counter=2, \"={=C= =s=t=r=i=n=g=.=.=.=.=+=0=.=.=.=C= =\u00dc=n=\u00ef=c=o=\u00b4=e= =\u001c=\u00a9=\u001d=}\" len 64, counter=1" },
+            new String[] { "" },
+            new String[] { "Passed." },
+            new String[] { "" },
             new String[] { ">", "quit\n" },
         }, null, null);
     }

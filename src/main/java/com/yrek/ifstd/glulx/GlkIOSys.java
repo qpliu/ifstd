@@ -13,6 +13,15 @@ class GlkIOSys extends IOSys {
     }
 
     @Override
+    void resumePrintNumber(Machine machine, int number, int pos) {
+        try {
+            glk.glk.putString(String.valueOf(number).substring(pos));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
     void streamChar(Machine machine, int ch) {
         try {
             glk.glk.putChar(ch);

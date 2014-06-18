@@ -8,6 +8,13 @@ class NullIOSys extends IOSys {
     }
 
     @Override
+    void resumePrintNumber(Machine machine, int number, int pos) {
+        if (TRACE && Glulx.trace != null) {
+            Glulx.trace.print(String.valueOf(number).substring(pos));
+        }
+    }
+
+    @Override
     void streamChar(Machine machine, int ch) {
         if (TRACE && Glulx.trace != null) {
             Glulx.trace.print((char) ch);

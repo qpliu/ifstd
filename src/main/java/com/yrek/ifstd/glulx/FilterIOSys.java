@@ -20,7 +20,8 @@ class FilterIOSys extends IOSys {
     void resumePrint(Machine machine, int addr) {
         int ch = machine.state.load8(addr) & 255;
         if (ch != 0) {
-            Instruction.pushCallStub(machine.state, 13, addr+1);
+            machine.state.pc = addr+1;
+            Instruction.pushCallStub(machine.state, 13, 0);
             Instruction.call(machine.state, rock, new int[] { ch });
             Instruction.pushCallStub(machine.state, 11, 0);
         }
@@ -30,7 +31,8 @@ class FilterIOSys extends IOSys {
     void resumePrintUnicode(Machine machine, int addr) {
         int ch = machine.state.load32(addr);
         if (ch != 0) {
-            Instruction.pushCallStub(machine.state, 14, addr+4);
+            machine.state.pc = addr+4;
+            Instruction.pushCallStub(machine.state, 14, 0);
             Instruction.call(machine.state, rock, new int[] { ch });
             Instruction.pushCallStub(machine.state, 11, 0);
         }
@@ -103,7 +105,10 @@ class FilterIOSys extends IOSys {
         if (!resuming) {
             Instruction.pushCallStub(machine.state, 11, 0);
         }
-        Instruction.pushCallStub(machine.state, 13, addr+1);
+        machine.state.pc = resumeAddr;
+        Instruction.pushCallStub(machine.state, 10, bit);
+        machine.state.pc = addr+1;
+        Instruction.pushCallStub(machine.state, 13, 0);
         Instruction.call(machine.state, rock, new int[] { ch });
         if (resuming) {
             Instruction.pushCallStub(machine.state, 11, 0);
@@ -120,7 +125,10 @@ class FilterIOSys extends IOSys {
         if (!resuming) {
             Instruction.pushCallStub(machine.state, 11, 0);
         }
-        Instruction.pushCallStub(machine.state, 14, addr+4);
+        machine.state.pc = resumeAddr;
+        Instruction.pushCallStub(machine.state, 10, bit);
+        machine.state.pc = addr+4;
+        Instruction.pushCallStub(machine.state, 14, 0);
         Instruction.call(machine.state, rock, new int[] { ch });
         if (resuming) {
             Instruction.pushCallStub(machine.state, 11, 0);
