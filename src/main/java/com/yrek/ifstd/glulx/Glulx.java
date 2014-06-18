@@ -4,6 +4,7 @@ import java.io.File;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Map;
 
 import com.yrek.ifstd.glk.Glk;
 import com.yrek.ifstd.glk.GlkDispatch;
@@ -46,5 +47,9 @@ public class Glulx implements Runnable {
 
     public void suspend() {
         suspend = true;
+    }
+
+    public static Map<String,long[]> profilingData() {
+        return Instruction.profilingData();
     }
 }

@@ -3,15 +3,20 @@ package com.yrek.ifstd.glulx;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.yrek.ifstd.glk.GlkDispatchArgument;
 
 abstract class Instruction {
     private static final boolean TRACE = false;
+    private static final boolean PROFILE = false;
 
     private static final Instruction[] table = new Instruction[0x1ca];
     private final String name;
     private final Operands operands;
+    private long profileCount = 0;
+    private long profileTime = 0;
 
     Instruction(int opcode, String name, Operands operands) {
         table[opcode] = this;
@@ -73,6 +78,31 @@ abstract class Instruction {
             throw new AssertionError();
         }
         Instruction insn = table[opcode];
+        if (!PROFILE) {
+            return executeInstruction(machine, opcode, insn);
+        } else {
+            long startTime = System.currentTimeMillis();
+            Result result = executeInstruction(machine, opcode, insn);
+            insn.profileTime += System.currentTimeMillis() - startTime;
+            insn.profileCount++;
+            return result;
+        }
+    }
+
+    public static Map<String,long[]> profilingData() {
+        if (!PROFILE) {
+            return null;
+        }
+        HashMap<String,long[]> data = new HashMap<String,long[]>();
+        for (Instruction insn : table) {
+            if (insn != null) {
+                data.put(insn.name, new long[] { insn.profileCount, insn.profileTime });
+            }
+        }
+        return data;
+    }
+
+    private static Result executeInstruction(Machine machine, int opcode, Instruction insn) {
         if (TRACE && Glulx.trace != null) {
             Glulx.trace.println();
             Glulx.trace.print(String.format("fp:%04x sp:%04x:",machine.state.fp,machine.state.sp));
