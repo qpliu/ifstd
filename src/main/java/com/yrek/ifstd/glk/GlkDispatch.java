@@ -261,11 +261,32 @@ public class GlkDispatch {
         case 0x0103: // cancelHyperlinkEvent
             throw new RuntimeException("unimplemented");
         case 0x0120: // bufferToLowerCaseUni
-            throw new RuntimeException("unimplemented");
+            GlkIntArray buffer = withLength(args[0].getIntArray(), args[1].getInt());
+            int length = args[2].getInt();
+            for (int i = 0; i < length; i++) {
+                buffer.setIntElementAt(i, Character.toLowerCase(buffer.getIntElementAt(i)));
+            }
+            return length;
         case 0x0121: // bufferToUpperCaseUni
-            throw new RuntimeException("unimplemented");
+            buffer = withLength(args[0].getIntArray(), args[1].getInt());
+            length = args[2].getInt();
+            for (int i = 0; i < length; i++) {
+                buffer.setIntElementAt(i, Character.toUpperCase(buffer.getIntElementAt(i)));
+            }
+            return length;
         case 0x0122: // bufferToTitleCaseUni
-            throw new RuntimeException("unimplemented");
+            buffer = withLength(args[0].getIntArray(), args[1].getInt());
+            length = args[2].getInt();
+            boolean toLower = args[3].getInt() != 0;
+            if (length > 0) {
+                buffer.setIntElementAt(0, Character.toTitleCase(buffer.getIntElementAt(0)));
+            }
+            if (toLower) {
+                for (int i = 1; i < length; i++) {
+                    buffer.setIntElementAt(i, Character.toLowerCase(buffer.getIntElementAt(i)));
+                }
+            }
+            return length;
         case 0x0123: // bufferCanonDecomposeUni
             throw new RuntimeException("unimplemented");
         case 0x0124: // bufferCanonNormalizeUni
@@ -277,7 +298,8 @@ public class GlkDispatch {
             glk.putStringUni(new GlkIntArrayString(args[0].getStringUnicode()));
             return 0;
         case 0x012a: // putBufferUni
-            throw new RuntimeException("unimplemented");
+            glk.putBufferUni(withLength(args[0].getIntArray(), args[1].getInt()));
+            return 0;
         case 0x012b: // putCharStreamUni
             streams.get(args[0].getInt()).putCharUni(args[1].getInt());
             return 0;
@@ -285,7 +307,8 @@ public class GlkDispatch {
             streams.get(args[0].getInt()).putStringUni(new GlkIntArrayString(args[1].getStringUnicode()));
             return 0;
         case 0x012d: // putBufferStreamUni
-            throw new RuntimeException("unimplemented");
+            streams.get(args[0].getInt()).putBufferUni(withLength(args[0].getIntArray(), args[1].getInt()));
+            return 0;
         case 0x0130: // getCharStreamUni
             throw new RuntimeException("unimplemented");
         case 0x0131: // getBufferStreamUni

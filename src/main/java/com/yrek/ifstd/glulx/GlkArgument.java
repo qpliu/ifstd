@@ -41,7 +41,7 @@ class GlkArgument implements GlkDispatchArgument, GlkByteArray, GlkIntArray {
             return null;
         } else if (value == -1) {
             throw new IllegalArgumentException("String from stack");
-        } else if (machine.state.load8(value) != 0xe0) {
+        } else if ((machine.state.load8(value) & 255) != 0xe0) {
             throw new IllegalArgumentException("Not a string object");
         }
         arrayOffset = 1;

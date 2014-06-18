@@ -704,22 +704,43 @@ new String[] { "\" len 68, \"=C= =\u00dc=n=\u00ef=c=o=\u00b4=e= =\u001c=\u00a9=\
         }, null, null);
     }
 
-    @org.junit.Ignore
     @Test
     public void glulxerciseGlk() throws Exception {
         testFile("/glulxercise.ulx", glulxerciseIntro, glulxerciseOutro, new String[][] {
             new String[] { ">", "glk\n" },
-
+            new String[] { "Glk opcode:" },
+            new String[] { "" },
+            new String[] { "lowercase 'A'=97, lowercase 'B'=98, lowercase 'C'=99" },
+            new String[] { "lowercase 'A'=97, lowercase 'B'=98, lowercase 'C'=99" },
+            new String[] { "lowercase 'D'=100, lowercase 'E'=101, lowercase 'F'=102" },
+            new String[] { "lowercase 'D'=100, lowercase 'E'=101, lowercase 'F'=102" },
+            new String[] { "lowercase 'G'=103, lowercase 'H'=104, lowercase 'I'=105" },
+            new String[] { "guard=999" },
+            new String[] { "window=1, rock=201" },
+            new String[] { "window=1, rock=201" },
+            new String[] { "window=1, rock=201" },
+            new String[] { "window=1, rock=201" },
+            new String[] { "select_poll=0, result=0000" },
+            new String[] { "select_poll=0, result=0000" },
+            new String[] { "guard=999" },
+            new String[] { "len=14 \"up-case \u00e3\u00e4\u03b4\u03b5\u0434.\" len 14" },
+            new String[] { "Passed." },
+            new String[] { "" },
             new String[] { ">", "quit\n" },
         }, null, null);
     }
 
-    @org.junit.Ignore
     @Test
     public void glulxerciseGidispa() throws Exception {
         testFile("/glulxercise.ulx", glulxerciseIntro, glulxerciseOutro, new String[][] {
             new String[] { ">", "gidispa\n" },
-
+            new String[] { "Glk dispatch layer:" },
+            new String[] { "" },
+            new String[] { "\"XYZ\u042f C string. C \u00dcn\u00efco\u03b4e \u201c\u30a9\u201d 123 \u2155\u2156\u2157.\" len 37" },
+            new String[] { "length: 37" },
+            new String[] { "" },
+            new String[] { "Passed." },
+            new String[] { "" },
             new String[] { ">", "quit\n" },
         }, null, null);
     }
