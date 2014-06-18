@@ -54,18 +54,7 @@ public class TestGlkStreamMemory extends GlkStream {
     @Override
     public void putCharUni(int ch) throws IOException {
         outputCount++;
-        if (memory != null && memory.getWriteArrayIndex() < memory.getArrayLength()) {
-            memory.setByteElement((ch >> 24) & 255);
-        }
-        if (memory != null && memory.getWriteArrayIndex() < memory.getArrayLength()) {
-            memory.setByteElement((ch >> 16) & 255);
-        }
-        if (memory != null && memory.getWriteArrayIndex() < memory.getArrayLength()) {
-            memory.setByteElement((ch >> 8) & 255);
-        }
-        if (memory != null && memory.getWriteArrayIndex() < memory.getArrayLength()) {
-            memory.setByteElement((ch >> 0) & 255);
-        }
+        memory.setByteElement(ch & 255);
     }
 
     @Override

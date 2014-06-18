@@ -566,22 +566,43 @@ public class TestGlulx {
         }, null, null);
     }
 
-    @org.junit.Ignore
     @Test
     public void glulxerciseStrings() throws Exception {
         testFile("/glulxercise.ulx", glulxerciseIntro, glulxerciseOutro, new String[][] {
             new String[] { ">", "strings\n" },
-
+            new String[] { "String table decoding:" },
+            new String[] { "" },
+            new String[] { "Basic strings: \"hello\" len 5 is len 5, \"bye\" len 3, \"\" len 0, \"abcdefghijklmnopqrstuvwxyz\" len 26, \"\u00e0\u00e8\u00ec\u00f2\u00f9\" len 5, \"" },
+            new String[] { "\" len 1, \"This contains several node types." },
+            new String[] { "\" len 34" },
+            new String[] { "Unicode strings: \"hello\" len 5, \"abcdefghijklmnopqrstuvwxyz\" len 26, \"a\u00e0\u03b1\u30a9\" len 4" },
+            new String[] { "C-style strings: \"C string.\" len 9" },
+            new String[] { "\"C \u00dcn\u00efco\u03b4e \u201c\u30a9\u201d\" len 13" },
+            new String[] { "Substrings: \"\"substring\"\" len 11, \"\"substring\"\" len 11" },
+            new String[] { "References: \"[hello]\" len 7, \"[hello]\" len 7, \"[]\" len 2, \"[1]\" len 3, \"[1 2]\" len 5, \"[foo bar]\" len 9" },
+            new String[] { "Indirect references: \"{0:bye:0}\" len 9, \"{0:\"substring\":0}\" len 17, \"{1:{0:hello:0}:1}\" len 17, \"{1:{0:bye hello:0}:1}\" len 21, \"{0:1:0}\" len 7, \"{1:2 3:1}\" len 9, \"{2:hello bye:2}\" len 15, \"{\"'``'\"}\" len 8" },
+            new String[] { "Multiple references: \"{hello...bye...C string.}\" len 25, \"{{1:+0:1}...+1...bye hello}\" len 27, counter=2" },
+            new String[] { "Indirect references with unicode: \"{2:a\u00e0\u03b1\u30a9:2}\" len 10" },
+            new String[] { "" },
+            new String[] { "Passed." },
+            new String[] { "" },
             new String[] { ">", "quit\n" },
         }, null, null);
     }
 
-    @org.junit.Ignore
     @Test
     public void glulxerciseRamstring() throws Exception {
         testFile("/glulxercise.ulx", glulxerciseIntro, glulxerciseOutro, new String[][] {
             new String[] { ">", "ramstring\n" },
-
+            new String[] { "String table decoding in RAM:" },
+            new String[] { "" },
+            new String[] { "\"Decode test.\" len 12" },
+            new String[] { "\"Another test.\" len 13" },
+            new String[] { "\"Third test.\" len 11" },
+            new String[] { "\"\" len 0" },
+            new String[] { "" },
+            new String[] { "Passed." },
+            new String[] { "" },
             new String[] { ">", "quit\n" },
         }, null, null);
     }
@@ -967,12 +988,31 @@ public class TestGlulx {
         }, null, null);
     }
 
-    @org.junit.Ignore
     @Test
     public void glulxerciseFloatconv() throws Exception {
         testFile("/glulxercise.ulx", glulxerciseIntro, glulxerciseOutro, new String[][] {
             new String[] { ">", "floatconv\n" },
-
+            new String[] { "Floating-point conversion:" },
+            new String[] { "" },
+            new String[] { "0=$0, -0=$80000000, 1=$3F800000, 9.2e-41=$10000, 2.9e-39=$200001, 1.2e-38=$7FFFFF, 1.2e-38=$800000, 3.8e-34=$8000000, 3.4e+38=$7F7FFFFF, Inf=$7F800000, -Inf=$FF800000" },
+            new String[] { "" },
+            new String[] { "numtof 0=$0, numtof 1=$3F800000, numtof -1=$BF800000, numtof 2=$40000000, numtof -2=$C0000000, numtof 33=$42040000, numtof -33=$C2040000, numtof 100=$42C80000, numtof -100=$C2C80000, numtof 12345=$4640E400, numtof -12345=$C640E400, numtof 9876543=$4B16B43F, numtof -9876543=$CB16B43F, numtof $1000000=$4B800000, numtof -$1000000=$CB800000, numtof $1000001=$4B800000, numtof -$1000001=$CB800000, numtof $1234CDEF=$4D91A66F, numtof -$1234CDEF=$CD91A66F, numtof $7FFFFFFF=$4F000000, numtof -$7FFFFFFF=$CF000000, numtof $80000000=$CF000000" },
+            new String[] { "numtof 0=$0, numtof 1=$3F800000, numtof -1=$BF800000, numtof 2=$40000000, numtof -2=$C0000000, numtof 33=$42040000, numtof -33=$C2040000, numtof 100=$42C80000, numtof -100=$C2C80000, numtof 12345=$4640E400, numtof -12345=$C640E400, numtof 9876543=$4B16B43F, numtof -9876543=$CB16B43F, numtof $1000000=$4B800000, numtof -$1000000=$CB800000, numtof $1000001=$4B800000, numtof -$1000001=$CB800000, numtof $1234CDEF=$4D91A66F, numtof -$1234CDEF=$CD91A66F, numtof $7FFFFFFF=$4F000000, numtof -$7FFFFFFF=$CF000000, numtof $80000000=$CF000000" },
+            new String[] { "numtof 0=$0, numtof 1=$3F800000, numtof -1=$BF800000, numtof 2=$40000000, numtof -2=$C0000000, numtof 33=$42040000, numtof -33=$C2040000, numtof 100=$42C80000, numtof -100=$C2C80000, numtof 12345=$4640E400, numtof -12345=$C640E400, numtof 9876543=$4B16B43F, numtof -9876543=$CB16B43F, numtof $1000000=$4B800000, numtof -$1000000=$CB800000, numtof $1000001=$4B800000, numtof -$1000001=$CB800000, numtof $1234CDEF=$4D91A66F, numtof -$1234CDEF=$CD91A66F, numtof $7FFFFFFF=$4F000000, numtof -$7FFFFFFF=$CF000000, numtof $80000000=$CF000000" },
+            new String[] { "numtof 0=$0, numtof 1=$3F800000, numtof -1=$BF800000, numtof 2=$40000000, numtof -2=$C0000000, numtof 33=$42040000, numtof -33=$C2040000, numtof 100=$42C80000, numtof -100=$C2C80000, numtof 12345=$4640E400, numtof -12345=$C640E400, numtof 9876543=$4B16B43F, numtof -9876543=$CB16B43F, numtof $1000000=$4B800000, numtof -$1000000=$CB800000, numtof $1000001=$4B800000, numtof -$1000001=$CB800000, numtof $1234CDEF=$4D91A66F, numtof -$1234CDEF=$CD91A66F, numtof $7FFFFFFF=$4F000000, numtof -$7FFFFFFF=$CF000000, numtof $80000000=$CF000000" },
+            new String[] { "" },
+            new String[] { "ftonumz 0.0=$0, ftonumz -0.0=$0, ftonumz 0.9=$0, ftonumz -0.9=$0, ftonumz 1.0=$1, ftonumz -1.0=$FFFFFFFF, ftonumz 1.75=$1, ftonumz -1.75=$FFFFFFFF, ftonumz 2.0=$2, ftonumz -2.0=$FFFFFFFE, ftonumz 10.1=$A, ftonumz -10.1=$FFFFFFF6, ftonumz 999.99995=$3E7, ftonumz -999.99995=$FFFFFC19, ftonumz $1000000=$1000000, ftonumz -$1000000=$FF000000, ftonumz $7FFFFF00=$7FFFFF00, ftonumz -$7FFFFF00=$80000100, ftonumz $80000000=$7FFFFFFF, ftonumz -$80000000=$80000000, ftonumz $90000000=$7FFFFFFF, ftonumz -$90000000=$80000000, ftonumz $C1234500=$7FFFFFFF, ftonumz -$C1234500=$80000000, ftonumz $100000000=$7FFFFFFF, ftonumz -$100000000=$80000000, ftonumz 3.4e+34=$7FFFFFFF, ftonumz -3.4e+34=$80000000, ftonumz +Inf=$7FFFFFFF, ftonumz -Inf=$80000000, ftonumz +NaN=$7FFFFFFF, ftonumz -NaN=$80000000" },
+            new String[] { "ftonumz 0.0=$0, ftonumz -0.0=$0, ftonumz 0.9=$0, ftonumz -0.9=$0, ftonumz 1.0=$1, ftonumz -1.0=$FFFFFFFF, ftonumz 1.75=$1, ftonumz -1.75=$FFFFFFFF, ftonumz 2.0=$2, ftonumz -2.0=$FFFFFFFE, ftonumz 10.1=$A, ftonumz -10.1=$FFFFFFF6, ftonumz 999.99995=$3E7, ftonumz -999.99995=$FFFFFC19, ftonumz $1000000=$1000000, ftonumz -$1000000=$FF000000, ftonumz $7FFFFF00=$7FFFFF00, ftonumz -$7FFFFF00=$80000100, ftonumz $80000000=$7FFFFFFF, ftonumz -$80000000=$80000000, ftonumz $90000000=$7FFFFFFF, ftonumz -$90000000=$80000000, ftonumz $C1234500=$7FFFFFFF, ftonumz -$C1234500=$80000000, ftonumz $100000000=$7FFFFFFF, ftonumz -$100000000=$80000000, ftonumz 3.4e+34=$7FFFFFFF, ftonumz -3.4e+34=$80000000, ftonumz +Inf=$7FFFFFFF, ftonumz -Inf=$80000000, ftonumz +NaN=$7FFFFFFF, ftonumz -NaN=$80000000" },
+            new String[] { "ftonumz 0.0=$0, ftonumz -0.0=$0, ftonumz 0.9=$0, ftonumz -0.9=$0, ftonumz 1.0=$1, ftonumz -1.0=$FFFFFFFF, ftonumz 1.75=$1, ftonumz -1.75=$FFFFFFFF, ftonumz 2.0=$2, ftonumz -2.0=$FFFFFFFE, ftonumz 10.1=$A, ftonumz -10.1=$FFFFFFF6, ftonumz 999.99995=$3E7, ftonumz -999.99995=$FFFFFC19, ftonumz $1000000=$1000000, ftonumz -$1000000=$FF000000, ftonumz $7FFFFF00=$7FFFFF00, ftonumz -$7FFFFF00=$80000100, ftonumz $80000000=$7FFFFFFF, ftonumz -$80000000=$80000000, ftonumz $90000000=$7FFFFFFF, ftonumz -$90000000=$80000000, ftonumz $C1234500=$7FFFFFFF, ftonumz -$C1234500=$80000000, ftonumz $100000000=$7FFFFFFF, ftonumz -$100000000=$80000000, ftonumz 3.4e+34=$7FFFFFFF, ftonumz -3.4e+34=$80000000, ftonumz +Inf=$7FFFFFFF, ftonumz -Inf=$80000000, ftonumz +NaN=$7FFFFFFF, ftonumz -NaN=$80000000" },
+            new String[] { "ftonumz 0.0=$0, ftonumz -0.0=$0, ftonumz 0.9=$0, ftonumz -0.9=$0, ftonumz 1.0=$1, ftonumz -1.0=$FFFFFFFF, ftonumz 1.75=$1, ftonumz -1.75=$FFFFFFFF, ftonumz 2.0=$2, ftonumz -2.0=$FFFFFFFE, ftonumz 10.1=$A, ftonumz -10.1=$FFFFFFF6, ftonumz 999.99995=$3E7, ftonumz -999.99995=$FFFFFC19, ftonumz $1000000=$1000000, ftonumz -$1000000=$FF000000, ftonumz $7FFFFF00=$7FFFFF00, ftonumz -$7FFFFF00=$80000100, ftonumz $80000000=$7FFFFFFF, ftonumz -$80000000=$80000000, ftonumz $90000000=$7FFFFFFF, ftonumz -$90000000=$80000000, ftonumz $C1234500=$7FFFFFFF, ftonumz -$C1234500=$80000000, ftonumz $100000000=$7FFFFFFF, ftonumz -$100000000=$80000000, ftonumz 3.4e+34=$7FFFFFFF, ftonumz -3.4e+34=$80000000, ftonumz +Inf=$7FFFFFFF, ftonumz -Inf=$80000000, ftonumz +NaN=$7FFFFFFF, ftonumz -NaN=$80000000" },
+            new String[] { "" },
+            new String[] { "ftonumn 0.0=$0, ftonumn -0.0=$0, ftonumn 0.9=$1, ftonumn -0.9=$FFFFFFFF, ftonumn 1.0=$1, ftonumn -1.0=$FFFFFFFF, ftonumn 1.75=$2, ftonumn -1.75=$FFFFFFFE, ftonumn 2.0=$2, ftonumn -2.0=$FFFFFFFE, ftonumn 10.1=$A, ftonumn -10.1=$FFFFFFF6, ftonumn 999.99995=$3E8, ftonumn -999.99995=$FFFFFC18, ftonumn $1000000=$1000000, ftonumn -$1000000=$FF000000, ftonumn $7FFFFF00=$7FFFFF00, ftonumn -$7FFFFF00=$80000100, ftonumn $80000000=$7FFFFFFF, ftonumn -$80000000=$80000000, ftonumn $90000000=$7FFFFFFF, ftonumn -$90000000=$80000000, ftonumn $C1234500=$7FFFFFFF, ftonumn -$C1234500=$80000000, ftonumn $100000000=$7FFFFFFF, ftonumn -$100000000=$80000000, ftonumn 3.4e+34=$7FFFFFFF, ftonumn -3.4e+34=$80000000, ftonumn +Inf=$7FFFFFFF, ftonumn -Inf=$80000000, ftonumn +NaN=$7FFFFFFF, ftonumn -NaN=$80000000" },
+            new String[] { "ftonumn 0.0=$0, ftonumn -0.0=$0, ftonumn 0.9=$1, ftonumn -0.9=$FFFFFFFF, ftonumn 1.0=$1, ftonumn -1.0=$FFFFFFFF, ftonumn 1.75=$2, ftonumn -1.75=$FFFFFFFE, ftonumn 2.0=$2, ftonumn -2.0=$FFFFFFFE, ftonumn 10.1=$A, ftonumn -10.1=$FFFFFFF6, ftonumn 999.99995=$3E8, ftonumn -999.99995=$FFFFFC18, ftonumn $1000000=$1000000, ftonumn -$1000000=$FF000000, ftonumn $7FFFFF00=$7FFFFF00, ftonumn -$7FFFFF00=$80000100, ftonumn $80000000=$7FFFFFFF, ftonumn -$80000000=$80000000, ftonumn -$90000000=$80000000, ftonumn $C1234500=$7FFFFFFF, ftonumn -$C1234500=$80000000, ftonumn $100000000=$7FFFFFFF, ftonumn -$100000000=$80000000, ftonumn 3.4e+34=$7FFFFFFF, ftonumn -3.4e+34=$80000000, ftonumn +Inf=$7FFFFFFF, ftonumn -Inf=$80000000, ftonumn +NaN=$7FFFFFFF, ftonumn -NaN=$80000000" },
+            new String[] { "ftonumn 0.0=$0, ftonumn -0.0=$0, ftonumn 0.9=$1, ftonumn -0.9=$FFFFFFFF, ftonumn 1.0=$1, ftonumn -1.0=$FFFFFFFF, ftonumn 1.75=$2, ftonumn -1.75=$FFFFFFFE, ftonumn 2.0=$2, ftonumn -2.0=$FFFFFFFE, ftonumn 10.1=$A, ftonumn -10.1=$FFFFFFF6, ftonumn 999.99995=$3E8, ftonumn -999.99995=$FFFFFC18, ftonumn $1000000=$1000000, ftonumn -$1000000=$FF000000, ftonumn $7FFFFF00=$7FFFFF00, ftonumn -$7FFFFF00=$80000100, ftonumn $80000000=$7FFFFFFF, ftonumn -$80000000=$80000000, ftonumn $90000000=$7FFFFFFF, ftonumn -$90000000=$80000000, ftonumn $C1234500=$7FFFFFFF, ftonumn -$C1234500=$80000000, ftonumn $100000000=$7FFFFFFF, ftonumn -$100000000=$80000000, ftonumn 3.4e+34=$7FFFFFFF, ftonumn -3.4e+34=$80000000, ftonumn +Inf=$7FFFFFFF, ftonumn -Inf=$80000000, ftonumn +NaN=$7FFFFFFF, ftonumn -NaN=$80000000" },
+            new String[] { "ftonumn 0.0=$0, ftonumn -0.0=$0, ftonumn 0.9=$1, ftonumn -0.9=$FFFFFFFF, ftonumn 1.0=$1, ftonumn -1.0=$FFFFFFFF, ftonumn 1.75=$2, ftonumn -1.75=$FFFFFFFE, ftonumn 2.0=$2, ftonumn -2.0=$FFFFFFFE, ftonumn 10.1=$A, ftonumn -10.1=$FFFFFFF6, ftonumn 999.99995=$3E8, ftonumn -999.99995=$FFFFFC18, ftonumn $1000000=$1000000, ftonumn -$1000000=$FF000000, ftonumn $7FFFFF00=$7FFFFF00, ftonumn -$7FFFFF00=$80000100, ftonumn $80000000=$7FFFFFFF, ftonumn -$80000000=$80000000, ftonumn $90000000=$7FFFFFFF, ftonumn -$90000000=$80000000, ftonumn $C1234500=$7FFFFFFF, ftonumn -$C1234500=$80000000, ftonumn $100000000=$7FFFFFFF, ftonumn -$100000000=$80000000, ftonumn 3.4e+34=$7FFFFFFF, ftonumn -3.4e+34=$80000000, ftonumn +Inf=$7FFFFFFF, ftonumn -Inf=$80000000, ftonumn +NaN=$7FFFFFFF, ftonumn -NaN=$80000000" },
+            new String[] { "" },
+            new String[] { "Passed." },
+            new String[] { "" },
             new String[] { ">", "quit\n" },
         }, null, null);
     }
@@ -983,21 +1023,21 @@ public class TestGlulx {
             new String[] { ">", "floatarith\n" },
             new String[] { "Floating-point arithmetic:" },
             new String[] { "" },
-            new String[] { "add(1,1.5)=1.00000, add(0.5,-1.5)=-1.00000, add(-0.5,-1.5)=-1.00000, add(-0.5,1.5)=1.00000, add(0,2.5)=1.00000" },
-            new String[] { "sub(1,1.5)=-1.00000, sub(0.5,-1.5)=1.00000, sub(-0.5,-1.5)=1.00000, sub(-0.5,1.5)=-1.00000, sub(0,2.5)=-1.00000" },
-            new String[] { "mul(1.25,1.5)=1.00000, mul(0.5,-1.5)=-1.00000, mul(-0.75,-1.5)=1.00000, mul(-0.5,2)=-1.00000, mul(4,2.5)=1.00000" },
-            new String[] { "div(1.25,1.5)=1.00000, div(0.5,-1.5)=-1.00000, div(-0.75,-1.5)=1.00000, div(-0.5,2)=-1.00000, div(4,2.5)=1.00000" },
+            new String[] { "add(1,1.5)=2.50000, add(0.5,-1.5)=-1.00000, add(-0.5,-1.5)=-2.00000, add(-0.5,1.5)=1.00000, add(0,2.5)=2.50000" },
+            new String[] { "sub(1,1.5)=-0.50000, sub(0.5,-1.5)=2.00000, sub(-0.5,-1.5)=1.00000, sub(-0.5,1.5)=-2.00000, sub(0,2.5)=-2.50000" },
+            new String[] { "mul(1.25,1.5)=1.87500, mul(0.5,-1.5)=-0.75000, mul(-0.75,-1.5)=1.12500, mul(-0.5,2)=-1.00000, mul(4,2.5)=10.00000" },
+            new String[] { "div(1.25,1.5)=0.83333, div(0.5,-1.5)=-0.33333, div(-0.75,-1.5)=0.50000, div(-0.5,2)=-0.25000, div(4,2.5)=1.60000" },
             new String[] { "" },
-            new String[] { "add(1,1)=1.00000, add(-1,1)=0.00000, add(-1,-1)=-1.00000, add(1,0)=1.00000, add(-0,1)=1.00000, add(-0,0)=0.00000, add(123,-0)=1.00000, add(0,123)=1.00000, add(1.0000001,-1)=1.19209e-07, add(3.4e38,3.4e38)=Inf, add(-3.4e38,-3.4e38)=-Inf, add(3.4e38,-3.4e38)=0.00000, add(Inf,123)=Inf, add(-Inf,123)=-Inf, add(Inf,Inf)=Inf, add(-Inf,Inf)=NaN" },
+            new String[] { "add(1,1)=2.00000, add(-1,1)=0.00000, add(-1,-1)=-2.00000, add(1,0)=1.00000, add(-0,1)=1.00000, add(-0,0)=0.00000, add(123,-0)=123.00000, add(0,123)=123.00000, add(1.0000001,-1)=1.19209e-07, add(3.4e38,3.4e38)=Inf, add(-3.4e38,-3.4e38)=-Inf, add(3.4e38,-3.4e38)=0.00000, add(Inf,123)=Inf, add(-Inf,123)=-Inf, add(Inf,Inf)=Inf, add(-Inf,Inf)=NaN" },
             new String[] { "add(1,NaN)=NaN, add(NaN,-0)=NaN, add(Inf,NaN)=NaN, add(-Inf,NaN)=NaN, add(NaN,NaN)=NaN" },
             new String[] { "" },
-            new String[] { "sub(1,1)=0.00000, sub(-1,1)=-1.00000, sub(-1,-1)=0.00000, sub(1,0)=1.00000, sub(-0,1)=-1.00000, sub(123,-0)=1.00000, sub(0,123)=-1.00000, sub(1.0000001,1)=1.19209e-07, sub(3.4e38,3.4e38)=0.00000, sub(-3.4e38,-3.4e38)=0.00000, sub(3.4e38,-3.4e38)=Inf, sub(-3.4e38,3.4e38)=-Inf, sub(Inf,123)=Inf, sub(-Inf,123)=-Inf, sub(123,Inf)=-Inf, sub(123,-Inf)=Inf, sub(Inf,-Inf)=Inf, sub(-Inf,Inf)=-Inf, sub(-Inf,-Inf)=NaN, sub(Inf,Inf)=NaN" },
+            new String[] { "sub(1,1)=0.00000, sub(-1,1)=-2.00000, sub(-1,-1)=0.00000, sub(1,0)=1.00000, sub(-0,1)=-1.00000, sub(123,-0)=123.00000, sub(0,123)=-123.00000, sub(1.0000001,1)=1.19209e-07, sub(3.4e38,3.4e38)=0.00000, sub(-3.4e38,-3.4e38)=0.00000, sub(3.4e38,-3.4e38)=Inf, sub(-3.4e38,3.4e38)=-Inf, sub(Inf,123)=Inf, sub(-Inf,123)=-Inf, sub(123,Inf)=-Inf, sub(123,-Inf)=Inf, sub(Inf,-Inf)=Inf, sub(-Inf,Inf)=-Inf, sub(-Inf,-Inf)=NaN, sub(Inf,Inf)=NaN" },
             new String[] { "sub(1,NaN)=NaN, sub(NaN,-0)=NaN, sub(Inf,NaN)=NaN, sub(-Inf,NaN)=NaN, sub(NaN,NaN)=NaN" },
             new String[] { "" },
-            new String[] { "mul(1,1)=1.00000, mul(-1,1)=-1.00000, mul(-1,-1)=1.00000, mul(1,0)=0.00000, mul(-0,1)=-0.00000, mul(-0,-1)=0.00000, mul(123,-1)=-1.00000, mul(1,123)=1.00000, mul(3.4e38,2.9e-39)=1.00000, mul(2.9e-39,2.9e-39)=0.00000, mul(-2.9e-39,2.9e-39)=-0.00000, mul(1e20,1e20)=Inf, mul(1e20,-1e20)=-Inf, mul(-1e20,-1e20)=Inf, mul(Inf,0.0001)=Inf, mul(-Inf,0.0001)=-Inf, mul(Inf,Inf)=Inf, mul(-Inf,Inf)=-Inf, mul(-Inf,-Inf)=Inf, mul(Inf,0)=NaN, mul(-0,Inf)=NaN" },
+            new String[] { "mul(1,1)=1.00000, mul(-1,1)=-1.00000, mul(-1,-1)=1.00000, mul(1,0)=0.00000, mul(-0,1)=-0.00000, mul(-0,-1)=0.00000, mul(123,-1)=-123.00000, mul(1,123)=123.00000, mul(3.4e38,2.9e-39)=1.00000, mul(2.9e-39,2.9e-39)=0.00000, mul(-2.9e-39,2.9e-39)=-0.00000, mul(1e20,1e20)=Inf, mul(1e20,-1e20)=-Inf, mul(-1e20,-1e20)=Inf, mul(Inf,0.0001)=Inf, mul(-Inf,0.0001)=-Inf, mul(Inf,Inf)=Inf, mul(-Inf,Inf)=-Inf, mul(-Inf,-Inf)=Inf, mul(Inf,0)=NaN, mul(-0,Inf)=NaN" },
             new String[] { "mul(1,NaN)=NaN, mul(NaN,-0)=NaN, mul(Inf,NaN)=NaN, mul(-Inf,NaN)=NaN, mul(NaN,NaN)=NaN" },
             new String[] { "" },
-            new String[] { "div(1,1)=1.00000, div(-1,1)=-1.00000, div(-1,-1)=1.00000, div(1,0)=Inf, div(1,-0)=-Inf, div(-0,1)=-0.00000, div(-0,-1)=0.00000, div(123,-1)=-1.00000, div(123,1)=1.00000, div(3.4e38,2.9e-39)=Inf, div(2.9e-39,2.9e-39)=1.00000, div(-2.9e-39,2.9e-39)=-1.00000, div(1e20,1e20)=1.00000, div(1e20,-1e20)=-1.00000, div(Inf,10000)=Inf, div(-Inf,10000)=-Inf, div(Inf,0)=Inf, div(Inf,-0)=-Inf, div(Inf,Inf)=NaN, div(-Inf,Inf)=NaN, div(0,0)=NaN, div(-0,0)=NaN" },
+            new String[] { "div(1,1)=1.00000, div(-1,1)=-1.00000, div(-1,-1)=1.00000, div(1,0)=Inf, div(1,-0)=-Inf, div(-0,1)=-0.00000, div(-0,-1)=0.00000, div(123,-1)=-123.00000, div(123,1)=123.00000, div(3.4e38,2.9e-39)=Inf, div(2.9e-39,2.9e-39)=1.00000, div(-2.9e-39,2.9e-39)=-1.00000, div(1e20,1e20)=1.00000, div(1e20,-1e20)=-1.00000, div(Inf,10000)=Inf, div(-Inf,10000)=-Inf, div(Inf,0)=Inf, div(Inf,-0)=-Inf, div(Inf,Inf)=NaN, div(-Inf,Inf)=NaN, div(0,0)=NaN, div(-0,0)=NaN" },
             new String[] { "div(1,NaN)=NaN, div(NaN,-0)=NaN, div(Inf,NaN)=NaN, div(-Inf,NaN)=NaN, div(NaN,NaN)=NaN" },
             new String[] { "" },
             new String[] { "Passed." },
@@ -1006,12 +1046,29 @@ public class TestGlulx {
         }, null, null);
     }
 
-    @org.junit.Ignore
     @Test
     public void glulxerciseFloatmod() throws Exception {
         testFile("/glulxercise.ulx", glulxerciseIntro, glulxerciseOutro, new String[][] {
             new String[] { ">", "floatmod\n" },
-
+            new String[] { "Floating-point modulo:" },
+            new String[] { "" },
+            new String[] { "mod(4.125,2)=rem 0.12500 quo 2.00000, mod(5,1.5)=rem 0.50000 quo 3.00000, mod(7.125,1)=rem 0.12500 quo 7.00000, mod(6,1.75)=rem 0.75000 quo 3.00000, mod(5.125,0.5)=rem 0.12500 quo 10.00000, mod(4,0.75)=rem 0.25000 quo 5.00000" },
+            new String[] { "" },
+            new String[] { "mod(2.5,1)=rem 0.50000 quo 2.00000, mod(2.5,-1)=rem 0.50000 quo -2.00000, mod(-2.5,1)=rem -0.50000 quo -2.00000, mod(-2.5,-1)=rem -0.50000 quo 2.00000, mod(0,1)=rem 0.00000 quo 0.00000, mod(0,-1)=rem 0.00000 quo -0.00000, mod(-0,1)=rem -0.00000 quo -0.00000, mod(-0,-1)=rem -0.00000 quo 0.00000" },
+            new String[] { "" },
+            new String[] { "mod(5.125,2)=rem 1.12500 quo 2.00000, mod(5.125,-2)=rem 1.12500 quo -2.00000, mod(-5.125,2)=rem -1.12500 quo -2.00000, mod(-5.125,-2)=rem -1.12500 quo 2.00000" },
+            new String[] { "mod(5.125,1)=rem 0.12500 quo 5.00000, mod(5.125,-1)=rem 0.12500 quo -5.00000, mod(-5.125,1)=rem -0.12500 quo -5.00000, mod(-5.125,-1)=rem -0.12500 quo 5.00000" },
+            new String[] { "mod(1.5,0.75)=rem 0.00000 quo 2.00000, mod(1.5,-0.75)=rem 0.00000 quo -2.00000, mod(-1.5,0.75)=rem -0.00000 quo -2.00000, mod(-1.5,-0.75)=rem -0.00000 quo 2.00000" },
+            new String[] { "" },
+            new String[] { "mod(1e-20,1)=rem 1.00000e-20 quo 0.00000, mod(1e20,1)=rem 0.00000 quo 1.00000e+20, mod(8388607.5,1)=rem 0.50000 quo 8.38861e+06, mod(-8388607.5,1)=rem -0.50000 quo -8.38861e+06" },
+            new String[] { "mod(2.5e11,1e10)=rem 15360.00000 quo 25.00000, mod(2.5e10,1e10)=rem 5.00000e+09 quo 2.00000, mod(2.5e10,0.0123)=rem 0.00301 quo 2.03252e+12" },
+            new String[] { "" },
+            new String[] { "mod(0,0)=rem NaN quo NaN, mod(-0,0)=rem NaN quo NaN, mod(1,0)=rem NaN quo NaN, mod(Inf,1)=rem NaN quo NaN, mod(-Inf,1)=rem NaN quo NaN, mod(Inf,Inf)=rem NaN quo NaN, mod(Inf,-Inf)=rem NaN quo NaN, mod(-Inf,Inf)=rem NaN quo NaN, mod(0,1)=rem 0.00000 quo 0.00000, mod(-0,1)=rem -0.00000 quo -0.00000, mod(0,-1)=rem 0.00000 quo -0.00000, mod(-0,-1)=rem -0.00000 quo 0.00000, mod(1,Inf)=rem 1.00000 quo 0.00000, mod(1,-Inf)=rem 1.00000 quo -0.00000, mod(-2,Inf)=rem -2.00000 quo -0.00000, mod(-0.125,Inf)=rem -0.12500 quo -0.00000" },
+            new String[] { "" },
+            new String[] { "mod(1,NaN)=NaN quo NaN, mod(NaN,-1)=NaN quo NaN, mod(0,NaN)=NaN quo NaN, mod(N0,NaN)=NaN quo NaN, mod(Inf,NaN)=NaN quo NaN, mod(NaN,Inf)=NaN quo NaN, mod(NaN,-Inf)=NaN quo NaN, mod(-Inf,NaN)=NaN quo NaN, mod(NaN,NaN)=NaN quo NaN" },
+            new String[] { "" },
+            new String[] { "Passed." },
+            new String[] { "" },
             new String[] { ">", "quit\n" },
         }, null, null);
     }
@@ -1022,13 +1079,13 @@ public class TestGlulx {
             new String[] { ">", "floatround\n" },
             new String[] { "Floating-point rounding:" },
             new String[] { "" },
-            new String[] { "floor 3.5=1.00000, floor -3.5=-1.00000, floor 3.5=1.00000, floor -3.5=-1.00000, floor 3.5=1.00000, floor -3.5=-1.00000, floor 3.5=1.00000, floor -3.5=-1.00000, floor 3.5=1.00000, floor -3.5=-1.00000" },
+            new String[] { "floor 3.5=3.00000, floor -3.5=-4.00000, floor 3.5=3.00000, floor -3.5=-4.00000, floor 3.5=3.00000, floor -3.5=-4.00000, floor 3.5=3.00000, floor -3.5=-4.00000, floor 3.5=3.00000, floor -3.5=-4.00000" },
             new String[] { "" },
-            new String[] { "ceil 3.5=1.00000, ceil -3.5=-1.00000, ceil 3.5=1.00000, ceil -3.5=-1.00000, ceil 3.5=1.00000, ceil -3.5=-1.00000, ceil 3.5=1.00000, ceil -3.5=-1.00000, ceil 3.5=1.00000, ceil -3.5=-1.00000" },
+            new String[] { "ceil 3.5=4.00000, ceil -3.5=-3.00000, ceil 3.5=4.00000, ceil -3.5=-3.00000, ceil 3.5=4.00000, ceil -3.5=-3.00000, ceil 3.5=4.00000, ceil -3.5=-3.00000, ceil 3.5=4.00000, ceil -3.5=-3.00000" },
             new String[] { "" },
-            new String[] { "floor 0.0=0.00000, floor -0.0=-0.00000, floor 0.9=0.00000, floor -0.9=-1.00000, floor 1.0=1.00000, floor -1.0=-1.00000, floor 1.75=1.00000, floor -1.75=-1.00000, floor 2.0=1.00000, floor -2.0=-1.00000, floor 10.1=1.00000, floor -10.1=-1.00000, floor 999.99995=1.00000, floor -999.99995=-1.00000, floor $1000000=1.67772e+07, floor -$1000000=-1.67772e+07, floor $7FFFFF00=2.14748e+09, floor -$7FFFFF00=-2.14748e+09, floor $80000000=2.14748e+09, floor -$80000000=-2.14748e+09, floor +Inf=Inf, floor -Inf=-Inf, floor +NaN=NaN, floor -NaN=NaN" },
+            new String[] { "floor 0.0=0.00000, floor -0.0=-0.00000, floor 0.9=0.00000, floor -0.9=-1.00000, floor 1.0=1.00000, floor -1.0=-1.00000, floor 1.75=1.00000, floor -1.75=-2.00000, floor 2.0=2.00000, floor -2.0=-2.00000, floor 10.1=10.00000, floor -10.1=-11.00000, floor 999.99995=999.00000, floor -999.99995=-1000.00000, floor $1000000=1.67772e+07, floor -$1000000=-1.67772e+07, floor $7FFFFF00=2.14748e+09, floor -$7FFFFF00=-2.14748e+09, floor $80000000=2.14748e+09, floor -$80000000=-2.14748e+09, floor +Inf=Inf, floor -Inf=-Inf, floor +NaN=NaN, floor -NaN=NaN" },
             new String[] { "" },
-            new String[] { "ceil 0.0=0.00000, ceil -0.0=-0.00000, ceil 0.9=1.00000, ceil -0.9=-0.00000, ceil 1.0=1.00000, ceil -1.0=-1.00000, ceil 1.75=1.00000, ceil -1.75=-1.00000, ceil 2.0=1.00000, ceil -2.0=-1.00000, ceil 10.1=1.00000, ceil -10.1=-1.00000, ceil 999.99995=1.00000, ceil -999.99995=-1.00000, ceil $1000000=1.67772e+07, ceil -$1000000=-1.67772e+07, ceil $7FFFFF00=2.14748e+09, ceil -$7FFFFF00=-2.14748e+09, ceil $80000000=2.14748e+09, ceil -$80000000=-2.14748e+09, ceil +Inf=Inf, ceil -Inf=-Inf, ceil +NaN=NaN, ceil -NaN=NaN" },
+            new String[] { "ceil 0.0=0.00000, ceil -0.0=-0.00000, ceil 0.9=1.00000, ceil -0.9=-0.00000, ceil 1.0=1.00000, ceil -1.0=-1.00000, ceil 1.75=2.00000, ceil -1.75=-1.00000, ceil 2.0=2.00000, ceil -2.0=-2.00000, ceil 10.1=11.00000, ceil -10.1=-10.00000, ceil 999.99995=1000.00000, ceil -999.99995=-999.00000, ceil $1000000=1.67772e+07, ceil -$1000000=-1.67772e+07, ceil $7FFFFF00=2.14748e+09, ceil -$7FFFFF00=-2.14748e+09, ceil $80000000=2.14748e+09, ceil -$80000000=-2.14748e+09, ceil +Inf=Inf, ceil -Inf=-Inf, ceil +NaN=NaN, ceil -NaN=NaN" },
             new String[] { "" },
             new String[] { "Passed." },
             new String[] { "" },
@@ -1036,12 +1093,35 @@ public class TestGlulx {
         }, null, null);
     }
 
-    @org.junit.Ignore
     @Test
     public void glulxerciseFloatexp() throws Exception {
         testFile("/glulxercise.ulx", glulxerciseIntro, glulxerciseOutro, new String[][] {
             new String[] { ">", "floatexp\n" },
-
+            new String[] { "Floating-point exponent functions:" },
+            new String[] { "" },
+            new String[] { "sqrt 2.25=1.50000, sqrt -2.25=NaN, sqrt 2.25=1.50000, sqrt -2.25=NaN, sqrt 2.25=1.50000, sqrt -2.25=NaN, sqrt 2.25=1.50000, sqrt -2.25=NaN" },
+            new String[] { "" },
+            new String[] { "log e^2=2.00000, log -1.0=NaN, log e^2=2.00000, log -1.0=NaN, log e^2=2.00000, log -1.0=NaN, log e^2=2.00000, log -1.0=NaN" },
+            new String[] { "" },
+            new String[] { "exp 2.0=7.38906, exp -2.0=0.13534, exp 2.0=7.38906, exp -2.0=0.13534, exp 2.0=7.38906, exp -2.0=0.13534, exp 2.0=7.38906, exp -2.0=0.13534" },
+            new String[] { "" },
+            new String[] { "pow(1.75,1.5)=2.31503, pow(1.75,-1.5)=0.43196, pow(-1.75,2)=3.06250, pow(-1.75,1.5)=NaN" },
+            new String[] { "pow(2.25,2.0)=5.06250, pow(2.25,-2.0)=0.19753, pow(-2.25,3.0)=-11.39063, pow(-2.25,-3.0)=-0.08779" },
+            new String[] { "" },
+            new String[] { "sqrt 0=0.00000, sqrt -0=-0.00000, sqrt 1=1.00000, sqrt -1=NaN, sqrt 0.6=0.77460, sqrt 100.0000076=10.00000, sqrt 123456789.0=11111.11133, sqrt 9.8765e+35=9.93805e+17, sqrt Inf=Inf, sqrt -Inf=NaN, sqrt +NaN=NaN, sqrt -NaN=NaN" },
+            new String[] { "" },
+            new String[] { "exp 0=1.00000, exp -0=1.00000, exp 1=2.71828, exp -1=0.36788, exp 0.6=1.82212, exp -0.6=0.54881, exp 88.0=1.65164e+38, exp 100.0=Inf, exp -100.0=3.78352e-44, exp -104.0=0.00000, exp Inf=Inf, exp -Inf=0.00000, exp +NaN=NaN, exp -NaN=NaN" },
+            new String[] { "" },
+            new String[] { "log 0=-Inf, log -0=-Inf, log 1=0.00000, log -1=NaN, log e=~0.99999, log 0.6=~-0.51083, log 65536=~11.09035, log 123456789.0=~18.63140, log 9.8765e+37=~87.48581, log Inf=Inf, log -Inf=NaN, log +NaN=NaN, log -NaN=NaN" },
+            new String[] { "" },
+            new String[] { "pow(-1,1)=-1.00000, pow(-1,-1)=-1.00000, pow(-1,1.5)=NaN, pow(0,1)=0.00000, pow(-0,1)=-0.00000, pow(2,127)=1.70141e+38, pow(2,128)=Inf, pow(2,-149)=1.40130e-45, pow(2,-150)=0.00000, pow(2,NaN)=NaN, pow(NaN,2)=NaN, pow(NaN,NaN)=NaN" },
+            new String[] { "pow(0,-1)=Inf, pow(-0,-1)=-Inf, pow(0,-2)=Inf, pow(-0,-2)=Inf, pow(0,-1.5)=Inf, pow(-0,-1.5)=Inf, pow(0,1)=0.00000, pow(-0,1)=-0.00000, pow(0,2)=0.00000, pow(-0,2)=0.00000, pow(0,1.5)=0.00000, pow(-0,1.5)=0.00000" },
+            new String[] { "pow(-1,Inf)=1.00000, pow(-1,-Inf)=1.00000, pow(1,1)=1.00000, pow(1,-1)=1.00000, pow(1,0)=1.00000, pow(1,Inf)=1.00000, pow(1,-Inf)=1.00000, pow(1,NaN)=1.00000, pow(1,-NaN)=1.00000" },
+            new String[] { "pow(4,0)=1.00000, pow(-4,0)=1.00000, pow(0,0)=1.00000, pow(-0,0)=1.00000, pow(Inf,0)=1.00000, pow(-Inf,0)=1.00000, pow(NaN,0)=1.00000, pow(-NaN,0)=1.00000" },
+            new String[] { "pow(-1,1.5)=NaN, pow(0.5,-Inf)=Inf, pow(-0.5,-Inf)=Inf, pow(1.5,-Inf)=0.00000, pow(-1.5,-Inf)=0.00000, pow(0.5,Inf)=0.00000, pow(-0.5,Inf)=0.00000, pow(1.5,Inf)=Inf, pow(-1.5,Inf)=Inf, pow(-Inf,-1)=-0.00000, pow(-Inf,-2)=0.00000, pow(-Inf,-1.5)=0.00000, pow(-Inf,1)=-Inf, pow(-Inf,2)=Inf, pow(-Inf,1.5)=Inf, pow(Inf,2)=Inf, pow(Inf,1.5)=Inf, pow(Inf,-2)=0.00000, pow(Inf,-1.5)=0.00000" },
+            new String[] { "" },
+            new String[] { "Passed." },
+            new String[] { "" },
             new String[] { ">", "quit\n" },
         }, null, null);
     }
@@ -1052,19 +1132,19 @@ public class TestGlulx {
             new String[] { ">", "floattrig\n" },
             new String[] { "Floating-point trig functions:" },
             new String[] { "" },
-            new String[] { "sin(pi/6)=~1.00000, sin(-pi/3)=~-1.00000, sin(pi/4)=~1.00000" },
-            new String[] { "cos(pi/6)=~1.00000, cos(-pi/3)=~1.00000, cos(pi/4)=~1.00000" },
-            new String[] { "tan(pi/6)=~1.00000, tan(-pi/3)=~-1.00000, tan(pi/4)=1.00000" },
-            new String[] { "asin(1/2)=~1.00000, asin(-sqrt(3)/2)=~-1.00000, asin(sqrt(2)/2)=~1.00000" },
-            new String[] { "acos(sqrt(3)/2)=~1.00000, acos(-0.5)=~1.00000, acos(sqrt(2)/2)=~1.00000" },
-            new String[] { "atan(sqrt(3)/3)=~1.00000, atan(-sqrt(3))=~-1.00000, atan(1)=~1.00000" },
+            new String[] { "sin(pi/6)=~0.50000, sin(-pi/3)=~-0.86603, sin(pi/4)=~0.70711" },
+            new String[] { "cos(pi/6)=~0.86603, cos(-pi/3)=~0.50000, cos(pi/4)=~0.70711" },
+            new String[] { "tan(pi/6)=~0.57735, tan(-pi/3)=~-1.73205, tan(pi/4)=1.00000" },
+            new String[] { "asin(1/2)=~0.52360, asin(-sqrt(3)/2)=~-1.04720, asin(sqrt(2)/2)=~0.78540" },
+            new String[] { "acos(sqrt(3)/2)=~0.52360, acos(-0.5)=~2.09440, acos(sqrt(2)/2)=~0.78540" },
+            new String[] { "atan(sqrt(3)/3)=~0.52360, atan(-sqrt(3))=~-1.04720, atan(1)=~0.78540" },
             new String[] { "" },
             new String[] { "sin(0)=0.00000, sin(-0)=-0.00000, sin(pi)=~-8.74228e-08, sin(2pi)=~1.74846e-07, sin(Inf)=NaN, sin(-Inf)=NaN, sin(NaN)=NaN" },
             new String[] { "cos(0)=1.00000, cos(-0)=1.00000, cos(pi)=~-1.00000, cos(2pi)=~1.00000, cos(Inf)=NaN, cos(-Inf)=NaN, cos(NaN)=NaN" },
             new String[] { "tan(0)=0.00000, tan(-0)=-0.00000, tan(pi)=~8.74228e-08, tan(2pi)=~1.74846e-07, tan(Inf)=NaN, tan(-Inf)=NaN, tan(NaN)=NaN" },
-            new String[] { "asin(0)=0.00000, asin(-0)=-0.00000, asin(1)=~1.00000, asin(-1)=~-1.00000, asin(2)=NaN, asin(-2)=NaN, asin(Inf)=NaN, asin(-Inf)=NaN, asin(NaN)=NaN" },
-            new String[] { "acos(1)=0.00000, acos(-1)=~1.00000, acos(0)=~1.00000, acos(-0)=~1.00000, acos(2)=NaN, acos(-2)=NaN, acos(Inf)=NaN, acos(-Inf)=NaN, acos(NaN)=NaN" },
-            new String[] { "atan(0)=0.00000, atan(-0)=-0.00000, atan(1)=~1.00000, atan(-1)=~-1.00000, atan(Inf)=~1.00000, atan(-Inf)=~-1.00000, atan(NaN)=NaN" },
+            new String[] { "asin(0)=0.00000, asin(-0)=-0.00000, asin(1)=~1.57080, asin(-1)=~-1.57080, asin(2)=NaN, asin(-2)=NaN, asin(Inf)=NaN, asin(-Inf)=NaN, asin(NaN)=NaN" },
+            new String[] { "acos(1)=0.00000, acos(-1)=~3.14159, acos(0)=~1.57080, acos(-0)=~1.57080, acos(2)=NaN, acos(-2)=NaN, acos(Inf)=NaN, acos(-Inf)=NaN, acos(NaN)=NaN" },
+            new String[] { "atan(0)=0.00000, atan(-0)=-0.00000, atan(1)=~0.78540, atan(-1)=~-0.78540, atan(Inf)=~1.57080, atan(-Inf)=~-1.57080, atan(NaN)=NaN" },
             new String[] { "" },
             new String[] { "Passed." },
             new String[] { "" },
@@ -1078,12 +1158,12 @@ public class TestGlulx {
             new String[] { ">", "floatatan2\n" },
             new String[] { "Floating-point atan2 function:" },
             new String[] { "" },
-            new String[] { "atan2(1,1)=~1.00000, atan2(1,-1)=~1.00000, atan2(-1,-1)=~-1.00000, atan2(-1,1)=~-1.00000" },
+            new String[] { "atan2(1,1)=~0.78540, atan2(1,-1)=~2.35619, atan2(-1,-1)=~-2.35619, atan2(-1,1)=~-0.78540" },
             new String[] { "" },
-            new String[] { "atan2(1,2)=~1.00000, atan2(2,-0.5)=~1.00000, atan2(-0.125,-8)=~-1.00000, atan2(-2,3)=~-1.00000" },
+            new String[] { "atan2(1,2)=~0.46365, atan2(2,-0.5)=~1.81578, atan2(-0.125,-8)=~-3.12597, atan2(-2,3)=~-0.58800" },
             new String[] { "" },
-            new String[] { "atan2(0,0)=0.00000, atan2(-0,0)=-0.00000, atan2(0,-0)=~1.00000, atan2(-0,-0)=~-1.00000, atan2(0,1)=0.00000, atan2(-0,1)=-0.00000, atan2(0,-1)=~1.00000, atan2(-0,-1)=~-1.00000, atan2(1,0)=~1.00000, atan2(1,-0)=~1.00000, atan2(-1,0)=~-1.00000, atan2(-1,-0)=~-1.00000" },
-            new String[] { "atan2(1,Inf)=0.00000, atan2(-1,Inf)=-0.00000, atan2(1,-Inf)=~1.00000, atan2(-1,-Inf)=~-1.00000, atan2(Inf,Inf)=~1.00000, atan2(-Inf,Inf)=~-1.00000, atan2(Inf,-Inf)=~1.00000, atan2(-Inf,-Inf)=~-1.00000" },
+            new String[] { "atan2(0,0)=0.00000, atan2(-0,0)=-0.00000, atan2(0,-0)=~3.14159, atan2(-0,-0)=~-3.14159, atan2(0,1)=0.00000, atan2(-0,1)=-0.00000, atan2(0,-1)=~3.14159, atan2(-0,-1)=~-3.14159, atan2(1,0)=~1.57080, atan2(1,-0)=~1.57080, atan2(-1,0)=~-1.57080, atan2(-1,-0)=~-1.57080" },
+            new String[] { "atan2(1,Inf)=0.00000, atan2(-1,Inf)=-0.00000, atan2(1,-Inf)=~3.14159, atan2(-1,-Inf)=~-3.14159, atan2(Inf,Inf)=~0.78540, atan2(-Inf,Inf)=~-0.78540, atan2(Inf,-Inf)=~2.35619, atan2(-Inf,-Inf)=~-2.35619" },
             new String[] { "atan2(1,NaN)=NaN, atan2(NaN,-0)=NaN, atan2(Inf,NaN)=NaN, atan2(-Inf,NaN)=NaN, atan2(NaN,NaN)=NaN" },
             new String[] { "" },
             new String[] { "Passed." },
@@ -1092,22 +1172,47 @@ public class TestGlulx {
         }, null, null);
     }
 
-    @org.junit.Ignore
     @Test
     public void glulxerciseFjumpform() throws Exception {
         testFile("/glulxercise.ulx", glulxerciseIntro, glulxerciseOutro, new String[][] {
             new String[] { ">", "fjumpform\n" },
-
+            new String[] { "Floating-point jump with various operand forms:" },
+            new String[] { "" },
+            new String[] { "Test A0=33, Test A1=44, Test A2=33, Test A3=44, Test A4=33, Test A5=44" },
+            new String[] { "Test B0=11, Test B1=22, Test B2=11, Test B3=22, Test B4=11, Test B5=22" },
+            new String[] { "Test C0=55, Test C1=66, Test C2=55, Test C3=66, Test C4=55, Test C5=66" },
+            new String[] { "Test E0=0, E1=1, E2=99" },
+            new String[] { "Test F0=2, F1=3, F2=9, F3=5, F4=2, F5=1, F6=0" },
+            new String[] { "" },
+            new String[] { "Passed." },
+            new String[] { "" },
             new String[] { ">", "quit\n" },
         }, null, null);
     }
 
-    @org.junit.Ignore
     @Test
     public void glulxerciseFjump() throws Exception {
         testFile("/glulxercise.ulx", glulxerciseIntro, glulxerciseOutro, new String[][] {
             new String[] { ">", "fjump\n" },
-
+            new String[] { "Floating-point equality comparisons:" },
+            new String[] { "" },
+            new String[] { "jisnan(0)=0, jisnan(-0)=0, jisnan(1)=0, jisnan(3.4e38)=0, jisnan(Inf)=0, jisnan(-Inf)=0, jisnan(NaN)=1, jisnan(-NaN)=1, jisnan(other NaN)=1, jisnan(other -NaN)=1" },
+            new String[] { "jisinf(0)=0, jisinf(-0)=0, jisinf(1)=0, jisinf(3.4e+38)=0, jisinf(Inf)=1, jisinf(-Inf)=1, jisinf(NaN)=0, jisinf(-NaN)=0, jisinf(other NaN)=0, jisinf(other -NaN)=0" },
+            new String[] { "jfeq(0,0,0)=1, jfeq(0,-0,0)=1, jfeq(0,0,-0)=1, jfeq(0,1.4e-45,0)=0, jfeq(0,-1.4e-45,0)=0, jfeq(3.4e+38,3.4e+38,0)=1, jfeq(3.4e+38,3.4e+38,0)=0, jfeq(Inf,Inf,0)=1, jfeq(-Inf,-Inf,0)=1, jfeq(Inf,-Inf,0)=0" },
+            new String[] { "jfeq(0,0,1.4e-45)=1, jfeq(0,-0,1.4e-45)=1, jfeq(0,0,-1.4e-45)=1, jfeq(0,1.4e-45,1.4e-45)=1, jfeq(0,-1.4e-45,1.4e-45)=1, jfeq(0,1.4e-45,-1.4e-45)=1, jfeq(0,2.8e-45,1.4e-45)=0, jfeq(3.4e+38,3.4e+38,1.4e-45)=1, jfeq(3.4e+38,3.4e+38,1.4e-45)=0, jfeq(Inf,Inf,1.4e-45)=1, jfeq(-Inf,-Inf,1.4e-45)=1, jfeq(Inf,-Inf,1.4e-45)=0" },
+            new String[] { "jfeq(0,0,1)=1, jfeq(0,-2,1)=0, jfeq(0,-2,1.5)=0, jfeq(0,-2,2)=1, jfeq(0,-2,-2)=1, jfeq(1.5,2,1.5)=1, jfeq(1.5,3,1.5)=1, jfeq(1.5,3+,1.5)=0" },
+            new String[] { "jfeq(0,3.4e+38,3.4e+38-)=0, jfeq(0,3.4e+38,3.4e+38)=1, jfeq(-1,3.4e+38,3.4e+38)=1, jfeq(-3.4e+38,3.4e+38,3.4e+38)=0,jfeq(Inf,3.4e+38,3.4e+38)=0, jfeq(-Inf,-3.4e+38,3.4e+38)=0, jfeq(Inf,Inf,3.4e+38)=1, jfeq(-Inf,Inf,3.4e+38)=0" },
+            new String[] { "jfeq(0,0,Inf)=1, jfeq(0,3.4e+38,Inf)=1, jfeq(0,3.4e+38,-Inf)=1, jfeq(0,-3.4e+38,-Inf)=1, jfeq(-3.4e+38,3.4e+38,Inf)=1, jfeq(-3.4e+38,3.4e+38,-Inf)=1, jfeq(0,Inf,Inf)=1, jfeq(-3.4e+38,-Inf,Inf)=1, jfeq(0,-Inf,Inf)=1, jfeq(-Inf,-Inf,Inf)=1, jfeq(Inf,-Inf,Inf)=0" },
+            new String[] { "jfeq(NaN,0,0)=0, jfeq(0,NaN,0)=0, jfeq(0,0,NaN)=0, jfeq(0,NaN,NAN)=0, jfeq(NaN,0,NaN)=0, jfeq(NaN,NaN,0)=0, jfeq(NaN,NaN,NaN)=0, jfeq(Inf,Inf,NaN)=0, jfeq(Inf,-Inf,NaN)=0, jfeq(Inf,0,NaN)=0, jfeq(0,NaN,Inf)=0, jfeq(NaN,NaN,Inf)=0" },
+            new String[] { "jfne(0,0,0)=0, jfne(0,-0,0)=0, jfne(0,0,-0)=0, jfne(0,1.4e-45,0)=1, jfne(0,-1.4e-45,0)=1, jfne(3.4e+38,3.4e+38,0)=0, jfne(3.4e+38,3.4e+38,0)=1, jfne(Inf,Inf,0)=0, jfne(-Inf,-Inf,0)=0, jfne(Inf,-Inf,0)=1" },
+            new String[] { "jfne(0,0,1.4e-45)=0, jfne(0,-0,1.4e-45)=0, jfne(0,0,-1.4e-45)=0, jfne(0,1.4e-45,1.4e-45)=0, jfne(0,-1.4e-45,1.4e-45)=0, jfne(0,1.4e-45,-1.4e-45)=0, jfne(0,2.8e-45,1.4e-45)=1, jfne(3.4e+38,3.4e+38,1.4e-45)=0, jfne(3.4e+38,3.4e+38,1.4e-45)=1, jfne(Inf,Inf,1.4e-45)=0, jfne(-Inf,-Inf,1.4e-45)=0, jfne(Inf,-Inf,1.4e-45)=1" },
+            new String[] { "jfne(0,0,1)=0, jfne(0,-2,1)=1, jfne(0,-2,1.5)=1, jfne(0,-2,2)=0, jfne(0,-2,-2)=0, jfne(1.5,2,1.5)=0, jfne(1.5,3,1.5)=0, jfne(1.5,3+,1.5)=1" },
+            new String[] { "jfne(0,3.4e+38,3.4e+38-)=1, jfne(0,3.4e+38,3.4e+38)=0, jfne(-1,3.4e+38,3.4e+38)=0, jfne(-3.4e+38,3.4e+38,3.4e+38)=1,jfne(Inf,3.4e+38,3.4e+38)=1, jfne(-Inf,-3.4e+38,3.4e+38)=1, jfne(Inf,Inf,3.4e+38)=0, jfne(-Inf,Inf,3.4e+38)=1" },
+            new String[] { "jfne(0,0,Inf)=0, jfne(0,3.4e+38,Inf)=0, jfne(0,3.4e+38,-Inf)=0, jfne(0,-3.4e+38,-Inf)=0, jfne(-3.4e+38,3.4e+38,Inf)=0, jfne(-3.4e+38,3.4e+38,-Inf)=0, jfne(0,Inf,Inf)=0, jfne(-3.4e+38,-Inf,Inf)=0, jfne(0,-Inf,Inf)=0, jfne(-Inf,-Inf,Inf)=0, jfne(Inf,-Inf,Inf)=1" },
+            new String[] { "jfne(NaN,0,0)=1, jfne(0,NaN,0)=1, jfne(0,0,NaN)=1, jfne(0,NaN,NAN)=1, jfne(NaN,0,NaN)=1, jfne(NaN,NaN,0)=1, jfne(NaN,NaN,NaN)=1, jfne(Inf,Inf,NaN)=1, jfne(Inf,-Inf,NaN)=1, jfne(Inf,0,NaN)=1, jfne(0,NaN,Inf)=1, jfne(NaN,NaN,Inf)=1" },
+            new String[] { "" },
+            new String[] { "Passed." },
+            new String[] { "" },
             new String[] { ">", "quit\n" },
         }, null, null);
     }
@@ -1137,12 +1242,29 @@ public class TestGlulx {
         }, null, null);
     }
 
-    @org.junit.Ignore
     @Test
     public void glulxerciseFprint() throws Exception {
         testFile("/glulxercise.ulx", glulxerciseIntro, glulxerciseOutro, new String[][] {
             new String[] { ">", "fprint\n" },
-
+            new String[] { "Print floating-point numbers:" },
+            new String[] { "Note: this does not test an opcode. It tests the FloatExp function, which is included in this test suite. You are welcome to use that function in your Glulx program or library." },
+            new String[] { "" },
+            new String[] { "\"0.00000e+00\" len 11, \"-0.00000e+00\" len 12, \"1.00000e+00\" len 11, \"-1.00000e+00\" len 12" },
+            new String[] { "\"1.00000e-01\" len 11, \"3.33333e-02\" len 11, \"2.00000e+00\" len 11, \"1.00000e+02\" len 11, \"1.00000e+02\" len 11, \"1.00000e+02\" len 11, \"9.99999e+01\" len 11, \"1.25000e+02\" len 11" },
+            new String[] { "\"3.00000e-30\" len 11, \"6.99998e+30\" len 11, \"3.00004e-40\" len 11, \"6.99998e+34\" len 11" },
+            new String[] { "\"1.0e+00\" len 7, \"1.0000e+00\" len 10, \"1.00000024e+00\" len 14, \"6.8e+00\" len 7, \"6.7898e+00\" len 10, \"6.78979520e+00\" len 14" },
+            new String[] { "\"Inf\" len 3, \"-Inf\" len 4, \"NaN\" len 3, \"-NaN\" len 4" },
+            new String[] { "" },
+            new String[] { "\"0.00000\" len 7, \"-0.00000\" len 8, \"1.00000\" len 7, \"-1.00000\" len 8" },
+            new String[] { "\"0.10000\" len 7, \"0.02000\" len 7, \"0.03333\" len 7, \"12.34568\" len 8, \"-120.34568\" len 10, \"100000.34375\" len 12, \"1000000.37500\" len 13, \"10000000.00000\" len 14" },
+            new String[] { "\"0.00000\" len 7, \"-0.00000\" len 8, \"4294965440.00000\" len 16, \"1000000240000000000000000000000.00000\" len 37" },
+            new String[] { "\"1.0\" len 3, \"1.0000\" len 6, \"1.00000000\" len 10, \"6.8\" len 3, \"6.7898\" len 6, \"6.78978832\" len 10" },
+            new String[] { "\"Inf\" len 3, \"-Inf\" len 4, \"NaN\" len 3, \"-NaN\" len 4" },
+            new String[] { "" },
+            new String[] { "\"1.00\" len 4, \"1.00000\" len 7, \"999999.00000\" len 12, \"-999999.00000\" len 13, \"1.00001e+06\" len 11, \"-1.00001e+06\" len 12, \"0.00010\" len 7, \"-0.00010\" len 8, \"9.0000e-05\" len 10, \"-9.0000e-05\" len 11" },
+            new String[] { "" },
+            new String[] { "Passed." },
+            new String[] { "" },
             new String[] { ">", "quit\n" },
         }, null, null);
     }

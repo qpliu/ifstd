@@ -1047,14 +1047,31 @@ abstract class Instruction {
         };
         new Instruction(0x191, "ftonumz", Operands.LS) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
-                float arg = Float.intBitsToFloat(arg1.load32(machine.state));
-                arg2.store32(machine.state, Math.round(Math.copySign((float) Math.floor(Math.abs(arg)), arg)));
+                int a1 = arg1.load32(machine.state);
+                float arg = Float.intBitsToFloat(a1);
+                int a2;
+                if (Float.isNaN(arg)) {
+                    a2 = (a1 & 0x80000000) == 0 ? Integer.MAX_VALUE : Integer.MIN_VALUE;
+                } else if (arg < 0.0f) {
+                    a2 = Math.round((float) Math.ceil(arg));
+                } else {
+                    a2 = Math.round((float) Math.floor(arg));
+                }
+                arg2.store32(machine.state, a2);
                 return Result.Continue;
             }
         };
         new Instruction(0x192, "ftonumn", Operands.LS) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
-                arg2.store32(machine.state, Math.round(Float.intBitsToFloat(arg1.load32(machine.state))));
+                int a1 = arg1.load32(machine.state);
+                float arg = Float.intBitsToFloat(a1);
+                int a2;
+                if (Float.isNaN(arg)) {
+                    a2 = (a1 & 0x80000000) == 0 ? Integer.MAX_VALUE : Integer.MIN_VALUE;
+                } else {
+                    a2 = Math.round(arg);
+                }
+                arg2.store32(machine.state, a2);
                 return Result.Continue;
             }
         };
@@ -1097,9 +1114,9 @@ abstract class Instruction {
         new Instruction(0x1A4, "fmod", Operands.L2S2) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3, Operand arg4) {
                 float a1 = Float.intBitsToFloat(arg1.load32(machine.state));
-                float a2 = Float.intBitsToFloat(arg1.load32(machine.state));
-                float q = Math.copySign((float) Math.floor(Math.abs(a1)/Math.abs(a2)), a1*a2);
-                float r = a1 - q*a2;
+                float a2 = Float.intBitsToFloat(arg2.load32(machine.state));
+                float r = a1 % a2;
+                float q = Math.copySign(Math.abs(a1 - r)/Math.abs(a2), Math.signum(a1)*Math.signum(a2));
                 arg3.store32(machine.state, Float.floatToIntBits(r));
                 arg4.store32(machine.state, Float.floatToIntBits(q));
                 return Result.Continue;
@@ -1125,7 +1142,15 @@ abstract class Instruction {
         };
         new Instruction(0x1AB, "pow", Operands.L2S) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3) {
-                arg3.store32(machine.state, Float.floatToIntBits((float) Math.pow((double) Float.intBitsToFloat(arg1.load32(machine.state)), (double) Float.intBitsToFloat(arg2.load32(machine.state)))));
+                float a1 = Float.intBitsToFloat(arg1.load32(machine.state));
+                float a2 = Float.intBitsToFloat(arg2.load32(machine.state));
+                float a3;
+                if (a1 == 1.0f || (a1 == -1.0f && Float.isInfinite(a2))) {
+                    a3 = 1.0f;
+                } else {
+                    a3 = (float) Math.pow((double) a1, (double) a2);
+                }
+                arg3.store32(machine.state, Float.floatToIntBits(a3));
                 return Result.Continue;
             }
         };
@@ -1177,10 +1202,25 @@ abstract class Instruction {
                 float a2 = Float.intBitsToFloat(arg2.load32(machine.state));
                 float a3 = Float.intBitsToFloat(arg3.load32(machine.state));
                 int a4 = arg4.load32(machine.state);
-                if (Math.abs(a1 - a2) < Math.abs(a3)) {
+                if (Float.isNaN(a1) || Float.isNaN(a2) || Float.isNaN(a3)) {
+                    return Result.Tick;
+                } else if (Float.isInfinite(a3)) {
+                    if (Float.isInfinite(a1) && Float.isInfinite(a2) && Math.signum(a1)*Math.signum(a2) < 0.0f) {
+                        return Result.Tick;
+                    } else {
+                        return branch(machine, a4);
+                    }
+                } else if (Float.isInfinite(a1) && Float.isInfinite(a2)) {
+                    if (Math.signum(a1)*Math.signum(a2) < 0.0f) {
+                        return Result.Tick;
+                    } else {
+                        return branch(machine, a4);
+                    }
+                } else if (Math.abs(a1 - a2) <= Math.abs(a3)) {
                     return branch(machine, a4);
+                } else {
+                    return Result.Tick;
                 }
-                return Result.Tick;
             }
         };
         new Instruction(0x1C1, "jfne", Operands.L4) {
@@ -1189,10 +1229,25 @@ abstract class Instruction {
                 float a2 = Float.intBitsToFloat(arg2.load32(machine.state));
                 float a3 = Float.intBitsToFloat(arg3.load32(machine.state));
                 int a4 = arg4.load32(machine.state);
-                if (!(Math.abs(a1 - a2) < Math.abs(a3))) {
+                if (Float.isNaN(a1) || Float.isNaN(a2) || Float.isNaN(a3)) {
+                    return branch(machine, a4);
+                } else if (Float.isInfinite(a3)) {
+                    if (Float.isInfinite(a1) && Float.isInfinite(a2) && Math.signum(a1)*Math.signum(a2) < 0.0f) {
+                        return branch(machine, a4);
+                    } else {
+                        return Result.Tick;
+                    }
+                } else if (Float.isInfinite(a1) && Float.isInfinite(a2)) {
+                    if (Math.signum(a1)*Math.signum(a2) < 0.0f) {
+                        return branch(machine, a4);
+                    } else {
+                        return Result.Tick;
+                    }
+                } else if (Math.abs(a1 - a2) <= Math.abs(a3)) {
+                    return Result.Tick;
+                } else {
                     return branch(machine, a4);
                 }
-                return Result.Tick;
             }
         };
         new Instruction(0x1C2, "jflt", Operands.L3) {
@@ -1674,19 +1729,20 @@ abstract class Instruction {
                 machine.state.pc = pc;
                 machine.state.push32(value);
                 return;
-            case 0x10:
+            case 10:
                 machine.ioSys.resumePrintCompressed(machine, pc, destAddr);
                 break;
-            case 0x11:
+            case 11:
+                machine.state.fp = fp;
                 machine.state.pc = pc;
                 return;
-            case 0x12:
+            case 12:
                 machine.ioSys.resumePrintNumber(machine, pc, destAddr);
                 break;
-            case 0x13:
+            case 13:
                 machine.ioSys.resumePrint(machine, pc);
                 break;
-            case 0x14:
+            case 14:
                 machine.ioSys.resumePrintUnicode(machine, pc);
                 break;
             default:
