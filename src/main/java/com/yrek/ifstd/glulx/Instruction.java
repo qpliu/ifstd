@@ -1730,19 +1730,23 @@ abstract class Instruction {
                 machine.state.push32(value);
                 return;
             case 10:
+                machine.state.fp = fp;
                 machine.ioSys.resumePrintCompressed(machine, pc, destAddr);
                 break;
             case 11:
-                machine.state.fp = fp;
+                assert machine.state.fp == fp;
                 machine.state.pc = pc;
                 return;
             case 12:
+                machine.state.fp = fp;
                 machine.ioSys.resumePrintNumber(machine, pc, destAddr);
                 break;
             case 13:
+                machine.state.fp = fp;
                 machine.ioSys.resumePrint(machine, pc);
                 break;
             case 14:
+                machine.state.fp = fp;
                 machine.ioSys.resumePrintUnicode(machine, pc);
                 break;
             default:

@@ -642,12 +642,18 @@ public class TestGlulx {
         }, null, null);
     }
 
-    @org.junit.Ignore
     @Test
     public void glulxerciseNullio() throws Exception {
         testFile("/glulxercise.ulx", glulxerciseIntro, glulxerciseOutro, new String[][] {
             new String[] { ">", "nullio\n" },
-
+            new String[] { "Null iosys mode:" },
+            new String[] { "" },
+            new String[] { "Basic strings: \"\" len 0, \"\" len 0, \"\" len 0, \"\" len 0" },
+            new String[] { "References: \"\" len 0, \"\" len 0, \"\" len 0" },
+            new String[] { "Multiple references: \"\" len 0, \"<.><.><.><[><1>< ><2><]><}>\" len 27, \"\" len 0, counter=2, \"\" len 0, counter=1" },
+            new String[] { "" },
+            new String[] { "Passed." },
+            new String[] { "" },
             new String[] { ">", "quit\n" },
         }, null, null);
     }

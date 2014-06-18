@@ -46,18 +46,7 @@ class StringTable {
                 if (TRACE && Glulx.trace != null) {
                     Glulx.trace.print(String.format("[decode char:%x,%c]", machine.state.load8(node+1)&255, (char) (machine.state.load8(node+1)&255)));
                 }
-                if (machine.ioSys.isFilter()) {
-                    if (!resuming) {
-                        Instruction.pushCallStub(machine.state, 11, 0);
-                    }
-                    machine.state.pc = addr;
-                    Instruction.pushCallStub(machine.state, 10, bit);
-                }
-                machine.ioSys.streamChar(machine, machine.state.load8(node+1));
-                if (machine.ioSys.isFilter()) {
-                    if (resuming) {
-                        Instruction.pushCallStub(machine.state, 11, 0);
-                    }
+                if (machine.ioSys.streamCharFromEncoded(machine, machine.state.load8(node+1), addr, bit, resuming)) {
                     return;
                 }
                 node = root;
@@ -66,18 +55,7 @@ class StringTable {
                 if (TRACE && Glulx.trace != null) {
                     Glulx.trace.print(String.format("[decode string:%x]", node+1));
                 }
-                if (machine.ioSys.isFilter()) {
-                    if (!resuming) {
-                        Instruction.pushCallStub(machine.state, 11, 0);
-                    }
-                    machine.state.pc = addr;
-                    Instruction.pushCallStub(machine.state, 10, bit);
-                }
-                machine.ioSys.streamString(machine, node+1);
-                if (machine.ioSys.isFilter()) {
-                    if (resuming) {
-                        Instruction.pushCallStub(machine.state, 11, 0);
-                    }
+                if (machine.ioSys.streamStringFromEncoded(machine, node+1, addr, bit, resuming)) {
                     return;
                 }
                 node = root;
@@ -86,18 +64,7 @@ class StringTable {
                 if (TRACE && Glulx.trace != null) {
                     Glulx.trace.print(String.format("[decode unichar:%x,%s]", machine.state.load32(node+1), new String(Character.toChars(machine.state.load32(node+1)))));
                 }
-                if (machine.ioSys.isFilter()) {
-                    if (!resuming) {
-                        Instruction.pushCallStub(machine.state, 11, 0);
-                    }
-                    machine.state.pc = addr;
-                    Instruction.pushCallStub(machine.state, 10, bit);
-                }
-                machine.ioSys.streamUnichar(machine, machine.state.load32(node+1));
-                if (machine.ioSys.isFilter()) {
-                    if (resuming) {
-                        Instruction.pushCallStub(machine.state, 11, 0);
-                    }
+                if (machine.ioSys.streamUnicharFromEncoded(machine, machine.state.load32(node+1), addr, bit, resuming)) {
                     return;
                 }
                 node = root;
@@ -106,18 +73,7 @@ class StringTable {
                 if (TRACE && Glulx.trace != null) {
                     Glulx.trace.print(String.format("[decode string:%x]", node+1));
                 }
-                if (machine.ioSys.isFilter()) {
-                    if (!resuming) {
-                        Instruction.pushCallStub(machine.state, 11, 0);
-                    }
-                    machine.state.pc = addr;
-                    Instruction.pushCallStub(machine.state, 10, bit);
-                }
-                machine.ioSys.streamStringUnicode(machine, node+1);
-                if (machine.ioSys.isFilter()) {
-                    if (resuming) {
-                        Instruction.pushCallStub(machine.state, 11, 0);
-                    }
+                if (machine.ioSys.streamStringUnicodeFromEncoded(machine, node+1, addr, bit, resuming)) {
                     return;
                 }
                 node = root;
@@ -152,7 +108,7 @@ class StringTable {
         }
     }
 
-    private boolean indirect(Machine machine, int addr, int bit, int indirectLevel, int tableAddr, int nargs, int argsAddr, boolean resuming) {
+    private boolean indirect(Machine machine, int resumeAddr, int bit, int indirectLevel, int tableAddr, int nargs, int argsAddr, boolean resuming) {
         for (int i = 0; i < indirectLevel; i++) {
             tableAddr = machine.state.load32(tableAddr);
         }
@@ -165,7 +121,7 @@ class StringTable {
             if (!resuming) {
                 Instruction.pushCallStub(machine.state, 11, 0);
             }
-            machine.state.pc = addr;
+            machine.state.pc = resumeAddr;
             Instruction.pushCallStub(machine.state, 10, bit);
             int[] args = new int[nargs];
             for (int i = 0; i < nargs; i++) {
@@ -180,21 +136,7 @@ class StringTable {
             if (TRACE && Glulx.trace != null) {
                 Glulx.trace.print(String.format("[indirect string:%x]", tableAddr+1));
             }
-            if (machine.ioSys.isFilter()) {
-                if (!resuming) {
-                    Instruction.pushCallStub(machine.state, 11, 0);
-                }
-                machine.state.pc = addr;
-                Instruction.pushCallStub(machine.state, 10, bit);
-            }
-            machine.ioSys.streamString(machine, tableAddr+1);
-            if (machine.ioSys.isFilter()) {
-                if (resuming) {
-                    Instruction.pushCallStub(machine.state, 11, 0);
-                }
-                return true;
-            }
-            return false;
+            return machine.ioSys.streamStringFromEncoded(machine, tableAddr+1, resumeAddr, bit, resuming);
         case 0xe1:
             if (TRACE && Glulx.trace != null) {
                 Glulx.trace.print(String.format("[indirect encoded string:%x]", tableAddr+1));
@@ -202,7 +144,7 @@ class StringTable {
             if (!resuming) {
                 Instruction.pushCallStub(machine.state, 11, 0);
             }
-            machine.state.pc = addr;
+            machine.state.pc = resumeAddr;
             Instruction.pushCallStub(machine.state, 10, bit);
             print(machine, tableAddr+1, 0, true);
             if (!resuming) {
@@ -213,21 +155,7 @@ class StringTable {
             if (TRACE && Glulx.trace != null) {
                 Glulx.trace.print(String.format("[indirect unistring:%x]", tableAddr+1));
             }
-            if (machine.ioSys.isFilter()) {
-                if (!resuming) {
-                    Instruction.pushCallStub(machine.state, 11, 0);
-                }
-                machine.state.pc = addr;
-                Instruction.pushCallStub(machine.state, 10, bit);
-            }
-            machine.ioSys.streamStringUnicode(machine, tableAddr+4);
-            if (machine.ioSys.isFilter()) {
-                if (resuming) {
-                    Instruction.pushCallStub(machine.state, 11, 0);
-                }
-                return true;
-            }
-            return false;
+            return machine.ioSys.streamStringUnicodeFromEncoded(machine, tableAddr+4, resumeAddr, bit, resuming);
         default:
             throw new IllegalArgumentException("Invalid indirect reference");
         }

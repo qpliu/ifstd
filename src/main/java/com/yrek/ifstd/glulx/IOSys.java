@@ -17,18 +17,12 @@ abstract class IOSys {
         }
         switch (machine.state.load8(addr) & 255) {
         case 0xe0:
-            if (isFilter()) {
-                Instruction.pushCallStub(machine.state, 0x11, 0);
-            }
             streamString(machine, addr+1);
             break;
         case 0xe1:
             machine.stringTable.print(machine, addr+1, 0, false);
             break;
         case 0xe2:
-            if (isFilter()) {
-                Instruction.pushCallStub(machine.state, 0x11, 0);
-            }
             streamStringUnicode(machine, addr+4);
             break;
         default:
@@ -58,7 +52,23 @@ abstract class IOSys {
     abstract void streamString(Machine machine, int addr);
     abstract void streamStringUnicode(Machine machine, int addr);
 
-    boolean isFilter() {
+    boolean streamCharFromEncoded(Machine machine, int ch, int resumeAddr, int bit, boolean resuming) {
+        streamChar(machine, ch);
+        return false;
+    }
+
+    boolean streamUnicharFromEncoded(Machine machine, int ch, int resumeAddr, int bit, boolean resuming) {
+        streamUnichar(machine, ch);
+        return false;
+    }
+
+    boolean streamStringFromEncoded(Machine machine, int addr, int resumeAddr, int bit, boolean resuming) {
+        streamString(machine, addr);
+        return false;
+    }
+
+    boolean streamStringUnicodeFromEncoded(Machine machine, int addr, int resumeAddr, int bit, boolean resuming) {
+        streamStringUnicode(machine, addr);
         return false;
     }
 }
