@@ -38,8 +38,10 @@ public class GlkDispatch {
             return windows.getPointer(glk.windowGetRoot());
         case 0x0023: // windowOpen
             GlkWindow window = glk.windowOpen(windows.get(args[0].getInt()), args[1].getInt(), args[2].getInt(), args[3].getInt(), args[4].getInt());
-            windows.add(window.getParent());
-            streams.add(window.getStream());
+            if (window != null) {
+                windows.add(window.getParent());
+                streams.add(window.getStream());
+            }
             return windows.getPointer(window);
         case 0x0024: // windowClose
             pointer = args[0].getInt();

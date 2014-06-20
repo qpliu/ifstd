@@ -15,6 +15,8 @@ import com.yrek.ifstd.glk.GlkGestalt;
 import com.yrek.ifstd.glk.GlkStream;
 import com.yrek.ifstd.glk.GlkIntArray;
 import com.yrek.ifstd.glk.GlkStream;
+import com.yrek.ifstd.glk.GlkStreamMemory;
+import com.yrek.ifstd.glk.GlkStreamMemoryUnicode;
 import com.yrek.ifstd.glk.GlkWindow;
 import com.yrek.ifstd.glk.UnicodeString;
 
@@ -188,12 +190,12 @@ public class TestGlk implements Glk {
 
     @Override
     public GlkStream streamOpenMemory(GlkByteArray memory, int mode, int rock) {
-        return new TestGlkStreamMemory(memory, rock);
+        return new GlkStreamMemory(memory, rock);
     }
 
     @Override
     public GlkStream streamOpenMemoryUni(GlkIntArray memory, int mode, int rock) {
-        return new TestGlkStreamMemoryUnicode(memory, rock);
+        return new GlkStreamMemoryUnicode(memory, rock);
     }
 
     @Override

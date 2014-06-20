@@ -28,8 +28,8 @@ public abstract class GlkWindow extends GlkObject {
     public abstract int getType();
     public abstract GlkWindow getParent();
     public abstract GlkWindow getSibling();
-    public abstract void clear();
-    public abstract void moveCursor(int x, int y);
+    public abstract void clear() throws IOException;
+    public abstract void moveCursor(int x, int y) throws IOException;
     public abstract boolean styleDistinguish(int style1, int style2);
     public abstract Integer styleMeasure(int style, int hint);
     public abstract void requestLineEvent(GlkByteArray buffer, int initLength);

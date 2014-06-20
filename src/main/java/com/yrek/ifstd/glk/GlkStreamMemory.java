@@ -1,19 +1,13 @@
-package com.yrek.ifstd.test.glk;
+package com.yrek.ifstd.glk;
 
 import java.io.IOException;
 
-import com.yrek.ifstd.glk.GlkByteArray;
-import com.yrek.ifstd.glk.GlkIntArray;
-import com.yrek.ifstd.glk.GlkStream;
-import com.yrek.ifstd.glk.GlkStreamResult;
-import com.yrek.ifstd.glk.UnicodeString;
-
-public class TestGlkStreamMemory extends GlkStream {
+public class GlkStreamMemory extends GlkStream {
     final GlkByteArray memory;
     int inputCount = 0;
     int outputCount = 0;
 
-    public TestGlkStreamMemory(GlkByteArray memory, int rock) {
+    public GlkStreamMemory(GlkByteArray memory, int rock) {
         super(rock);
         this.memory = memory;
     }
