@@ -703,7 +703,7 @@ abstract class Instruction {
                     arg3.store32(machine.state, Glulx.TerpVersion);
                     break;
                 case Gestalt.ResizeMem:
-                    arg3.store32(machine.state, 0);
+                    arg3.store32(machine.state, 1);
                     break;
                 case Gestalt.Undo:
                     arg3.store32(machine.state, 1);
@@ -761,7 +761,7 @@ abstract class Instruction {
         };
         new Instruction(0x103, "setmemsize", Operands.LS) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
-                arg2.store32(machine.state, 1);
+                arg2.store32(machine.state, machine.state.setMemorySize(arg1.load32(machine.state)));
                 return Result.Continue;
             }
         };

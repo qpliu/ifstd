@@ -71,7 +71,9 @@ class State {
         byte[] protect = null;
         if (protectLength > 0) {
             protect = new byte[protectLength];
-            System.arraycopy(memory, protectStart, protect, 0, protectLength);
+            if (memory.length > protectStart) {
+                System.arraycopy(memory, protectStart, protect, 0, Math.min(protectLength, memory.length - protectStart));
+            }
         }
         int id = in.readInt();
         if (id != 0x464f524d) {
@@ -127,10 +129,17 @@ class State {
                         index += b + 1;
                     }
                 }
+                if (index != memory.length) {
+                    throw new RuntimeException("unimplemented: restore resized memory from CMem"); // Should read into ByteArrayOutputStream to calculate the end of memory to check for resizing, then restore from the byte[]
+                }
                 break;
             case 0x554d656d: // UMem
                 if (!gotIFhd) {
                     throw new IllegalArgumentException("No IFhd");
+                }
+                int endMem = load32(8) + size;
+                if (memory.length != endMem) {
+                    memory = Arrays.copyOf(memory, endMem);
                 }
                 readBytes(in, memory, load32(8), size);
                 break;
@@ -146,8 +155,8 @@ class State {
                 break;
             }
         }
-        if (protect != null) {
-            System.arraycopy(protect, 0, memory, protectStart, protectLength);
+        if (protect != null && memory.length > protectStart) {
+            System.arraycopy(protect, 0, memory, protectStart, Math.min(protectLength, memory.length - protectStart));
         }
     }
 
@@ -186,7 +195,12 @@ class State {
         } else if (memory.length != saveState.memory.length) {
             byte[] oldMemory = memory;
             memory = Arrays.copyOf(saveState.memory, saveState.memory.length);
-            System.arraycopy(oldMemory, protectStart, memory, protectStart, protectLength);
+            if (memory.length > protectStart) {
+                Arrays.fill(memory, protectStart, Math.min(memory.length, protectStart + protectLength), (byte) 0);
+                if (oldMemory.length > protectStart) {
+                    System.arraycopy(oldMemory, protectStart, memory, protectStart, Math.min(Math.min(protectLength, memory.length - protectStart), oldMemory.length - protectStart));
+                }
+            }
         } else {
             System.arraycopy(saveState.memory, 0, memory, 0, protectStart);
             System.arraycopy(saveState.memory, protectStart + protectLength, memory, protectStart + protectLength, memory.length - protectStart - protectLength);
@@ -298,6 +312,14 @@ class State {
 
     int memorySize() {
         return memory.length;
+    }
+
+    int setMemorySize(int size) {
+        if (size == memory.length) {
+            return 0;
+        }
+        memory = Arrays.copyOf(memory, size);
+        return 0;
     }
 
     void roll(int count, int places) {
