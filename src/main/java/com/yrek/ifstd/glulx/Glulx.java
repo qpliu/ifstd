@@ -49,6 +49,10 @@ public class Glulx implements Runnable {
         suspend = true;
     }
 
+    public static void resetProfilingData() {
+        Instruction.resetProfilingData();
+    }
+
     public static Map<String,long[]> profilingData() {
         return Instruction.profilingData();
     }

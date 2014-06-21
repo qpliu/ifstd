@@ -12,6 +12,9 @@ abstract class Instruction {
     private static final boolean TRACE = false;
     private static final boolean PROFILE = false;
 
+    private static long totalProfileCount = 0;
+    private static long totalProfileTime = 0;
+
     private static final Instruction[] table = new Instruction[0x1ca];
     private final String name;
     private final Operands operands;
@@ -61,6 +64,10 @@ abstract class Instruction {
     }
 
     public static Result executeNext(Machine machine) {
+        long startTime = 0;
+        if (PROFILE) {
+            startTime = System.currentTimeMillis();
+        }
         int opcode;
         switch (machine.state.load8(machine.state.pc) & 0xe0) {
         case 0x00: case 0x20: case 0x40: case 0x60:
@@ -78,22 +85,34 @@ abstract class Instruction {
             throw new AssertionError();
         }
         Instruction insn = table[opcode];
-        if (!PROFILE) {
-            return executeInstruction(machine, opcode, insn);
-        } else {
-            long startTime = System.currentTimeMillis();
-            Result result = executeInstruction(machine, opcode, insn);
-            insn.profileTime += System.currentTimeMillis() - startTime;
+        Result result = executeInstruction(machine, opcode, insn);
+        if (PROFILE) {
+            long time = System.currentTimeMillis() - startTime;
+            totalProfileCount++;
+            totalProfileTime += time;
             insn.profileCount++;
-            return result;
+            insn.profileTime += time;
+        }
+        return result;
+    }
+
+    static void resetProfilingData() {
+        totalProfileCount = 0;
+        totalProfileTime = 0;
+        for (Instruction insn : table) {
+            if (insn != null) {
+                insn.profileCount = 0;
+                insn.profileTime = 0;
+            }
         }
     }
 
-    public static Map<String,long[]> profilingData() {
+    static Map<String,long[]> profilingData() {
         if (!PROFILE) {
             return null;
         }
         HashMap<String,long[]> data = new HashMap<String,long[]>();
+        data.put("", new long[] { totalProfileCount, totalProfileTime });
         for (Instruction insn : table) {
             if (insn != null) {
                 data.put(insn.name, new long[] { insn.profileCount, insn.profileTime });
