@@ -3,6 +3,7 @@ package com.yrek.ifstd.glk;
 // Implemented by the Glk user, passed into GlkDispatch.dispatch()
 public interface GlkDispatchArgument {
     public int getInt();
+    public int getIndirectInt();
     public void setInt(int result);
     public GlkByteArray getByteArray();
     public GlkByteArray getString();

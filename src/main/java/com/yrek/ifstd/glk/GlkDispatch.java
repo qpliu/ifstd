@@ -72,7 +72,12 @@ public class GlkDispatch {
             windows.get(args[0].getInt()).clear();
             return 0;
         case 0x002b: // windowMoveCursor
-            windows.get(args[0].getInt()).moveCursor(args[1].getInt(), args[2].getInt());
+            window = windows.get(args[0].getInt());
+            int x = args[1].getInt();
+            int y = args[2].getInt();
+            if (window != null) {
+                window.moveCursor(x, y);
+            }
             return 0;
         case 0x002c: // windowGetStream
             return streams.getPointer(windows.get(args[0].getInt()).getStream());
@@ -216,21 +221,70 @@ public class GlkDispatch {
             glk.requestTimerEvents(args[0].getInt());
             return 0;
         case 0x00e0: // imageGetInfo
-            throw new RuntimeException("unimplemented");
+            int resourceId = args[0].getInt();
+            int[] size = new int[] { args[1].getIndirectInt(), args[2].getIndirectInt() };
+            boolean flag = glk.imageGetInfo(resourceId, size);
+            args[1].setInt(size[0]);
+            args[2].setInt(size[1]);
+            return flag ? 1 : 0;
         case 0x00e1: // imageDraw
-            throw new RuntimeException("unimplemented");
+            window = windows.get(args[0].getInt());
+            resourceId = args[1].getInt();
+            int val1 = args[2].getInt();
+            int val2 = args[3].getInt();
+            if (window == null) {
+                return 0;
+            }
+            return window.drawImage(resourceId, val1, val2) ? 1 : 0;
         case 0x00e2: // imageDrawScaled
-            throw new RuntimeException("unimplemented");
+            window = windows.get(args[0].getInt());
+            resourceId = args[1].getInt();
+            val1 = args[2].getInt();
+            val2 = args[3].getInt();
+            int width = args[4].getInt();
+            int height = args[5].getInt();
+            if (window == null) {
+                return 0;
+            }
+            return window.drawScaledImage(resourceId, val1, val2, width, height) ? 1 : 0;
         case 0x00e8: // windowFlowBreak
-            throw new RuntimeException("unimplemented");
+            window = windows.get(args[0].getInt());
+            if (window != null) {
+                window.flowBreak();
+            }
+            return 0;
         case 0x00e9: // windowEraseRect
-            throw new RuntimeException("unimplemented");
+            window = windows.get(args[0].getInt());
+            int left = args[1].getInt();
+            int top = args[2].getInt();
+            width = args[3].getInt();
+            height = args[4].getInt();
+            if (window != null) {
+                window.eraseRect(left, top, width, height);
+            }
+            return 0;
         case 0x00ea: // windowFillRect
-            throw new RuntimeException("unimplemented");
+            window = windows.get(args[0].getInt());
+            int color = args[1].getInt();
+            left = args[2].getInt();
+            top = args[3].getInt();
+            width = args[4].getInt();
+            height = args[5].getInt();
+            if (window != null) {
+                window.fillRect(color, left, top, width, height);
+            }
+            return 0;
         case 0x00eb: // windowSetBackgroundColor
-            throw new RuntimeException("unimplemented");
+            window = windows.get(args[0].getInt());
+            color = args[1].getInt();
+            if (window != null) {
+                window.setBackgroundColor(color);
+            }
+            return 0;
         case 0x00f0: // sChannelIterate
-            throw new RuntimeException("unimplemented");
+            pointer = schannels.iterate(args[0].getInt());
+            args[1].setInt(pointer == 0 ? 0 : schannels.get(pointer).getRock());
+            return pointer;
         case 0x00f1: // sChannelGetRock
             throw new RuntimeException("unimplemented");
         case 0x00f2: // sChannelCreate
@@ -312,16 +366,16 @@ public class GlkDispatch {
             streams.get(args[0].getInt()).putStringUni(new GlkIntArrayString(args[1].getStringUnicode()));
             return 0;
         case 0x012d: // putBufferStreamUni
-            streams.get(args[0].getInt()).putBufferUni(withLength(args[0].getIntArray(), args[1].getInt()));
+            streams.get(args[0].getInt()).putBufferUni(withLength(args[1].getIntArray(), args[2].getInt()));
             return 0;
         case 0x0130: // getCharStreamUni
-            throw new RuntimeException("unimplemented");
+            return streams.get(args[0].getInt()).getCharUni();
         case 0x0131: // getBufferStreamUni
-            throw new RuntimeException("unimplemented");
+            return streams.get(args[0].getInt()).getBufferUni(withLength(args[1].getIntArray(), args[2].getInt()));
         case 0x0132: // getLineStreamUni
-            throw new RuntimeException("unimplemented");
+            return streams.get(args[0].getInt()).getLineUni(withLength(args[1].getIntArray(), args[2].getInt()));
         case 0x0138: // streamOpenFileUni
-            throw new RuntimeException("unimplemented");
+            return streams.add(glk.streamOpenFileUni(files.get(args[0].getInt()), args[1].getInt(), args[2].getInt()));
         case 0x0139: // streamOpenMemoryUni
             return streams.getPointer(glk.streamOpenMemoryUni(withLength(args[0].getIntArray(), args[1].getInt()), args[2].getInt(), args[3].getInt()));
         case 0x013a: // streamOpenResourceUni
@@ -357,6 +411,22 @@ public class GlkDispatch {
         default:
             throw new IllegalArgumentException("Unrecognized glk selector");
         }
+    }
+
+    public GlkWindow getWindow(int pointer) {
+        return windows.get(pointer);
+    }
+
+    public GlkStream getStream(int pointer) {
+        return streams.get(pointer);
+    }
+
+    public GlkFile getFile(int pointer) {
+        return files.get(pointer);
+    }
+
+    public GlkSChannel getSChannel(int pointer) {
+        return schannels.get(pointer);
     }
 
     private static GlkByteArray withLength(GlkByteArray arg, int length) {

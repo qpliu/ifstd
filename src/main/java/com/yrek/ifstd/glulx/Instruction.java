@@ -821,12 +821,27 @@ abstract class Instruction {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 int a1 = arg1.load32(machine.state);
                 pushCallStub(machine.state, arg2.getDestType(), arg2.getDestAddr());
-                throw new RuntimeException("unimplemented");
+                int result = 1;
+                try {
+                    machine.state.writeSave(machine.glk.getStream(a1).getDataOutput());
+                    result = 0;
+                } catch (IOException e) {
+                    throw new RuntimeException("unimplemented", e);
+                }
+                returnValue(machine, result);
+                return Result.Continue;
             }
         };
         new Instruction(0x124, "restore", Operands.LS) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
-                throw new RuntimeException("unimplemented");
+                int a1 = arg1.load32(machine.state);
+                try {
+                    machine.state.readSave(machine.getData(), machine.glk.getStream(a1).getDataInput(), machine.protectStart, machine.protectLength);
+                } catch (IOException e) {
+                    throw new RuntimeException("unimplemented", e);
+                }
+                returnValue(machine, -1);
+                return Result.Continue;
             }
         };
         new Instruction(0x125, "saveundo", Operands.S) {

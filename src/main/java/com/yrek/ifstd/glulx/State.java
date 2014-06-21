@@ -1,11 +1,9 @@
 package com.yrek.ifstd.glulx;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.EOFException;
-import java.io.InputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Arrays;
 
 class State {
@@ -15,14 +13,14 @@ class State {
     byte[] memory;
     byte[] stack;
 
-    void readFile(InputStream in, int protectStart, int protectLength) throws IOException {
+    void readFile(DataInput in, int protectStart, int protectLength) throws IOException {
         byte[] protect = null;
         if (memory != null && protectLength > 0) {
             protect = new byte[protectLength];
             System.arraycopy(memory, protectStart, protect, 0, protectLength);
         }
         byte[] header = new byte[36];
-        readBytes(in, header, 0, 36);
+        in.readFully(header, 0, 36);
         if (load32(header, 0) != 0x476c756c) {
             throw new IllegalArgumentException("Bad magic");
         }
@@ -39,7 +37,7 @@ class State {
             Arrays.fill(memory, extStart, memory.length, (byte) 0);
         }
         System.arraycopy(header, 0, memory, 0, 36);
-        readBytes(in, memory, 36, extStart - 36);
+        in.readFully(memory, 36, extStart - 36);
         if (!verify()) {
             throw new IllegalArgumentException("Failed checksum");
         }
@@ -55,19 +53,8 @@ class State {
         fp = 0;
     }
 
-    private void readBytes(InputStream in, byte[] buffer, int start, int count) throws IOException {
-        for (int total = 0; total < count; ) {
-            int n = in.read(buffer, start + total, count - total);
-            if (n < 0) {
-                throw new IllegalArgumentException("premature EOF");
-            }
-            total += n;
-        }
-    }
-
-    void readSave(InputStream story, InputStream save, int protectStart, int protectLength) throws IOException {
+    void readSave(DataInput story, DataInput in, int protectStart, int protectLength) throws IOException {
         readFile(story, protectStart, protectLength);
-        DataInputStream in = new DataInputStream(save);
         byte[] protect = null;
         if (protectLength > 0) {
             protect = new byte[protectLength];
@@ -98,7 +85,7 @@ class State {
                     throw new IllegalArgumentException("IFhd length not 128");
                 }
                 byte[] hd = new byte[128];
-                readBytes(in, hd, 0, 128);
+                in.readFully(hd, 0, 128);
                 for (int i = 0; i < 128; i++) {
                     if (hd[i] != memory[i]) {
                         throw new IllegalArgumentException("IFhd mismatch");
@@ -111,10 +98,8 @@ class State {
                 }
                 int index = load32(8);
                 for (int i = 0; i < size; i++) {
-                    int b = in.read();
-                    if (b < 0) {
-                        throw new EOFException();
-                    } else if (b != 0) {
+                    int b = in.readByte();
+                    if (b != 0) {
                         memory[index] ^= (byte) b;
                         index++;
                     } else {
@@ -122,10 +107,7 @@ class State {
                         if (i >= size) {
                             break;
                         }
-                        b = in.read();
-                        if (b < 0) {
-                            throw new EOFException();
-                        }
+                        b = in.readByte();
                         index += b + 1;
                     }
                 }
@@ -141,17 +123,17 @@ class State {
                 if (memory.length != endMem) {
                     memory = Arrays.copyOf(memory, endMem);
                 }
-                readBytes(in, memory, load32(8), size);
+                in.readFully(memory, load32(8), size);
                 break;
             case 0x53746b73: //Stks
                 if (!gotIFhd) {
                     throw new IllegalArgumentException("No IFhd");
                 }
                 sp = size;
-                readBytes(in, stack, 0, size);
+                in.readFully(stack, 0, size);
                 break;
             default:
-                in.skip((long) size);
+                in.skipBytes(size);
                 break;
             }
         }
@@ -160,8 +142,7 @@ class State {
         }
     }
 
-    void writeSave(OutputStream save, int destType, int destAddr) throws IOException {
-        DataOutputStream out = new DataOutputStream(save);
+    void writeSave(DataOutput out) throws IOException {
         out.writeInt(0x464f524d); // FORM
         int length = 0;
         length += 4; // IFZS

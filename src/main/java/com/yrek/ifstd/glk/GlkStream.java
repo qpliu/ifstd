@@ -1,5 +1,7 @@
 package com.yrek.ifstd.glk;
 
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 
 public abstract class GlkStream extends GlkObject {
@@ -39,4 +41,12 @@ public abstract class GlkStream extends GlkObject {
     public abstract int getBufferUni(GlkIntArray buffer) throws IOException;
     public abstract void setPosition(int position, int seekMode) throws IOException;
     public abstract int getPosition() throws IOException;
+
+    public DataOutput getDataOutput() {
+        throw new RuntimeException("unimplemented");
+    }
+
+    public DataInput getDataInput() {
+        throw new RuntimeException("unimplemented");
+    }
 }

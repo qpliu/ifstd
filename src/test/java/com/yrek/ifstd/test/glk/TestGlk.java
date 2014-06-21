@@ -189,6 +189,11 @@ public class TestGlk implements Glk {
     }
 
     @Override
+    public GlkStream streamOpenFileUni(GlkFile file, int mode, int rock) throws IOException {
+        throw new RuntimeException("unimplemented");
+    }
+
+    @Override
     public GlkStream streamOpenMemory(GlkByteArray memory, int mode, int rock) {
         return new GlkStreamMemory(memory, rock);
     }
@@ -336,6 +341,12 @@ public class TestGlk implements Glk {
     public void requestTimerEvents(int millisecs) {
         timerInterval = millisecs;
     }
+
+    @Override
+    public boolean imageGetInfo(int resourceId, int[] size) {
+        return false;
+    }
+
 
     public void setWriteNewlines(boolean writeNewlines) {
         this.writeNewlines = writeNewlines;

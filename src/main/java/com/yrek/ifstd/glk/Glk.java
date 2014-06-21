@@ -20,6 +20,7 @@ public interface Glk {
     public void setWindow(GlkWindow window);
 
     public GlkStream streamOpenFile(GlkFile file, int mode, int rock) throws IOException;
+    public GlkStream streamOpenFileUni(GlkFile file, int mode, int rock) throws IOException;
     public GlkStream streamOpenMemory(GlkByteArray memory, int mode, int rock);
     public GlkStream streamOpenMemoryUni(GlkIntArray memory, int mode, int rock);
     public void streamSetCurrent(GlkStream stream);
@@ -44,4 +45,6 @@ public interface Glk {
     public GlkEvent selectPoll() throws IOException;
 
     public void requestTimerEvents(int millisecs);
+
+    public boolean imageGetInfo(int resourceId, int[] size);
 }

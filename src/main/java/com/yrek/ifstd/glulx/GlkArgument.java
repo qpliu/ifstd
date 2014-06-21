@@ -24,6 +24,14 @@ class GlkArgument implements GlkDispatchArgument, GlkByteArray, GlkIntArray {
     }
 
     @Override
+    public int getIndirectInt() {
+        if (value != 0) {
+            return getIntElementAt(0);
+        }
+        return 0;
+    }
+
+    @Override
     public void setInt(int element) {
         if (value != 0) {
             setIntElement(element);

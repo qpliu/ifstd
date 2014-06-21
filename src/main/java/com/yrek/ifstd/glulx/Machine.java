@@ -1,6 +1,8 @@
 package com.yrek.ifstd.glulx;
 
 import java.io.ByteArrayInputStream;
+import java.io.DataInput;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -37,11 +39,11 @@ class Machine {
         return newState;
     }
 
-    InputStream getData() throws IOException {
+    DataInput getData() throws IOException {
         if (byteData != null) {
-            return new ByteArrayInputStream(byteData);
+            return new DataInputStream(new ByteArrayInputStream(byteData));
         } else {
-            return new FileInputStream(fileData);
+            return new DataInputStream(new FileInputStream(fileData));
         }
     }
 }

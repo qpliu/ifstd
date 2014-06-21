@@ -38,4 +38,10 @@ public abstract class GlkWindow extends GlkObject {
     public abstract GlkEvent cancelLineEvent();
     public abstract void cancelCharEvent();
     public abstract void cancelMouseEvent();
+    public abstract boolean drawImage(int resourceId, int val1, int val2) throws IOException;
+    public abstract boolean drawScaledImage(int resourceId, int val1, int val2, int width, int height) throws IOException;
+    public abstract void flowBreak();
+    public abstract void eraseRect(int left, int top, int width, int height);
+    public abstract void fillRect(int color, int left, int top, int width, int height);
+    public abstract void setBackgroundColor(int color);
 }

@@ -141,6 +141,10 @@ public class TestGlkWindow extends GlkWindow {
     }
 
     @Override
+    public void flowBreak() {
+    }
+
+    @Override
     public void requestLineEvent(final GlkByteArray buffer, final int initLength) {
         assert eventRequest == null;
         eventRequest = new TestGlkEventRequest() {
@@ -211,5 +215,27 @@ public class TestGlkWindow extends GlkWindow {
 
     @Override
     public void cancelMouseEvent() {
+    }
+
+    @Override
+    public boolean drawImage(int resourceId, int val1, int val2) throws IOException {
+        return false;
+    }
+
+    @Override
+    public boolean drawScaledImage(int resourceId, int val1, int val2, int width, int height) throws IOException {
+        return false;
+    }
+
+    @Override
+    public void eraseRect(int left, int top, int width, int height) {
+    }
+
+    @Override
+    public void fillRect(int color, int left, int top, int width, int height) {
+    }
+
+    @Override
+    public void setBackgroundColor(int color) {
     }
 }
