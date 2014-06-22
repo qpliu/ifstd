@@ -1410,4 +1410,323 @@ new String[] { "\" len 68, \"=C= =\u00dc=n=\u00ef=c=o=\u00b4=e= =\u001c=\u00a9=\
             new String[] { ">", "quit\n" },
         }, null, null);
     }
+
+    private static final String[] accelfunctestIntro = new String[] {
+            "",
+            "AccelFuncTest",
+            "Not a game.",
+            "Release 3 / Serial number 140313 / Inform v6.33 Library 6/11 S",
+            "",
+            "Acceleration Room",
+            "A voice booooms out: Try \"slow test\" or \"fast test\", to run a sequence with the standard or accelerated function. The results should be identical. Type \"which\" to list the functions that your interpreter can accelerate.",
+            "",
+            "NUM_ATTR_BYTES is 7 (the default). The old and new accel functions should behave identically.",
+            "",
+            "You can see a core test, a ZRegion test, a CPTab (old) test, a RAPr (old) test, a RLPr (old) test, an OCCl (old) test, a RVPr (old) test, an OPPr (old) test, a CPTab (new) test, a RAPr (new) test, a RLPr (new) test, an OCCl (new) test, a RVPr (new) test and an OPPr (new) test here.",
+            "",
+    };
+
+    private static final String[] accelfunctestOutro = new String[] {
+    };
+
+    private void accelfunctest(String name, String[] expected) throws Exception {
+        ArrayList<String[]> transcript = new ArrayList<String[]>();
+        transcript.add(new String[] { ">                                                                                Acceleration RoomScore: 0Moves: 0", "which\n" });
+        transcript.add(new String[] { "This interpreter supports acceleration of Z__Region, CP__Tab (old), RA__Pr (old), RL__Pr (old), OC__Cl (old), RV__Pr (old), OP__Pr (old), CP__Tab (new), RA__Pr (new), RL__Pr (new), OC__Cl (new), RV__Pr (new) and OP__Pr (new)." });
+        transcript.add(new String[] { "" });
+        transcript.add(new String[] { ">                                                                                Acceleration RoomScore: 0Moves: 1", "slow test " + name + "\n" });
+        String prefix = "Unaccelerated ";
+        for (String s : expected) {
+            transcript.add(new String[] { prefix + s });
+            prefix = "";
+        }
+        transcript.add(new String[] { "" });
+        transcript.add(new String[] { ">                                                                                Acceleration RoomScore: 0Moves: 2", "quit\n" });
+        transcript.add(new String[] { "Are you sure you want to quit? ", "yes\n" });
+        testFile("/accelfunctest.ulx", accelfunctestIntro, accelfunctestOutro, transcript.toArray(new String[transcript.size()][]), " Programming error: [^*]+", " Programming error ");
+
+        transcript.clear();
+        transcript.add(new String[] { ">                                                                                Acceleration RoomScore: 0Moves: 0", "fast test " + name + "\n" });
+        prefix = "ACCELERATED ";
+        for (String s : expected) {
+            transcript.add(new String[] { prefix + s });
+            prefix = "";
+        }
+        transcript.add(new String[] { "" });
+        transcript.add(new String[] { ">                                                                                Acceleration RoomScore: 0Moves: 1", "quit\n" });
+        transcript.add(new String[] { "Are you sure you want to quit? ", "yes\n" });
+
+        testFile("/accelfunctest.ulx", accelfunctestIntro, accelfunctestOutro, transcript.toArray(new String[transcript.size()][]), " Programming error: [^*]+", " Programming error ");
+    }
+
+    @Test
+    public void accelfunctestCore() throws Exception {
+        accelfunctest("core", new String[] {
+            "test of core opcode funtionality, using Z__Region (function 1)",
+            "",
+            "Too few arguments: 0",
+            "Too many arguments: 1",
+            "So many arguments that they go on the stack: 2",
+            "To local: 1",
+            "To global: 2",
+            "To stack: 1",
+            "In tailcall: 2",
+        });
+    }
+
+    @Test
+    public void accelfunctestZRegion() throws Exception {
+        accelfunctest("zregion", new String[] {
+            "test of Z__Region (function 1)",
+            "",
+            "(Note: objects return 1, functions return 2, strings return 3)",
+            "Kitchen: 1; test_zregion(): 2; \"foo\": 3",
+            "Various zeroes: 0 0 0 0 0 0",
+            "Z__Region itself: 2",
+        });
+    }
+
+    @Test
+    public void accelfunctestCPTab() throws Exception {
+        String[] expected = new String[] {
+            "test of CP__Tab (old) (function 2)",
+            "",
+            "Kitchen.description:",
+            "Property 35, flags 0, 1 words:",
+            "  0: 80529 <func>",
+            "",
+            "Kitchen.testfunc:",
+            "No such property.",
+            "",
+            "TestCPTab.testfunc:",
+            "Property 277, flags 0, 1 words:",
+            "  0: 81038 <func>",
+            "",
+            "TestCPTab.name:",
+            "Property 1, flags 0, 5 words:",
+            "  0: 123435 'cptab'",
+            "  1: 123419 'cp'",
+            "  2: 127195 'tab'",
+            "  3: 125179 'new'",
+            "  4: 127291 'test'",
+            "",
+            "Kitchen.321:",
+            "No such property.",
+            "",
+            "bareobject.name:",
+            "No such property.",
+            "",
+            "Kitchen.(0):",
+            "No such property.",
+            "",
+            "Three errors (might be fatal):",
+            "The exact phrasing of errors need not be identical between fast and slow.",
+            "",
+            "[** Programming error **]",
+            "",
+            "[** Programming error **]",
+            "",
+            "[** Programming error **]",
+        };
+        accelfunctest("old cptab", expected);
+        expected[0] = expected[0].replace("(old) (function 2)", "(new) (function 8)");
+        accelfunctest("new cptab", expected);
+    }
+
+    @Test
+    public void accelfunctestRAPr() throws Exception {
+        String[] expected = new String[] {
+            "test of RA__Pr (old) (function 3)",
+            "",
+            "bareobject.name: No such property.",
+            "CoreRegion.name: 123387 'core'",
+            "CoreRegion.indexnum: 1",
+            "bareobject.TestObj::indexnum: No such property.",
+            "CoreRegion.TestObj::indexnum: 0",
+            "botspecial.TestObj::indexnum: No such property.",
+            "topobj.gloop: 11",
+            "midobj.gloop: 22",
+            "midobj.TopClass::gloop: 11",
+            "midobj.BotClass::gloop: No such property.",
+            "botspecial.glark: 127003 'special'",
+            "botspecial.BotClass::glark: 124443 'goodbye'",
+            "botspecial.MidClass::glark: 124507 'hello'",
+            "midobj.password: 125691 'pass'",
+            "botspecial.password (foreign): No such property.",
+            "midobj.password (foreign): No such property.",
+            "botspecial.password: 127179 'swordfish'",
+            "TopClass.gloop: No such property.",
+            "TopClass.create: No such property.",
+        };
+        accelfunctest("old rapr", expected);
+        expected[0] = expected[0].replace("(old) (function 3)", "(new) (function 9)");
+        accelfunctest("new rapr", expected);
+    }
+
+    @Test
+    public void accelfunctestRLPr() throws Exception {
+        String[] expected = new String[] {
+            "test of RL__Pr (old) (function 4)",
+            "",
+            "bareobject.name: 0 bytes",
+            "CoreRegion.name: 12 bytes",
+            "CoreRegion.indexnum: 4 bytes",
+            "bareobject.TestObj::indexnum: 0 bytes",
+            "CoreRegion.TestObj::indexnum: 4 bytes",
+            "botspecial.TestObj::indexnum: 0 bytes",
+            "topobj.gloop: 4 bytes",
+            "midobj.gloop: 8 bytes",
+            "midobj.TopClass::gloop: 4 bytes",
+            "midobj.BotClass::gloop: 0 bytes",
+            "botspecial.glark: 12 bytes",
+            "botspecial.BotClass::glark: 4 bytes",
+            "botspecial.MidClass::glark: 8 bytes",
+            "midobj.password: 4 bytes",
+            "botspecial.password (foreign): 0 bytes",
+            "midobj.password (foreign): 0 bytes",
+            "botspecial.password: 4 bytes",
+            "TopClass.gloop: 0 bytes",
+            "TopClass.create: 0 bytes",
+        };
+        accelfunctest("old rlpr", expected);
+        expected[0] = expected[0].replace("(old) (function 4)", "(new) (function 10)");
+        accelfunctest("new rlpr", expected);
+    }
+
+    @Test
+    public void accelfunctestOCCl() throws Exception {
+        String[] expected = new String[] {
+            "test of OC__Cl (old) (function 5)",
+            "",
+            "\"str\" ofclass String: yes",
+            "\"str\" ofclass Routine: no",
+            "\"str\" ofclass Object: no",
+            "\"str\" ofclass Class: no",
+            "\"str\" ofclass TopClass: no",
+            "printbool() ofclass String: no",
+            "printbool() ofclass Routine: yes",
+            "printbool() ofclass Object: no",
+            "printbool() ofclass Class: no",
+            "printbool() ofclass TopClass: no",
+            "'word' ofclass String: no",
+            "'word' ofclass Routine: no",
+            "'word' ofclass Object: no",
+            "'word' ofclass Class: no",
+            "'word' ofclass TopClass: no",
+            "String ofclass Class: yes",
+            "Routine ofclass Class: yes",
+            "Object ofclass Class: yes",
+            "Class ofclass Class: yes",
+            "TopClass ofclass Class: yes",
+            "bareobject ofclass Class: no",
+            "String ofclass Object: no",
+            "Routine ofclass Object: no",
+            "Object ofclass Object: no",
+            "Class ofclass Object: no",
+            "TopClass ofclass Object: no",
+            "bareobject ofclass Object: yes",
+            "TopClass ofclass String: no",
+            "bareobject ofclass String: no",
+            "TopClass ofclass Routine: no",
+            "bareobject ofclass Routine: no",
+            "bareobject ofclass TopClass: no",
+            "bareobject ofclass BotClass: no",
+            "topobj ofclass TopClass: yes",
+            "topobj ofclass MidClass: no",
+            "topobj ofclass BotClass: no",
+            "midobj ofclass TopClass: yes",
+            "midobj ofclass MidClass: yes",
+            "midobj ofclass BotClass: no",
+            "botobj ofclass TopClass: yes",
+            "botobj ofclass MidClass: yes",
+            "botobj ofclass BotClass: yes",
+            "",
+            "Three errors (might be fatal):",
+            "The exact phrasing of errors need not be identical between fast and slow.",
+            "",
+            "[** Programming error **]",
+            "bareobject ofclass topobj: no",
+            "",
+            "[** Programming error **]",
+            "topobj ofclass \"str\": no",
+            "",
+            "[** Programming error **]",
+            "TopClass ofclass printbool(): no",
+        };
+        accelfunctest("old occl", expected);
+        expected[0] = expected[0].replace("(old) (function 5)", "(new) (function 11)");
+        accelfunctest("new occl", expected);
+    }
+
+    @Test
+    public void accelfunctestRVPr() throws Exception {
+        String[] expected = new String[] {
+            "test of RV__Pr (old) (function 6)",
+            "",
+            "bareobject.name: 0",
+            "botobj.gloop: 22",
+            "midobj.gloop: 22",
+            "topobj.gloop: 11",
+            "botobj.comprop: 123",
+            "midobj.comprop: 123",
+            "topobj.comprop: 99",
+            "TopClass.comprop: 99",
+            "",
+            "Two errors (might be fatal):",
+            "The exact phrasing of errors need not be identical between fast and slow.",
+            "",
+            "[** Programming error **]",
+            "topobj.glark: 0",
+            "",
+            "[** Programming error **]",
+            "TopClass.gloop: 0",
+        };
+        accelfunctest("old rvpr", expected);
+        expected[0] = expected[0].replace("(old) (function 6)", "(new) (function 12)");
+        accelfunctest("new rvpr", expected);
+    }
+
+    @Test
+    public void accelfunctestOPPr() throws Exception {
+        String[] expected = new String[] {
+            "test of OP__Pr (old) (function 7)",
+            "",
+            "\"str\" provides name: no",
+            "\"str\" provides gloop: no",
+            "\"str\" provides print: yes",
+            "\"str\" provides print_to_array: yes",
+            "\"str\" provides create: no",
+            "\"str\" provides call: no",
+            "printbool() provides name: no",
+            "printbool() provides gloop: no",
+            "printbool() provides print: no",
+            "printbool() provides print_to_array: no",
+            "printbool() provides create: no",
+            "printbool() provides call: yes",
+            "'word' provides name: no",
+            "'word' provides gloop: no",
+            "'word' provides print: no",
+            "'word' provides print_to_array: no",
+            "'word' provides create: no",
+            "'word' provides call: no",
+            "TopClass provides name: no",
+            "TopClass provides gloop: no",
+            "TopClass provides glark: no",
+            "TopClass provides print: yes",
+            "TopClass provides print_to_array: yes",
+            "TopClass provides create: yes",
+            "TopClass provides call: yes",
+            "topobj provides gloop: yes",
+            "midobj provides gloop: yes",
+            "midobj provides TopClass::gloop: yes",
+            "midobj provides BotClass::gloop: no",
+            "botspecial provides glark: yes",
+            "botspecial provides BotClass::glark: yes",
+            "botspecial provides MidClass::glark: yes",
+            "botspecial provides TopClass::glark: no",
+        };
+        accelfunctest("old oppr", expected);
+        expected[0] = expected[0].replace("(old) (function 7)", "(new) (function 13)");
+        accelfunctest("new oppr", expected);
+    }
 }

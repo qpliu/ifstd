@@ -23,6 +23,7 @@ class Machine {
     int protectLength = 0;
     IOSys ioSys = new NullIOSys(0);
     StringTable stringTable;
+    Acceleration acceleration = new Acceleration();
 
     Machine(byte[] byteData, File fileData, GlkDispatch glk) throws IOException {
         this.byteData = byteData;

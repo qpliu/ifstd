@@ -485,7 +485,7 @@ abstract class Instruction {
                     args[i] = machine.state.pop32();
                 }
                 pushCallStub(machine.state, arg3.getDestType(), arg3.getDestAddr());
-                call(machine.state, a1, args);
+                call(machine, a1, args);
                 return Result.Tick;
             }
         };
@@ -529,7 +529,7 @@ abstract class Instruction {
                     args[i] = machine.state.pop32();
                 }
                 machine.state.sp = machine.state.fp;
-                call(machine.state, a1, args);
+                call(machine, a1, args);
                 return Result.Tick;
             }
         };
@@ -755,7 +755,7 @@ abstract class Instruction {
                     arg3.store32(machine.state, 1);
                     break;
                 case Gestalt.AccelFunc:
-                    arg3.store32(machine.state, 0);
+                    arg3.store32(machine.state, machine.acceleration.gestalt(a2) ? 1 : 0);
                     break;
                 case Gestalt.Float:
                     arg3.store32(machine.state, 1);
@@ -832,7 +832,7 @@ abstract class Instruction {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-                Instruction.call(machine.state, machine.state.load32(24), new int[0]);
+                call(machine.state, machine.state.load32(24), new int[0]);
                 return Result.Continue;
             }
         };
@@ -980,33 +980,8 @@ abstract class Instruction {
         };
         new Instruction(0x151, "binarysearch", Operands.L7S) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3, Operand arg4, Operand arg5, Operand arg6, Operand arg7, Operand arg8) {
-                int key = arg1.load32(machine.state);
-                int keySize = arg2.load32(machine.state);
-                int start = arg3.load32(machine.state);
-                int structSize = arg4.load32(machine.state);
-                int numStructs = arg5.load32(machine.state);
-                int keyOffset = arg6.load32(machine.state);
-                int options = arg7.load32(machine.state);
-                byte[] searchKey = searchKey(machine.state, key, keySize, options);
-                boolean returnIndex = (options & 4) != 0;
-                int lo = 0;
-                int hi = numStructs;
-                for (;;) {
-                    int i = (lo + hi) / 2;
-                    int c = searchKeyCompare(machine.state, start + i*structSize + keyOffset, searchKey);
-                    if (c == 0) {
-                        arg8.store32(machine.state,  returnIndex ? i : start + i*structSize);
-                        return Result.Continue;
-                    }
-                    if (c < 0 && i != hi) {
-                        hi = i;
-                    } else if (c > 0 && i != lo) {
-                        lo = i;
-                    } else {
-                        arg8.store32(machine.state,  returnIndex ? -1 : 0);
-                        return Result.Continue;
-                    }
-                }
+                arg8.store32(machine.state, binarySearch(machine.state, arg1.load32(machine.state), arg2.load32(machine.state), arg3.load32(machine.state), arg4.load32(machine.state), arg5.load32(machine.state), arg6.load32(machine.state), arg7.load32(machine.state)));
+                return Result.Continue;
             }
         };
         new Instruction(0x152, "linkedsearch", Operands.L6S) {
@@ -1039,7 +1014,7 @@ abstract class Instruction {
                 int a1 = arg1.load32(machine.state);
                 int[] args = new int[0];
                 pushCallStub(machine.state, arg2.getDestType(), arg2.getDestAddr());
-                call(machine.state, a1, args);
+                call(machine, a1, args);
                 return Result.Tick;
             }
         };
@@ -1050,7 +1025,7 @@ abstract class Instruction {
                     arg2.load32(machine.state),
                 };
                 pushCallStub(machine.state, arg3.getDestType(), arg3.getDestAddr());
-                call(machine.state, a1, args);
+                call(machine, a1, args);
                 return Result.Tick;
             }
         };
@@ -1062,7 +1037,7 @@ abstract class Instruction {
                     arg3.load32(machine.state),
                 };
                 pushCallStub(machine.state, arg4.getDestType(), arg4.getDestAddr());
-                call(machine.state, a1, args);
+                call(machine, a1, args);
                 return Result.Tick;
             }
         };
@@ -1075,7 +1050,7 @@ abstract class Instruction {
                     arg4.load32(machine.state),
                 };
                 pushCallStub(machine.state, arg5.getDestType(), arg5.getDestAddr());
-                call(machine.state, a1, args);
+                call(machine, a1, args);
                 return Result.Tick;
             }
         };
@@ -1110,15 +1085,17 @@ abstract class Instruction {
         };
         new Instruction(0x180, "accelfunc", Operands.L2) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
-                arg1.load32(machine.state);
-                arg2.load32(machine.state);
+                int a1 = arg1.load32(machine.state);
+                int a2 = arg2.load32(machine.state);
+                machine.acceleration.accelerate(a1, a2);
                 return Result.Continue;
             }
         };
         new Instruction(0x181, "accelparam", Operands.L2) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
-                arg1.load32(machine.state);
-                arg2.load32(machine.state);
+                int a1 = arg1.load32(machine.state);
+                int a2 = arg2.load32(machine.state);
+                machine.acceleration.setParameter(a1, a2);
                 return Result.Continue;
             }
         };
@@ -1631,6 +1608,15 @@ abstract class Instruction {
         state.push32(state.fp);
     }
 
+    static void call(Machine machine, int addr, int[] args) {
+        Acceleration.Function accelerated = machine.acceleration.get(addr);
+        if (accelerated != null) {
+            returnValue(machine, accelerated.call(machine, args));
+        } else {
+            call(machine.state, addr, args);
+        }
+    }
+
     static void call(State state, int addr, int[] args) {
         state.fp = state.sp;
         boolean pushArgs;
@@ -1834,6 +1820,27 @@ abstract class Instruction {
                 break;
             default:
                 throw new IllegalArgumentException("stack corruption");
+            }
+        }
+    }
+
+    static int binarySearch(State state, int key, int keySize, int start, int structSize, int numStructs, int keyOffset, int options) {
+        byte[] searchKey = searchKey(state, key, keySize, options);
+        boolean returnIndex = (options & 4) != 0;
+        int lo = 0;
+        int hi = numStructs;
+        for (;;) {
+            int i = (lo + hi) / 2;
+            int c = searchKeyCompare(state, start + i*structSize + keyOffset, searchKey);
+            if (c == 0) {
+                return returnIndex ? i : start + i*structSize;
+            }
+            if (c < 0 && i != hi) {
+                hi = i;
+            } else if (c > 0 && i != lo) {
+                lo = i;
+            } else {
+                return returnIndex ? -1 : 0;
             }
         }
     }
