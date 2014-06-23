@@ -1,6 +1,7 @@
 package com.yrek.ifstd.glulx;
 
 class NullIOSys extends IOSys {
+    private static final long serialVersionUID = 0L;
     private static final boolean TRACE = false;
 
     NullIOSys(int rock) {

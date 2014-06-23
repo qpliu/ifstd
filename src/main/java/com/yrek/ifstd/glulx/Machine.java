@@ -7,14 +7,17 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Random;
 
 import com.yrek.ifstd.glk.GlkDispatch;
 
-class Machine {
+class Machine implements Serializable {
+    private static final long serialVersionUID = 0L;
+
     final byte[] byteData;
     final File fileData;
-    final GlkDispatch glk;
+    transient GlkDispatch glk;
 
     State state;
     State[] saveUndo = new State[3];

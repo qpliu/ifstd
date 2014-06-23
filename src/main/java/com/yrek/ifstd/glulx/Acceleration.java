@@ -1,9 +1,12 @@
 package com.yrek.ifstd.glulx;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.HashMap;
 
-class Acceleration {
+class Acceleration implements Serializable {
+    private static final long serialVersionUID = 0L;
+
     HashMap<Integer,Function> functions = new HashMap<Integer,Function>();
     int[] parameters = new int[9];
     Function[] table = new Function[14];

@@ -4,9 +4,12 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Arrays;
 
-class State {
+class State implements Serializable {
+    private static final long serialVersionUID = 0L;
+
     int pc;
     int sp;
     int fp;

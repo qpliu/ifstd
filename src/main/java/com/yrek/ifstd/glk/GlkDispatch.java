@@ -1,16 +1,25 @@
 package com.yrek.ifstd.glk;
 
 import java.io.IOException;
+import java.util.Map;
 
 public class GlkDispatch {
     public final Glk glk;
-    private final GlkObjectPool<GlkWindow> windows = new GlkObjectPool<GlkWindow>();
-    private final GlkObjectPool<GlkStream> streams = new GlkObjectPool<GlkStream>();
-    private final GlkObjectPool<GlkFile> files = new GlkObjectPool<GlkFile>();
-    private final GlkObjectPool<GlkSChannel> schannels = new GlkObjectPool<GlkSChannel>();
+    private final GlkObjectPool<GlkWindow> windows;
+    private final GlkObjectPool<GlkStream> streams;
+    private final GlkObjectPool<GlkFile> files;
+    private final GlkObjectPool<GlkSChannel> schannels;
 
     public GlkDispatch(Glk glk) {
+        this(glk, null, null, null, null);
+    }
+
+    public GlkDispatch(Glk glk, Map<Integer,GlkWindow> windows, Map<Integer,GlkStream> streams, Map<Integer,GlkFile> files, Map<Integer,GlkSChannel> schannels) {
         this.glk = glk;
+        this.windows = new GlkObjectPool<GlkWindow>(windows);
+        this.streams = new GlkObjectPool<GlkStream>(streams);
+        this.files = new GlkObjectPool<GlkFile>(files);
+        this.schannels = new GlkObjectPool<GlkSChannel>(schannels);
     }
 
     public int dispatch(int selector, GlkDispatchArgument[] args) throws IOException {

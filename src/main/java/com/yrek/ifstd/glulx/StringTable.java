@@ -1,6 +1,9 @@
 package com.yrek.ifstd.glulx;
 
-class StringTable {
+import java.io.Serializable;
+
+class StringTable implements Serializable {
+    private static final long serialVersionUID = 0L;
     private static final boolean TRACE = false;
 
     final int table;
@@ -14,6 +17,7 @@ class StringTable {
             return new StringTable(table);
         } else {
             return new StringTable(0) {
+                private static final long serialVersionUID = 0L;
                 @Override void print(Machine machine, int addr, int bit, boolean resuming) {
                     throw new IllegalArgumentException("No string table set");
                 }

@@ -5,17 +5,16 @@ import java.io.IOException;
 import com.yrek.ifstd.glk.GlkDispatch;
 
 class GlkIOSys extends IOSys {
-    final GlkDispatch glk;
+    private static final long serialVersionUID = 0L;
 
-    GlkIOSys(GlkDispatch glk, int rock) {
+    GlkIOSys(int rock) {
         super(2, rock);
-        this.glk = glk;
     }
 
     @Override
     void resumePrintNumber(Machine machine, int number, int pos) {
         try {
-            glk.glk.putString(String.valueOf(number).substring(pos));
+            machine.glk.glk.putString(String.valueOf(number).substring(pos));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -24,7 +23,7 @@ class GlkIOSys extends IOSys {
     @Override
     void streamChar(Machine machine, int ch) {
         try {
-            glk.glk.putChar(ch);
+            machine.glk.glk.putChar(ch);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -33,7 +32,7 @@ class GlkIOSys extends IOSys {
     @Override
     void streamUnichar(Machine machine, int ch) {
         try {
-            glk.glk.putCharUni(ch);
+            machine.glk.glk.putCharUni(ch);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -42,7 +41,7 @@ class GlkIOSys extends IOSys {
     @Override
     void streamNum(Machine machine, int num) {
         try {
-            glk.glk.putString(String.valueOf(num));
+            machine.glk.glk.putString(String.valueOf(num));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -52,7 +51,7 @@ class GlkIOSys extends IOSys {
     @Override
     void streamString(Machine machine, int addr) {
         try {
-            glk.glk.putString(new CString(machine.state, addr));
+            machine.glk.glk.putString(new CString(machine.state, addr));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -61,7 +60,7 @@ class GlkIOSys extends IOSys {
     @Override
     void streamStringUnicode(Machine machine, int addr) {
         try {
-            glk.glk.putStringUni(new UString(machine.state, addr));
+            machine.glk.glk.putStringUni(new UString(machine.state, addr));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

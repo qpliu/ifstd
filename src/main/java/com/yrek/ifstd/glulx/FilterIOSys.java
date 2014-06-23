@@ -1,6 +1,8 @@
 package com.yrek.ifstd.glulx;
 
 class FilterIOSys extends IOSys {
+    private static final long serialVersionUID = 0L;
+
     FilterIOSys(int rock) {
         super(1, rock);
     }

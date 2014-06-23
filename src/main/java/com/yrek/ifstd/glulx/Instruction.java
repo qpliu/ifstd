@@ -948,7 +948,7 @@ abstract class Instruction {
                 switch (a1) {
                 case 0: machine.ioSys = new NullIOSys(a2); break;
                 case 1: machine.ioSys = new FilterIOSys(a2); break;
-                case 2: machine.ioSys = new GlkIOSys(machine.glk, a2); break;
+                case 2: machine.ioSys = new GlkIOSys(a2); break;
                 default: machine.ioSys = new NullIOSys(a2); break;
                 }
                 return Result.Continue;

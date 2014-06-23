@@ -1,9 +1,25 @@
 package com.yrek.ifstd.glk;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 public class GlkObjectPool<T extends GlkObject> {
     private final ArrayList<T> pool = new ArrayList<T>();
+
+    public GlkObjectPool() {
+    }
+
+    public GlkObjectPool(Map<Integer,T> restore) {
+        if (restore != null) {
+            for (Map.Entry<Integer,T> e : restore.entrySet()) {
+                while (pool.size() < e.getKey()) {
+                    pool.add(null);
+                }
+                pool.set(e.getKey() - 1, e.getValue());
+                e.getValue().setPointer(e.getKey());
+            }
+        }
+    }
 
     public int add(T obj) {
         if (obj == null || obj.isDestroyed()) {
