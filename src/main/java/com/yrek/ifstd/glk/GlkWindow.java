@@ -10,17 +10,11 @@ public abstract class GlkWindow extends GlkObject {
     public static final int TypeTextGrid = 4;
     public static final int TypeGraphics = 5;
 
-    protected final GlkWindowStream windowStream;
-
-    protected GlkWindow(GlkStream windowStream, int rock) {
+    protected GlkWindow(int rock) {
         super(rock);
-        this.windowStream = new GlkWindowStream(windowStream);
     }
 
-    public GlkWindowStream getStream() {
-        return windowStream;
-    }
-
+    public abstract GlkWindowStream getStream();
     public abstract GlkStreamResult close() throws IOException;
     public abstract GlkWindowSize getSize();
     public abstract void setArrangement(int method, int size, GlkWindow key);

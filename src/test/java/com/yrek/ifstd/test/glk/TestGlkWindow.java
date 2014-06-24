@@ -9,6 +9,7 @@ import com.yrek.ifstd.glk.GlkStreamResult;
 import com.yrek.ifstd.glk.GlkWindow;
 import com.yrek.ifstd.glk.GlkWindowArrangement;
 import com.yrek.ifstd.glk.GlkWindowSize;
+import com.yrek.ifstd.glk.GlkWindowStream;
 
 public class TestGlkWindow extends GlkWindow {
     final TestGlk glk;
@@ -21,12 +22,14 @@ public class TestGlkWindow extends GlkWindow {
     int method;
     int size;
     private TestGlkEventRequest eventRequest = null;
+    TestGlkStream stream;
 
     public TestGlkWindow(TestGlk glk, String name, String streamName, int winType, int rock) {
-        super(new TestGlkStream(glk,streamName,0), rock);
+        super(rock);
         this.glk = glk;
         this.winType = winType;
         this.name = name;
+        this.stream = new TestGlkStream(glk, streamName, this, 0);
     }
 
     public void writeTree() {
@@ -42,6 +45,11 @@ public class TestGlkWindow extends GlkWindow {
             child2.writeTree();
             glk.outputQueue.add("</pair>");
         }
+    }
+
+    @Override
+    public GlkWindowStream getStream() {
+        return stream;
     }
 
     @Override
@@ -70,7 +78,7 @@ public class TestGlkWindow extends GlkWindow {
                 parent.parent.child2 = sibling;
             }
         }
-        return getStream().close();
+        return new GlkStreamResult(stream.inputCount, stream.outputCount);
     }
 
     protected void _close() {

@@ -6,28 +6,25 @@ import com.yrek.ifstd.glk.GlkByteArray;
 import com.yrek.ifstd.glk.GlkIntArray;
 import com.yrek.ifstd.glk.GlkStream;
 import com.yrek.ifstd.glk.GlkStreamResult;
+import com.yrek.ifstd.glk.GlkWindowStream;
 import com.yrek.ifstd.glk.UnicodeString;
 
-public class TestGlkStream extends GlkStream {
+public class TestGlkStream extends GlkWindowStream {
     final TestGlk glk;
     final String name;
     private int style = 0;
     int inputCount = 0;
     int outputCount = 0;
 
-    public TestGlkStream(TestGlk glk, String name, int rock) {
-        super(rock);
+    public TestGlkStream(TestGlk glk, String name, TestGlkWindow window, int rock) {
+        super(window, rock);
         this.glk = glk;
         this.name = name;
     }
 
     @Override
-    public GlkStreamResult close() throws IOException {
-        return new GlkStreamResult(inputCount, outputCount);
-    }
-
-    @Override
     public void putChar(int ch) throws IOException {
+        super.putChar(ch);
         outputCount++;
         output(escapeChar((char) ch));
         if (glk.output != null) {
@@ -37,6 +34,7 @@ public class TestGlkStream extends GlkStream {
 
     @Override
     public void putString(CharSequence string) throws IOException {
+        super.putString(string);
         int length = string.length();
         outputCount += length;
         output(escapeString(string, length));
@@ -47,6 +45,7 @@ public class TestGlkStream extends GlkStream {
 
     @Override
     public void putBuffer(GlkByteArray buffer) throws IOException {
+        super.putBuffer(buffer);
         int length = buffer.getArrayLength();
         outputCount += length;
         output(escapeString(buffer, length));
@@ -59,6 +58,7 @@ public class TestGlkStream extends GlkStream {
 
     @Override
     public void putCharUni(int ch) throws IOException {
+        super.putCharUni(ch);
         outputCount++;
         String str = new String(Character.toChars(ch));
         output(escapeString(str, str.length()));
@@ -69,6 +69,7 @@ public class TestGlkStream extends GlkStream {
 
     @Override
     public void putStringUni(UnicodeString string) throws IOException {
+        super.putStringUni(string);
         int length = string.codePointCount();
         outputCount += length;
         output(escapeString(string, string.length()));
@@ -79,11 +80,13 @@ public class TestGlkStream extends GlkStream {
 
     @Override
     public void putBufferUni(GlkIntArray buffer) throws IOException {
+        super.putBufferUni(buffer);
         throw new RuntimeException("unimplemented");
     }
 
     @Override
     public void setStyle(int style) {
+        super.setStyle(style);
         this.style = style;
     }
 
