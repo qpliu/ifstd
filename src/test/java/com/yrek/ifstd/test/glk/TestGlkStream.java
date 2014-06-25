@@ -16,8 +16,8 @@ public class TestGlkStream extends GlkWindowStream {
     int inputCount = 0;
     int outputCount = 0;
 
-    public TestGlkStream(TestGlk glk, String name, TestGlkWindow window, int rock) {
-        super(window, rock);
+    public TestGlkStream(TestGlk glk, String name, TestGlkWindow window) {
+        super(window);
         this.glk = glk;
         this.name = name;
     }
@@ -88,46 +88,6 @@ public class TestGlkStream extends GlkWindowStream {
     public void setStyle(int style) {
         super.setStyle(style);
         this.style = style;
-    }
-
-    @Override
-    public int getChar() throws IOException {
-        throw new RuntimeException("unimplemented");
-    }
-
-    @Override
-    public int getLine(GlkByteArray buffer) throws IOException {
-        throw new RuntimeException("unimplemented");
-    }
-
-    @Override
-    public int getBuffer(GlkByteArray buffer) throws IOException {
-        throw new RuntimeException("unimplemented");
-    }
-
-    @Override
-    public int getCharUni() throws IOException {
-        throw new RuntimeException("unimplemented");
-    }
-
-    @Override
-    public int getLineUni(GlkIntArray buffer) throws IOException {
-        throw new RuntimeException("unimplemented");
-    }
-
-    @Override
-    public int getBufferUni(GlkIntArray buffer) throws IOException {
-        throw new RuntimeException("unimplemented");
-    }
-
-    @Override
-    public void setPosition(int position, int seekMode) throws IOException {
-        throw new RuntimeException("unimplemented");
-    }
-
-    @Override
-    public int getPosition() throws IOException {
-        throw new RuntimeException("unimplemented");
     }
 
     private void output(String value) {

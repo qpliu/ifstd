@@ -38,4 +38,5 @@ public abstract class GlkWindow extends GlkObject {
     public abstract void eraseRect(int left, int top, int width, int height);
     public abstract void fillRect(int color, int left, int top, int width, int height);
     public abstract void setBackgroundColor(int color);
+    public abstract void setEchoLineEvent(boolean echoLineEvent);
 }

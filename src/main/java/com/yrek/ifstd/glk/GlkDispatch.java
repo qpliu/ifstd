@@ -394,7 +394,12 @@ public class GlkDispatch {
         case 0x0141: // requestLineEventUni
             throw new RuntimeException("unimplemented");
         case 0x0150: // setEchoLineEvent
-            throw new RuntimeException("unimplemented");
+            window = windows.get(args[0].getInt());
+            flag = args[1].getInt() != 0;
+            if (window != null) {
+                window.setEchoLineEvent(flag);
+            }
+            return 0;
         case 0x0151: // setTerminatorsLineEvent
             throw new RuntimeException("unimplemented");
         case 0x0160: // currentTime

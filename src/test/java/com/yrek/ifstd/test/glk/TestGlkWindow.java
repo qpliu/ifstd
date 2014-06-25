@@ -29,7 +29,7 @@ public class TestGlkWindow extends GlkWindow {
         this.glk = glk;
         this.winType = winType;
         this.name = name;
-        this.stream = new TestGlkStream(glk, streamName, this, 0);
+        this.stream = new TestGlkStream(glk, streamName, this);
     }
 
     public void writeTree() {
@@ -245,5 +245,9 @@ public class TestGlkWindow extends GlkWindow {
 
     @Override
     public void setBackgroundColor(int color) {
+    }
+
+    @Override
+    public void setEchoLineEvent(boolean echoLineEvent) {
     }
 }

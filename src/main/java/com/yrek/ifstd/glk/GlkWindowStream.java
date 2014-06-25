@@ -1,15 +1,15 @@
 package com.yrek.ifstd.glk;
 
-import java.io.InputStream;
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
-import java.io.OutputStream;
 
 public abstract class GlkWindowStream extends GlkStream {
     protected final GlkWindow window;
     protected GlkStream echoStream = null;
 
-    protected GlkWindowStream(GlkWindow window, int rock) {
-        super(rock);
+    protected GlkWindowStream(GlkWindow window) {
+        super(0);
         this.window = window;
     }
 
@@ -73,5 +73,54 @@ public abstract class GlkWindowStream extends GlkStream {
         if (echoStream != null) {
             echoStream.setStyle(style);
         }
+    }
+
+    @Override
+    public int getChar() throws IOException {
+        throw new IllegalArgumentException();
+    }
+
+    @Override
+    public int getLine(GlkByteArray buffer) throws IOException {
+        throw new IllegalArgumentException();
+    }
+
+    @Override
+    public int getBuffer(GlkByteArray buffer) throws IOException {
+        throw new IllegalArgumentException();
+    }
+
+    @Override
+    public int getCharUni() throws IOException {
+        throw new IllegalArgumentException();
+    }
+
+    @Override
+    public int getLineUni(GlkIntArray buffer) throws IOException {
+        throw new IllegalArgumentException();
+    }
+
+    @Override
+    public int getBufferUni(GlkIntArray buffer) throws IOException {
+        throw new IllegalArgumentException();
+    }
+
+    @Override
+    public void setPosition(int position, int seekMode) throws IOException {
+    }
+
+    @Override
+    public int getPosition() throws IOException {
+        return 0;
+    }
+
+    @Override
+    public DataOutput getDataOutput() {
+        throw new IllegalArgumentException();
+    }
+
+    @Override
+    public DataInput getDataInput() {
+        throw new IllegalArgumentException();
     }
 }
