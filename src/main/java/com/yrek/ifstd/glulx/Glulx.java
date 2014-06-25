@@ -77,6 +77,14 @@ public class Glulx implements Runnable, Serializable {
         machine.glk = glk;
     }
 
+    public boolean suspending() {
+        return suspend;
+    }
+
+    public boolean suspended() {
+        return suspended;
+    }
+
     public static void resetProfilingData() {
         Instruction.resetProfilingData();
     }
