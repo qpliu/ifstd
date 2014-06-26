@@ -62,7 +62,7 @@ public abstract class Blorb implements Closeable {
                 if (chunk.start + 8 + chunk.length >= eof - 8) {
                     break;
                 }
-                seek(chunk.start + 8 + chunk.length);
+                seek(chunk.start + 8 + ((chunk.length+1)&0xfffffffe));
             }
         }
         for (Chunk chunk : chunks.values()) {

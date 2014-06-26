@@ -41,4 +41,42 @@ public class TestBlorb {
         }
         Assert.assertEquals(1, count);
     }
+
+    @Test
+    public void testAlabaster() throws Exception {
+        Blorb blorb = Blorb.from(new File(getClass().getResource("/Alabaster.gblorb").toURI()));
+        int count = 0;
+        HashMap<Integer,Integer> chunks = new HashMap<Integer,Integer>();
+        for (Blorb.Chunk chunk : blorb.chunks()) {
+            count++;
+            if (chunks.containsKey(chunk.getId())) {
+                chunks.put(chunk.getId(), 1 + chunks.get(chunk.getId()));
+            } else {
+                chunks.put(chunk.getId(), 1);
+            }
+        }
+        Assert.assertEquals(29, count);
+        Assert.assertEquals(6, chunks.size());
+        Assert.assertEquals(1, chunks.get(Blorb.RIdx).intValue());
+        Assert.assertEquals(1, chunks.get(Blorb.GLUL).intValue());
+        Assert.assertEquals(1, chunks.get(Blorb.IFmd).intValue());
+        Assert.assertEquals(1, chunks.get(Blorb.Fspc).intValue());
+        Assert.assertEquals(1, chunks.get(Blorb.JPEG).intValue());
+        Assert.assertEquals(24, chunks.get(Blorb.PNG).intValue());
+
+        count = 0;
+        HashMap<Integer,Blorb.Resource> resources = new HashMap<Integer,Blorb.Resource>();
+        for (Blorb.Resource resource : blorb.resources()) {
+            count++;
+            resources.put(resource.getNumber(), resource);
+            Assert.assertNotNull(resource.getChunk());
+        }
+        Assert.assertEquals(26, count);
+        Assert.assertEquals(26, resources.size());
+        Assert.assertEquals(Blorb.Exec, resources.get(0).getUsage());
+        Assert.assertEquals(Blorb.Pict, resources.get(1).getUsage());
+        for (int i = 3; i < 27; i++) {
+            Assert.assertEquals(Blorb.Pict, resources.get(i).getUsage());
+        }
+    }
 }
