@@ -42,11 +42,15 @@ public class GlkDispatch {
             args[1].setInt(pointer == 0 ? 0 : windows.get(pointer).getRock());
             return pointer;
         case 0x0021: // windowGetRock
-            return windows.get(args[0].getInt()).getRock();
+            GlkWindow window = windows.get(args[0].getInt());
+            if (window != null) {
+                return window.getRock();
+            }
+            return 0;
         case 0x0022: // windowGetRoot
             return windows.getPointer(glk.windowGetRoot());
         case 0x0023: // windowOpen
-            GlkWindow window = glk.windowOpen(windows.get(args[0].getInt()), args[1].getInt(), args[2].getInt(), args[3].getInt(), args[4].getInt());
+            window = glk.windowOpen(windows.get(args[0].getInt()), args[1].getInt(), args[2].getInt(), args[3].getInt(), args[4].getInt());
             if (window != null) {
                 windows.add(window.getParent());
                 streams.add(window.getStream());
@@ -60,25 +64,52 @@ public class GlkDispatch {
             windows.destroy(pointer);
             return 0;
         case 0x0025: // windowGetSize
-            GlkWindowSize windowSize = windows.get(args[0].getInt()).getSize();
-            args[1].setInt(windowSize.width);
-            args[2].setInt(windowSize.height);
+            window = windows.get(args[0].getInt());
+            if (window != null) {
+                GlkWindowSize windowSize = window.getSize();
+                args[1].setInt(windowSize.width);
+                args[2].setInt(windowSize.height);
+            } else {
+                args[1].setInt(0);
+                args[2].setInt(0);
+            }
             return 0;
         case 0x0026: // windowSetArrangement
-            windows.get(args[0].getInt()).setArrangement(args[1].getInt(), args[2].getInt(), windows.get(args[3].getInt()));
+            window = windows.get(args[0].getInt());
+            if (window != null) {
+                window.setArrangement(args[1].getInt(), args[2].getInt(), windows.get(args[3].getInt()));
+            }
             return 0;
         case 0x0027: // windowGetArrangement
-            GlkWindowArrangement windowArrangement = windows.get(args[0].getInt()).getArrangement();
-            args[1].setInt(windowArrangement.method);
-            args[2].setInt(windowArrangement.size);
-            args[3].setInt(windows.getPointer(windowArrangement.key));
+            window = windows.get(args[0].getInt());
+            if (window != null) {
+                GlkWindowArrangement windowArrangement = window.getArrangement();
+                args[1].setInt(windowArrangement.method);
+                args[2].setInt(windowArrangement.size);
+                args[3].setInt(windows.getPointer(windowArrangement.key));
+            } else {
+                args[1].setInt(0);
+                args[2].setInt(0);
+                args[3].setInt(0);
+            }
             return 0;
         case 0x0028: // windowGetType
-            return windows.get(args[0].getInt()).getType();
+            window = windows.get(args[0].getInt());
+            if (window != null) {
+                return window.getType();
+            }
+            return 0;
         case 0x0029: // windowGetParent
-            return windows.getPointer(windows.get(args[0].getInt()).getParent());
+            window = windows.get(args[0].getInt());
+            if (window != null) {
+                return windows.getPointer(window.getParent());
+            }
+            return 0;
         case 0x002a: // windowClear
-            windows.get(args[0].getInt()).clear();
+            window = windows.get(args[0].getInt());
+            if (window != null) {
+                window.clear();
+            }
             return 0;
         case 0x002b: // windowMoveCursor
             window = windows.get(args[0].getInt());
@@ -89,17 +120,32 @@ public class GlkDispatch {
             }
             return 0;
         case 0x002c: // windowGetStream
-            return streams.getPointer(windows.get(args[0].getInt()).getStream());
+            window = windows.get(args[0].getInt());
+            if (window != null) {
+                return streams.getPointer(window.getStream());
+            }
+            return 0;
         case 0x002d: // windowSetEchoStream
-            windows.get(args[0].getInt()).getStream().setEchoStream(streams.get(args[1].getInt()));
+            window = windows.get(args[0].getInt());
+            if (window != null) {
+                window.getStream().setEchoStream(streams.get(args[1].getInt()));
+            }
             return 0;
         case 0x002e: // windowGetEchoStream
-            return streams.getPointer(windows.get(args[0].getInt()).getStream().getEchoStream());
+            window = windows.get(args[0].getInt());
+            if (window != null) {
+                return streams.getPointer(window.getStream().getEchoStream());
+            }
+            return 0;
         case 0x002f: // setWindow
             glk.setWindow(windows.get(args[0].getInt()));
             return 0;
         case 0x0030: // windowGetSibling
-            return windows.getPointer(windows.get(args[0].getInt()).getSibling());
+            window = windows.get(args[0].getInt());
+            if (window != null) {
+                return windows.getPointer(window.getSibling());
+            }
+            return 0;
         case 0x0040: // streamIterate
             pointer = streams.iterate(args[0].getInt());
             args[1].setInt(pointer == 0 ? 0 : streams.get(pointer).getRock());
