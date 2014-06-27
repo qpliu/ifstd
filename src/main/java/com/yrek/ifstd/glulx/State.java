@@ -100,22 +100,24 @@ class State implements Serializable {
                     throw new IllegalArgumentException("No IFhd");
                 }
                 int index = load32(8);
+                byte[] cmem = new byte[size];
+                in.readFully(cmem, 0, size);
                 for (int i = 0; i < size; i++) {
-                    int b = in.readByte();
-                    if (b != 0) {
-                        memory[index] ^= (byte) b;
+                    if (cmem[i] != 0) {
+                        if (index < memory.length) {
+                            memory[index] ^= cmem[i];
+                        }
                         index++;
                     } else {
                         i++;
                         if (i >= size) {
                             break;
                         }
-                        b = in.readByte();
-                        index += b + 1;
+                        index += (cmem[i]&255) + 1;
                     }
                 }
                 if (index != memory.length) {
-                    throw new RuntimeException("unimplemented: restore resized memory from CMem"); // Should read into ByteArrayOutputStream to calculate the end of memory to check for resizing, then restore from the byte[]
+                    memory = Arrays.copyOf(memory, index);
                 }
                 break;
             case 0x554d656d: // UMem
