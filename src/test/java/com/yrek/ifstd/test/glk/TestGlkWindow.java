@@ -139,6 +139,16 @@ public class TestGlkWindow extends GlkWindow {
     }
 
     @Override
+    public int getCursorX() {
+        return 0;
+    }
+
+    @Override
+    public int getCursorY() {
+        return 0;
+    }
+
+    @Override
     public boolean styleDistinguish(int style1, int style2) {
         return style1 != style2;
     }
