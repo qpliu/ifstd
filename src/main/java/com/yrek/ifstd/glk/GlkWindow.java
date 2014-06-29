@@ -10,6 +10,12 @@ public abstract class GlkWindow extends GlkObject {
     public static final int TypeTextGrid = 4;
     public static final int TypeGraphics = 5;
 
+    public static final int ImageAlignInlineUp = 1;
+    public static final int ImageAlignInlineDown = 2;
+    public static final int ImageAlignInlineCenter = 3;
+    public static final int ImageAlignMarginLeft = 4;
+    public static final int ImageAlignMarginRight = 5;
+
     protected GlkWindow(int rock) {
         super(rock);
     }
