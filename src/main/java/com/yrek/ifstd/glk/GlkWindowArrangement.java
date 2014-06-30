@@ -7,7 +7,7 @@ public class GlkWindowArrangement {
     public static final int MethodBelow = 0x3;
     public static final int MethodDirMask = 0xf;
     public static final int MethodFixed = 0x10;
-    public static final int MethodProportional = 0x11;
+    public static final int MethodProportional = 0x20;
     public static final int MethodDivisionMask = 0xf0;
     public static final int MethodBorder = 0x000;
     public static final int MethodNoBorder = 0x100;
