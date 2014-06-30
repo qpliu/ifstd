@@ -60,7 +60,10 @@ public class GlkDispatch {
             pointer = args[0].getInt();
             window = windows.get(pointer);
             setStreamResult(args[1], window.close());
-            streams.destroy(window.getStream().getPointer());
+            GlkStream stream = window.getStream();
+            if (stream != null) {
+                streams.destroy(stream.getPointer());
+            }
             windows.destroy(pointer);
             return 0;
         case 0x0025: // windowGetSize
@@ -158,8 +161,8 @@ public class GlkDispatch {
             return streams.add(glk.streamOpenMemory(withLength(args[0].getByteArray(), args[1].getInt()), args[2].getInt(), args[3].getInt()));
         case 0x0044: // streamClose
             pointer = args[0].getInt();
-            GlkStream str = streams.get(pointer);
-            setStreamResult(args[1], str.close());
+            stream = streams.get(pointer);
+            setStreamResult(args[1], stream.close());
             streams.destroy(pointer);
             return 0;
         case 0x0045: // streamSetPosition
