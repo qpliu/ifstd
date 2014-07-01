@@ -73,4 +73,12 @@ public class GlkObjectPool<T extends GlkObject> {
     public int getPointer(T obj) {
         return add(obj);
     }
+
+    public void saveToMap(Map<Integer,T> map) {
+        for (T obj : pool) {
+            if (obj != null && !obj.isDestroyed()) {
+                map.put(obj.getPointer(), obj);
+            }
+        }
+    }
 }

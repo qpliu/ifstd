@@ -492,6 +492,13 @@ public class GlkDispatch {
         return schannels.get(pointer);
     }
 
+    public void saveToMap(Map<Integer,GlkWindow> windows, Map<Integer,GlkStream> streams, Map<Integer,GlkFile> files, Map<Integer,GlkSChannel> schannels) {
+        this.windows.saveToMap(windows);
+        this.streams.saveToMap(streams);
+        this.files.saveToMap(files);
+        this.schannels.saveToMap(schannels);
+    }
+
     private static GlkByteArray withLength(GlkByteArray arg, int length) {
         if (arg != null) {
             arg.setArrayLength(length);

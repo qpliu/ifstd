@@ -1611,7 +1611,7 @@ abstract class Instruction {
     static void call(Machine machine, int addr, int[] args) {
         Acceleration.Function accelerated = machine.acceleration.get(addr);
         if (accelerated != null) {
-            returnValue(machine, accelerated.call(machine, args));
+            returnValue(machine, accelerated.call(machine, args, machine.acceleration.parameters));
         } else {
             call(machine.state, addr, args);
         }

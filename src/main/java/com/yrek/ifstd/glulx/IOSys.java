@@ -2,7 +2,7 @@ package com.yrek.ifstd.glulx;
 
 import java.io.Serializable;
 
-abstract class IOSys {
+abstract class IOSys implements Serializable {
     private static final boolean TRACE = false;
     final int rock;
     final int mode;
