@@ -1562,13 +1562,13 @@ abstract class Instruction {
         case 12:
             throw new IllegalArgumentException("Unrecognized addressing mode");
         case 13:
-            result = new MemoryOperand(machine.state.load32(8) + (machine.state.advancePC8() & 255));
+            result = new MemoryOperand(machine.state.ramStart + (machine.state.advancePC8() & 255));
             break;
         case 14:
-            result = new MemoryOperand(machine.state.load32(8) + (machine.state.advancePC16() & 65535));
+            result = new MemoryOperand(machine.state.ramStart + (machine.state.advancePC16() & 65535));
             break;
         case 15:
-            result = new MemoryOperand(machine.state.load32(8) + machine.state.advancePC16());
+            result = new MemoryOperand(machine.state.ramStart + machine.state.advancePC16());
             break;
         default:
             throw new AssertionError();

@@ -15,6 +15,7 @@ class State implements Serializable {
     int fp;
     byte[] memory;
     byte[] stack;
+    int ramStart;
 
     void readFile(DataInput in, int protectStart, int protectLength) throws IOException {
         byte[] protect = null;
@@ -31,6 +32,7 @@ class State implements Serializable {
         if (version < 0x0002000 && version > 0x000301ff) {
             throw new IllegalArgumentException("Unrecognized Glulx version");
         }
+        ramStart = load32(header, 8);
         int extStart = load32(header, 12);
         int endMem = load32(header, 16);
         int stackSize = load32(header, 20);
@@ -99,7 +101,7 @@ class State implements Serializable {
                 if (!gotIFhd) {
                     throw new IllegalArgumentException("No IFhd");
                 }
-                int index = load32(8);
+                int index = ramStart;
                 byte[] cmem = new byte[size];
                 in.readFully(cmem, 0, size);
                 for (int i = 0; i < size; i++) {
@@ -124,11 +126,11 @@ class State implements Serializable {
                 if (!gotIFhd) {
                     throw new IllegalArgumentException("No IFhd");
                 }
-                int endMem = load32(8) + size;
+                int endMem = ramStart + size;
                 if (memory.length != endMem) {
                     memory = Arrays.copyOf(memory, endMem);
                 }
-                in.readFully(memory, load32(8), size);
+                in.readFully(memory, ramStart, size);
                 break;
             case 0x53746b73: //Stks
                 if (!gotIFhd) {
@@ -152,7 +154,7 @@ class State implements Serializable {
         int length = 0;
         length += 4; // IFZS
         length += 4 + 4 + 128; // IFhd
-        length += 4 + 4 + memory.length - load32(8); // UMem
+        length += 4 + 4 + memory.length - ramStart; // UMem
         length += 4 + 4 + sp; // Stks
         out.writeInt(length);
         out.writeInt(0x49465a53); // IFZS
@@ -160,8 +162,8 @@ class State implements Serializable {
         out.writeInt(128);
         out.write(memory, 0, 128);
         out.writeInt(0x554d656d); // UMem
-        out.writeInt(memory.length - load32(8));
-        out.write(memory, load32(8), memory.length - load32(8));
+        out.writeInt(memory.length - ramStart);
+        out.write(memory, ramStart, memory.length - ramStart);
         out.writeInt(0x53746b73); // Stks
         out.writeInt(sp);
         out.write(stack, 0, sp);
@@ -228,15 +230,21 @@ class State implements Serializable {
     }
 
     void store8(int addr, int value) {
-        memory[addr] = (byte) value;
+        if (addr >= ramStart) {
+            memory[addr] = (byte) value;
+        }
     }
 
     void store16(int addr, int value) {
-        store16(memory, addr, value);
+        if (addr >= ramStart) {
+            store16(memory, addr, value);
+        }
     }
 
     void store32(int addr, int value) {
-        store32(memory, addr, value);
+        if (addr >= ramStart) {
+            store32(memory, addr, value);
+        }
     }
 
     int pop32() {
