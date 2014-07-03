@@ -1,7 +1,9 @@
 package com.yrek.ifstd.glk;
 
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.Map;
+import java.util.TimeZone;
 
 public class GlkDispatch {
     public final Glk glk;
@@ -154,29 +156,52 @@ public class GlkDispatch {
             args[1].setInt(pointer == 0 ? 0 : streams.get(pointer).getRock());
             return pointer;
         case 0x0041: // streamGetRock
-            return streams.get(args[0].getInt()).getRock();
+            stream = streams.get(args[0].getInt());
+            if (stream != null) {
+                return stream.getRock();
+            }
+            return 0;
         case 0x0042: // streamOpenFile
-            return streams.add(glk.streamOpenFile(files.get(args[0].getInt()), args[1].getInt(), args[2].getInt()));
+            GlkFile file = files.get(args[0].getInt());
+            int mode = args[1].getInt();
+            int rock = args[2].getInt();
+            if (file != null) {
+                return streams.add(glk.streamOpenFile(file, mode, rock));
+            }
+            return 0;
         case 0x0043: // streamOpenMemory
             return streams.add(glk.streamOpenMemory(withLength(args[0].getByteArray(), args[1].getInt()), args[2].getInt(), args[3].getInt()));
         case 0x0044: // streamClose
             pointer = args[0].getInt();
             stream = streams.get(pointer);
-            setStreamResult(args[1], stream.close());
-            streams.destroy(pointer);
+            if (stream != null) {
+                setStreamResult(args[1], stream.close());
+                streams.destroy(pointer);
+            } else {
+                setStreamResult(args[1], new GlkStreamResult(0, 0));
+            }
             return 0;
         case 0x0045: // streamSetPosition
-            streams.get(args[0].getInt()).setPosition(args[1].getInt(), args[2].getInt());
+            stream = streams.get(args[0].getInt());
+            int position = args[1].getInt();
+            mode = args[2].getInt();
+            if (stream != null) {
+                stream.setPosition(position, mode);
+            }
             return 0;
         case 0x0046: // streamGetPosition
-            return streams.get(args[0].getInt()).getPosition();
+            stream = streams.get(args[0].getInt());
+            if (stream != null) {
+                return stream.getPosition();
+            }
+            return 0;
         case 0x0047: // streamSetCurrent
             glk.streamSetCurrent(streams.get(args[0].getInt()));
             return 0;
         case 0x0048: // streamGetCurrent
             return streams.getPointer(glk.streamGetCurrent());
         case 0x0049: // streamOpenResource
-            throw new RuntimeException("unimplemented");
+            return streams.add(glk.streamOpenResource(args[0].getInt(), args[1].getInt()));
         case 0x0060: // filerefCreateTemp
             return files.add(glk.fileCreateTemp(args[0].getInt(), args[1].getInt()));
         case 0x0061: // filerefCreateByName
@@ -185,52 +210,96 @@ public class GlkDispatch {
             return files.add(glk.fileCreateByPrompt(args[0].getInt(), args[1].getInt(), args[2].getInt()));
         case 0x0063: // filerefDestroy
             pointer = args[0].getInt();
-            files.get(pointer).destroy();
-            files.destroy(pointer);
+            file = files.get(pointer);
+            if (file != null) {
+                file.destroy();
+                files.destroy(pointer);
+            }
             return 0;
         case 0x0064: // filerefIterate
             pointer = files.iterate(args[0].getInt());
             args[1].setInt(pointer == 0 ? 0 : files.get(pointer).getRock());
             return pointer;
         case 0x0065: // filerefGetRock
-            return files.get(args[0].getInt()).getRock();
+            file = files.get(args[0].getInt());
+            if (file != null) {
+                return file.getRock();
+            }
+            return 0;
         case 0x0066: // filerefDeleteFile
-            files.get(args[0].getInt()).delete();
+            file = files.get(args[0].getInt());
+            if (file != null) {
+                file.delete();
+            }
             return 0;
         case 0x0067: // filerefDoesFileExist
-            return files.get(args[0].getInt()).exists() ? 1 : 0;
+            file = files.get(args[0].getInt());
+            if (file != null) {
+                return file.exists() ? 1 : 0;
+            }
+            return 0;
         case 0x0068: // filerefCreateFromFileref
             return files.add(glk.fileCreateFromFile(args[0].getInt(), files.get(args[1].getInt()), args[2].getInt()));
         case 0x0080: // putChar
             glk.putChar(args[0].getInt());
             return 0;
         case 0x0081: // putCharStream
-            streams.get(args[0].getInt()).putChar(args[1].getInt());
+            stream = streams.get(args[0].getInt());
+            int ch = args[1].getInt();
+            if (stream != null) {
+                stream.putChar(ch);
+            }
             return 0;
         case 0x0082: // putString
             glk.putString(new GlkByteArrayString(args[0].getString()));
             return 0;
         case 0x0083: // putStringStream
-            streams.get(args[0].getInt()).putString(new GlkByteArrayString(args[1].getString()));
+            stream = streams.get(args[0].getInt());
+            GlkByteArray string = args[1].getString();
+            if (stream != null) {
+                stream.putString(new GlkByteArrayString(string));
+            }
             return 0;
         case 0x0084: // putBuffer
             glk.putBuffer(withLength(args[0].getByteArray(), args[1].getInt()));
             return 0;
         case 0x0085: // putBufferStream
-            streams.get(args[0].getInt()).putBuffer(withLength(args[1].getByteArray(), args[2].getInt()));
+            stream = streams.get(args[0].getInt());
+            GlkByteArray byteArray = withLength(args[1].getByteArray(), args[2].getInt());
+            if (stream != null) {
+                stream.putBuffer(byteArray);
+            }
             return 0;
         case 0x0086: // setStyle
             glk.setStyle(args[0].getInt());
             return 0;
         case 0x0087: // setStyleStream
-            streams.get(args[0].getInt()).setStyle(args[1].getInt());
+            stream = streams.get(args[0].getInt());
+            int style = args[1].getInt();
+            if (stream != null) {
+                stream.setStyle(style);
+            }
             return 0;
         case 0x0090: // getCharStream
-            return streams.get(args[0].getInt()).getChar();
+            stream = streams.get(args[0].getInt());
+            if (stream != null) {
+                return stream.getChar();
+            }
+            return 0;
         case 0x0091: // getLineStream
-            return streams.get(args[0].getInt()).getLine(withLength(args[1].getByteArray(), args[2].getInt()));
+            stream = streams.get(args[0].getInt());
+            byteArray = withLength(args[1].getByteArray(), args[2].getInt());
+            if (stream != null) {
+                return stream.getLine(byteArray);
+            }
+            return 0;
         case 0x0092: // getBufferStream
-            return streams.get(args[0].getInt()).getBuffer(withLength(args[1].getByteArray(), args[2].getInt()));
+            stream = streams.get(args[0].getInt());
+            byteArray = withLength(args[1].getByteArray(), args[2].getInt());
+            if (stream != null) {
+                return stream.getBuffer(byteArray);
+            }
+            return 0;
         case 0x00a0: // charToLower
             return Character.toLowerCase(args[0].getInt() & 255) & 255;
         case 0x00a1: // charToUpper
@@ -242,9 +311,21 @@ public class GlkDispatch {
             glk.styleHintClear(args[0].getInt(), args[1].getInt(), args[2].getInt());
             return 0;
         case 0x00b2: // styleDistinguish
-            return windows.get(args[0].getInt()).styleDistinguish(args[1].getInt(), args[2].getInt()) ? 1 : 0;
+            window = windows.get(args[0].getInt());
+            int style1 = args[1].getInt();
+            int style2 = args[2].getInt();
+            if (window != null) {
+                return window.styleDistinguish(style1, style2) ? 1 : 0;
+            }
+            return 0;
         case 0x00b3: // styleMeasure
-            Integer integer = windows.get(args[0].getInt()).styleMeasure(args[1].getInt(), args[2].getInt());
+            window = windows.get(args[0].getInt());
+            style = args[1].getInt();
+            int hint = args[2].getInt();
+            Integer integer = null;
+            if (window != null) {
+                integer = window.styleMeasure(style, hint);
+            }
             if (integer == null) {
                 return 0;
             } else {
@@ -258,22 +339,44 @@ public class GlkDispatch {
             setEvent(args[0], glk.selectPoll());
             return 0;
         case 0x00d0: // requestLineEvent
-            windows.get(args[0].getInt()).requestLineEvent(withLength(args[1].getByteArray(), args[2].getInt()), args[3].getInt());
+            window = windows.get(args[0].getInt());
+            byteArray = withLength(args[1].getByteArray(), args[2].getInt());
+            int initLength = args[3].getInt();
+            if (window != null) {
+                window.requestLineEvent(byteArray, initLength);
+            }
             return 0;
         case 0x00d1: // cancelLineEvent
-            setEvent(args[1], windows.get(args[0].getInt()).cancelLineEvent());
+            window = windows.get(args[0].getInt());
+            if (window != null) {
+                setEvent(args[1], window.cancelLineEvent());
+            } else {
+                setEvent(args[1], new GlkEvent(GlkEvent.TypeNone, null, 0, 0));
+            }
             return 0;
         case 0x00d2: // requestCharEvent
-            windows.get(args[0].getInt()).requestCharEvent();
+            window = windows.get(args[0].getInt());
+            if (window != null) {
+                window.requestCharEvent();
+            }
             return 0;
         case 0x00d3: // cancelCharEvent
-            windows.get(args[0].getInt()).cancelCharEvent();
+            window = windows.get(args[0].getInt());
+            if (window != null) {
+                window.cancelCharEvent();
+            }
             return 0;
         case 0x00d4: // requestMouseEvent
-            windows.get(args[0].getInt()).requestMouseEvent();
+            window = windows.get(args[0].getInt());
+            if (window != null) {
+                window.requestMouseEvent();
+            }
             return 0;
         case 0x00d5: // cancelMouseEvent
-            windows.get(args[0].getInt()).cancelMouseEvent();
+            window = windows.get(args[0].getInt());
+            if (window != null) {
+                window.cancelMouseEvent();
+            }
             return 0;
         case 0x00d6: // requestTimerEvents
             glk.requestTimerEvents(args[0].getInt());
@@ -344,39 +447,105 @@ public class GlkDispatch {
             args[1].setInt(pointer == 0 ? 0 : schannels.get(pointer).getRock());
             return pointer;
         case 0x00f1: // sChannelGetRock
-            throw new RuntimeException("unimplemented");
+            GlkSChannel schannel = schannels.get(args[0].getInt());
+            if (schannel != null) {
+                return schannel.getRock();
+            }
+            return 0;
         case 0x00f2: // sChannelCreate
-            throw new RuntimeException("unimplemented");
+            return schannels.add(glk.sChannelCreate(args[0].getInt()));
         case 0x00f3: // sChannelDestroy
-            throw new RuntimeException("unimplemented");
+            pointer = args[0].getInt();
+            schannel = schannels.get(pointer);
+            if (schannel != null) {
+                schannel.destroyChannel();
+                schannels.destroy(pointer);
+            }
+            return 0;
         case 0x00f4: // sChannelCreateExt
-            throw new RuntimeException("unimplemented");
+            return schannels.add(glk.sChannelCreateExt(args[0].getInt(), args[1].getInt()));
         case 0x00f7: // sChannelPlayMulti
-            throw new RuntimeException("unimplemented");
+            GlkIntArray intArray = args[0].getIntArray();
+            GlkSChannel[] channels = new GlkSChannel[args[1].getInt()];
+            for (int i = 0; i < channels.length; i++) {
+                channels[i] = schannels.get(intArray.getIntElementAt(i));
+            }
+            glk.sChannelPlayMulti(channels, toIntArray(args[2].getIntArray(), args[3].getInt()), args[4].getInt() != 0);
+            return 0;
         case 0x00f8: // sChannelPlay
-            throw new RuntimeException("unimplemented");
+            schannel = schannels.get(args[0].getInt());
+            if (schannel != null) {
+                return schannel.play(args[1].getInt()) ? 1 : 0;
+            }
+            return 0;
         case 0x00f9: // sChannelPlayExt
-            throw new RuntimeException("unimplemented");
+            schannel = schannels.get(args[0].getInt());
+            resourceId = args[1].getInt();
+            int repeats = args[2].getInt();
+            boolean notify = args[3].getInt() != 0;
+            if (schannel != null) {
+                return schannel.playExt(resourceId, repeats, notify) ? 1 : 0;
+            }
+            return 0;
         case 0x00fa: // sChannelStop
-            throw new RuntimeException("unimplemented");
+            schannel = schannels.get(args[0].getInt());
+            if (schannel != null) {
+                schannel.stop();
+            }
+            return 0;
         case 0x00fb: // sChannelSetVolume
-            throw new RuntimeException("unimplemented");
+            schannel = schannels.get(args[0].getInt());
+            int volume = args[1].getInt();
+            if (schannel != null) {
+                schannel.setVolume(volume);
+            }
+            return 0;
         case 0x00fc: // soundLoadHint
-            throw new RuntimeException("unimplemented");
+            glk.soundLoadHint(args[0].getInt(), args[1].getInt() != 0);
+            return 0;
         case 0x00fd: // sChannelSetVolumeExt
-            throw new RuntimeException("unimplemented");
+            schannel = schannels.get(args[0].getInt());
+            volume = args[1].getInt();
+            int duration = args[2].getInt();
+            notify = args[3].getInt() != 0;
+            if (schannel != null) {
+                schannel.setVolumeExt(volume, duration, notify);
+            }
+            return 0;
         case 0x00fe: // sChannelPause
-            throw new RuntimeException("unimplemented");
+            schannel = schannels.get(args[0].getInt());
+            if (schannel != null) {
+                schannel.pause();
+            }
+            return 0;
         case 0x00ff: // sChannelUnpause
-            throw new RuntimeException("unimplemented");
+            schannel = schannels.get(args[0].getInt());
+            if (schannel != null) {
+                schannel.unpause();
+            }
+            return 0;
         case 0x0100: // setHyperlink
-            throw new RuntimeException("unimplemented");
+            glk.setHyperlink(args[0].getInt());
+            return 0;
         case 0x0101: // setHyperlinkStream
-            throw new RuntimeException("unimplemented");
+            stream = streams.get(args[0].getInt());
+            int linkVal = args[1].getInt();
+            if (stream != null) {
+                stream.setHyperlink(linkVal);
+            }
+            return 0;
         case 0x0102: // requestHyperlinkEvent
-            throw new RuntimeException("unimplemented");
+            window = windows.get(args[0].getInt());
+            if (window != null) {
+                window.requestHyperlinkEvent();
+            }
+            return 0;
         case 0x0103: // cancelHyperlinkEvent
-            throw new RuntimeException("unimplemented");
+            window = windows.get(args[0].getInt());
+            if (window != null) {
+                window.cancelHyperlinkEvent();
+            }
+            return 0;
         case 0x0120: // bufferToLowerCaseUni
             GlkIntArray buffer = withLength(args[0].getIntArray(), args[1].getInt());
             int length = args[2].getInt();
@@ -418,30 +587,72 @@ public class GlkDispatch {
             glk.putBufferUni(withLength(args[0].getIntArray(), args[1].getInt()));
             return 0;
         case 0x012b: // putCharStreamUni
-            streams.get(args[0].getInt()).putCharUni(args[1].getInt());
+            stream = streams.get(args[0].getInt());
+            ch = args[1].getInt();
+            if (stream != null) {
+                stream.putCharUni(ch);
+            }
             return 0;
         case 0x012c: // putStringStreamUni
-            streams.get(args[0].getInt()).putStringUni(new GlkIntArrayString(args[1].getStringUnicode()));
+            stream = streams.get(args[0].getInt());
+            intArray = args[1].getStringUnicode();
+            if (stream != null) {
+                stream.putStringUni(new GlkIntArrayString(intArray));
+            }
             return 0;
         case 0x012d: // putBufferStreamUni
-            streams.get(args[0].getInt()).putBufferUni(withLength(args[1].getIntArray(), args[2].getInt()));
+            stream = streams.get(args[0].getInt());
+            buffer = withLength(args[1].getIntArray(), args[2].getInt());
+            if (stream != null) {
+                stream.putBufferUni(buffer);
+            }
             return 0;
         case 0x0130: // getCharStreamUni
-            return streams.get(args[0].getInt()).getCharUni();
+            stream = streams.get(args[0].getInt());
+            if (stream != null) {
+                return stream.getCharUni();
+            }
+            return 0;
         case 0x0131: // getBufferStreamUni
-            return streams.get(args[0].getInt()).getBufferUni(withLength(args[1].getIntArray(), args[2].getInt()));
+            stream = streams.get(args[0].getInt());
+            buffer = withLength(args[1].getIntArray(), args[2].getInt());
+            if (stream != null) {
+                return stream.getBufferUni(buffer);
+            }
+            return 0;
         case 0x0132: // getLineStreamUni
-            return streams.get(args[0].getInt()).getLineUni(withLength(args[1].getIntArray(), args[2].getInt()));
+            stream = streams.get(args[0].getInt());
+            buffer = withLength(args[1].getIntArray(), args[2].getInt());
+            if (stream != null) {
+                return stream.getLineUni(buffer);
+            }
+            return 0;
         case 0x0138: // streamOpenFileUni
-            return streams.add(glk.streamOpenFileUni(files.get(args[0].getInt()), args[1].getInt(), args[2].getInt()));
+            file = files.get(args[0].getInt());
+            mode = args[1].getInt();
+            rock = args[2].getInt();
+            if (file != null) {
+                return streams.add(glk.streamOpenFileUni(file, mode, rock));
+            }
+            return 0;
         case 0x0139: // streamOpenMemoryUni
-            return streams.getPointer(glk.streamOpenMemoryUni(withLength(args[0].getIntArray(), args[1].getInt()), args[2].getInt(), args[3].getInt()));
+            return streams.add(glk.streamOpenMemoryUni(withLength(args[0].getIntArray(), args[1].getInt()), args[2].getInt(), args[3].getInt()));
         case 0x013a: // streamOpenResourceUni
-            throw new RuntimeException("unimplemented");
+            return streams.add(glk.streamOpenResourceUni(args[0].getInt(), args[1].getInt()));
         case 0x0140: // requestCharEventUni
-            throw new RuntimeException("unimplemented");
+            window = windows.get(args[0].getInt());
+            if (window != null) {
+                window.requestCharEventUni();
+            }
+            return 0;
         case 0x0141: // requestLineEventUni
-            throw new RuntimeException("unimplemented");
+            window = windows.get(args[0].getInt());
+            intArray = withLength(args[1].getIntArray(), args[2].getInt());
+            initLength = args[3].getInt();
+            if (window != null) {
+                window.requestLineEventUni(intArray, initLength);
+            }
+            return 0;
         case 0x0150: // setEchoLineEvent
             window = windows.get(args[0].getInt());
             flag = args[1].getInt() != 0;
@@ -450,27 +661,55 @@ public class GlkDispatch {
             }
             return 0;
         case 0x0151: // setTerminatorsLineEvent
-            throw new RuntimeException("unimplemented");
+            window = windows.get(args[0].getInt());
+            int[] keycodes = toIntArray(args[1].getIntArray(), args[2].getInt());
+            if (window != null) {
+                window.setTerminatorsLineEvent(keycodes);
+            }
+            return 0;
         case 0x0160: // currentTime
-            throw new RuntimeException("unimplemented");
+            setTimeValStruct(args[0], System.currentTimeMillis());
+            return 0;
         case 0x0161: // currentSimpleTime
-            throw new RuntimeException("unimplemented");
+            return (int) (System.currentTimeMillis()/(args[0].getInt()*1000L));
         case 0x0168: // timeToDateUtc
-            throw new RuntimeException("unimplemented");
+            Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+            cal.setTimeInMillis(getTimeValStruct(args[0]));
+            setDateStruct(args[1], cal);
+            return 0;
         case 0x0169: // timeToDateLocal
-            throw new RuntimeException("unimplemented");
+            cal = Calendar.getInstance();
+            cal.setTimeInMillis(getTimeValStruct(args[0]));
+            setDateStruct(args[1], cal);
+            return 0;
         case 0x016a: // simpleTimeToDateUtc
-            throw new RuntimeException("unimplemented");
+            cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+            cal.setTimeInMillis(1000L*args[0].getInt()*args[1].getInt());
+            setDateStruct(args[2], cal);
+            return 0;
         case 0x016b: // simpleTimeToDateLocal
-            throw new RuntimeException("unimplemented");
+            cal = Calendar.getInstance();
+            cal.setTimeInMillis(1000L*args[0].getInt()*args[1].getInt());
+            setDateStruct(args[2], cal);
+            return 0;
         case 0x016c: // dateToTimeUtc
-            throw new RuntimeException("unimplemented");
+            cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+            getDateStruct(args[0], cal);
+            setTimeValStruct(args[0], cal.getTimeInMillis());
+            return 0;
         case 0x016d: // dateToTimeLocal
-            throw new RuntimeException("unimplemented");
+            cal = Calendar.getInstance();
+            getDateStruct(args[0], cal);
+            setTimeValStruct(args[0], cal.getTimeInMillis());
+            return 0;
         case 0x016e: // dateToSimpleTimeUtc
-            throw new RuntimeException("unimplemented");
+            cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+            getDateStruct(args[0], cal);
+            return (int) (cal.getTimeInMillis()/(1000L*args[1].getInt()));
         case 0x016f: // dateToSimpleTimeLocal
-            throw new RuntimeException("unimplemented");
+            cal = Calendar.getInstance();
+            getDateStruct(args[0], cal);
+            return (int) (cal.getTimeInMillis()/(1000L*args[1].getInt()));
         default:
             throw new IllegalArgumentException("Unrecognized glk selector");
         }
@@ -513,6 +752,17 @@ public class GlkDispatch {
         return arg;
     }
 
+    private static int[] toIntArray(GlkIntArray arg, int length) {
+        if (arg == null) {
+            return null;
+        }
+        int[] result = new int[length];
+        for (int i = 0; i < length; i++) {
+            result[i] = arg.getIntElementAt(i);
+        }
+        return result;
+    }
+
     private static void setStreamResult(GlkDispatchArgument arg, GlkStreamResult streamResult) {
         GlkIntArray intArray = arg.getIntArray();
         if (intArray != null) {
@@ -528,6 +778,55 @@ public class GlkDispatch {
             intArray.setIntElement(windows.getPointer(event.window));
             intArray.setIntElement(event.val1);
             intArray.setIntElement(event.val2);
+        }
+    }
+
+    private void setTimeValStruct(GlkDispatchArgument arg, long time) {
+        GlkIntArray intArray = arg.getIntArray();
+        if (intArray != null) {
+            intArray.setIntElement((int) ((time/1000L) >> 32));
+            intArray.setIntElement((int) (time/1000L));
+            intArray.setIntElement((int) (time%1000L)*1000);
+        }
+    }
+
+    private long getTimeValStruct(GlkDispatchArgument arg) {
+        GlkIntArray intArray = arg.getIntArray();
+        long time = 0;
+        if (intArray != null) {
+            time |= intArray.getIntElement() << 32;
+            time |= intArray.getIntElement() & 0xffffffffL;
+            time *= 1000L;
+            time += intArray.getIntElement() / 1000;
+        }
+        return time;
+    }
+
+    private void setDateStruct(GlkDispatchArgument arg, Calendar cal) {
+        GlkIntArray intArray = arg.getIntArray();
+        if (intArray != null) {
+            intArray.setIntElement(cal.get(Calendar.YEAR));
+            intArray.setIntElement(cal.get(Calendar.MONTH)+1);
+            intArray.setIntElement(cal.get(Calendar.DAY_OF_MONTH));
+            intArray.setIntElement(cal.get(Calendar.DAY_OF_WEEK)-1);
+            intArray.setIntElement(cal.get(Calendar.HOUR_OF_DAY));
+            intArray.setIntElement(cal.get(Calendar.MINUTE));
+            intArray.setIntElement(cal.get(Calendar.SECOND));
+            intArray.setIntElement(cal.get(Calendar.MILLISECOND)*1000);
+        }
+    }
+
+    private void getDateStruct(GlkDispatchArgument arg, Calendar cal) {
+        GlkIntArray intArray = arg.getIntArray();
+        if (intArray != null) {
+            cal.set(Calendar.YEAR, intArray.getIntElement());
+            cal.set(Calendar.MONTH, intArray.getIntElement()-1);
+            cal.set(Calendar.DAY_OF_MONTH, intArray.getIntElement());
+            intArray.getIntElement(); // DAY_OF_WEEK
+            cal.set(Calendar.HOUR_OF_DAY, intArray.getIntElement());
+            cal.set(Calendar.MINUTE, intArray.getIntElement());
+            cal.set(Calendar.SECOND, intArray.getIntElement());
+            cal.set(Calendar.MILLISECOND, intArray.getIntElement()/1000);
         }
     }
 }

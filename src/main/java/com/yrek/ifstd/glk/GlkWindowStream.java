@@ -76,6 +76,13 @@ public abstract class GlkWindowStream extends GlkStream {
     }
 
     @Override
+    public void setHyperlink(int linkVal) {
+        if (echoStream != null) {
+            echoStream.setHyperlink(linkVal);
+        }
+    }
+
+    @Override
     public int getChar() throws IOException {
         throw new IllegalArgumentException();
     }

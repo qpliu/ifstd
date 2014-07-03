@@ -72,6 +72,10 @@ public class GlkStreamMemoryUnicode extends GlkStream {
     }
 
     @Override
+    public void setHyperlink(int linkVal) {
+    }
+
+    @Override
     public int getChar() throws IOException {
         if (memory == null || memory.getReadArrayIndex() >= memory.getArrayLength()) {
             return -1;

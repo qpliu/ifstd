@@ -23,6 +23,8 @@ public interface Glk {
     public GlkStream streamOpenFileUni(GlkFile file, int mode, int rock) throws IOException;
     public GlkStream streamOpenMemory(GlkByteArray memory, int mode, int rock);
     public GlkStream streamOpenMemoryUni(GlkIntArray memory, int mode, int rock);
+    public GlkStream streamOpenResource(int resourceId, int rock);
+    public GlkStream streamOpenResourceUni(int resourceId, int rock);
     public void streamSetCurrent(GlkStream stream);
     public GlkStream streamGetCurrent();
     public void putChar(int ch) throws IOException;
@@ -32,6 +34,7 @@ public interface Glk {
     public void putStringUni(UnicodeString string) throws IOException;
     public void putBufferUni(GlkIntArray buffer) throws IOException;
     public void setStyle(int style);
+    public void setHyperlink(int linkVal);
 
     public void styleHintSet(int winType, int style, int hint, int value);
     public void styleHintClear(int winType, int style, int hint);
@@ -40,6 +43,12 @@ public interface Glk {
     public GlkFile fileCreateByName(int usage, CharSequence name, int rock) throws IOException;
     public GlkFile fileCreateByPrompt(int usage, int mode, int rock) throws IOException;
     public GlkFile fileCreateFromFile(int usage, GlkFile file, int rock) throws IOException;
+
+    public GlkSChannel sChannelCreate(int rock) throws IOException;
+    public GlkSChannel sChannelCreateExt(int rock, int volume) throws IOException;
+    public int sChannelPlayMulti(GlkSChannel[] channels, int[] resourceIds, boolean notify);
+
+    public void soundLoadHint(int resourceId, boolean flag);
 
     public GlkEvent select() throws IOException;
     public GlkEvent selectPoll() throws IOException;

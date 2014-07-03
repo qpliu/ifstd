@@ -90,6 +90,10 @@ public class TestGlkStream extends GlkWindowStream {
         this.style = style;
     }
 
+    @Override
+    public void setHyperlink(int linkVal) {
+    }
+
     private void output(String value) {
         glk.outputQueue.add("<out s=\""+name+"\" style=\""+style+"\" v=\""+value+"\"/>");
     }

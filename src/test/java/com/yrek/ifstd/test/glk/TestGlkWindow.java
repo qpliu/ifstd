@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import com.yrek.ifstd.glk.GlkByteArray;
 import com.yrek.ifstd.glk.GlkEvent;
+import com.yrek.ifstd.glk.GlkIntArray;
 import com.yrek.ifstd.glk.GlkStreamResult;
 import com.yrek.ifstd.glk.GlkWindow;
 import com.yrek.ifstd.glk.GlkWindowArrangement;
@@ -195,6 +196,10 @@ public class TestGlkWindow extends GlkWindow {
     }
 
     @Override
+    public void requestLineEventUni(final GlkIntArray buffer, final int initLength) {
+    }
+
+    @Override
     public void requestCharEvent() {
         assert eventRequest == null;
         eventRequest = new TestGlkEventRequest() {
@@ -215,7 +220,15 @@ public class TestGlkWindow extends GlkWindow {
     }
 
     @Override
+    public void requestCharEventUni() {
+    }
+
+    @Override
     public void requestMouseEvent() {
+    }
+
+    @Override
+    public void requestHyperlinkEvent() {
     }
 
     @Override
@@ -227,12 +240,16 @@ public class TestGlkWindow extends GlkWindow {
 
     @Override
     public void cancelCharEvent() {
-        glk.eventRequestQueue.remove(eventRequest);
-        eventRequest = null;
+        glk.eventRequestQueue.remove(eventRequest); 
+       eventRequest = null;
     }
 
     @Override
     public void cancelMouseEvent() {
+    }
+
+    @Override
+    public void cancelHyperlinkEvent() {
     }
 
     @Override
@@ -259,5 +276,9 @@ public class TestGlkWindow extends GlkWindow {
 
     @Override
     public void setEchoLineEvent(boolean echoLineEvent) {
+    }
+
+    @Override
+    public void setTerminatorsLineEvent(int[] keycodes) {
     }
 }

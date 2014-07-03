@@ -35,11 +35,15 @@ public abstract class GlkWindow extends GlkObject {
     public abstract boolean styleDistinguish(int style1, int style2);
     public abstract Integer styleMeasure(int style, int hint);
     public abstract void requestLineEvent(GlkByteArray buffer, int initLength);
+    public abstract void requestLineEventUni(GlkIntArray buffer, int initLength);
     public abstract void requestCharEvent();
+    public abstract void requestCharEventUni();
     public abstract void requestMouseEvent();
+    public abstract void requestHyperlinkEvent();
     public abstract GlkEvent cancelLineEvent();
     public abstract void cancelCharEvent();
     public abstract void cancelMouseEvent();
+    public abstract void cancelHyperlinkEvent();
     public abstract boolean drawImage(int resourceId, int val1, int val2) throws IOException;
     public abstract boolean drawScaledImage(int resourceId, int val1, int val2, int width, int height) throws IOException;
     public abstract void flowBreak();
@@ -47,4 +51,5 @@ public abstract class GlkWindow extends GlkObject {
     public abstract void fillRect(int color, int left, int top, int width, int height);
     public abstract void setBackgroundColor(int color);
     public abstract void setEchoLineEvent(boolean echoLineEvent);
+    public abstract void setTerminatorsLineEvent(int[] keycodes);
 }

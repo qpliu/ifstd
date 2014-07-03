@@ -49,6 +49,7 @@ public abstract class GlkStream extends GlkObject {
     public abstract void putStringUni(UnicodeString string) throws IOException;
     public abstract void putBufferUni(GlkIntArray buffer) throws IOException;
     public abstract void setStyle(int style);
+    public abstract void setHyperlink(int linkVal);
     public abstract int getChar() throws IOException;
     public abstract int getLine(GlkByteArray buffer) throws IOException;
     public abstract int getBuffer(GlkByteArray buffer) throws IOException;
