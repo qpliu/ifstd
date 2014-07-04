@@ -1,5 +1,6 @@
 package com.yrek.ifstd.glulx;
 
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Arrays;
@@ -841,11 +842,21 @@ abstract class Instruction {
                 int a1 = arg1.load32(machine.state);
                 pushCallStub(machine.state, arg2.getDestType(), arg2.getDestAddr());
                 int result = 1;
+                DataInputStream dataInputStream = null;
                 try {
-                    machine.state.writeSave(machine.glk.getStream(a1).getDataOutput());
+                    dataInputStream = machine.getData();
+                    machine.state.writeSave(dataInputStream, machine.glk.getStream(a1).getDataOutput());
                     result = 0;
                 } catch (IOException e) {
                     throw new RuntimeException("unimplemented", e);
+                } finally {
+                    if (dataInputStream != null) {
+                        try {
+                            dataInputStream.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
                 returnValue(machine, result);
                 return Result.Continue;
@@ -854,10 +865,20 @@ abstract class Instruction {
         new Instruction(0x124, "restore", Operands.LS) {
             @Override protected Result execute(Machine machine, Operand arg1, Operand arg2) {
                 int a1 = arg1.load32(machine.state);
+                DataInputStream dataInputStream = null;
                 try {
-                    machine.state.readSave(machine.getData(), machine.glk.getStream(a1).getDataInput(), machine.protectStart, machine.protectLength);
+                    dataInputStream = machine.getData();
+                    machine.state.readSave(dataInputStream, machine.glk.getStream(a1).getDataInput(), machine.protectStart, machine.protectLength);
                 } catch (IOException e) {
                     throw new RuntimeException("unimplemented", e);
+                } finally {
+                    if (dataInputStream != null) {
+                        try {
+                            dataInputStream.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
                 returnValue(machine, -1);
                 return Result.Continue;

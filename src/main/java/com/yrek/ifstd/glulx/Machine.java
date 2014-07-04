@@ -1,7 +1,6 @@
 package com.yrek.ifstd.glulx;
 
 import java.io.ByteArrayInputStream;
-import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -43,7 +42,7 @@ class Machine implements Serializable {
         return newState;
     }
 
-    DataInput getData() throws IOException {
+    DataInputStream getData() throws IOException {
         if (byteData != null) {
             return new DataInputStream(new ByteArrayInputStream(byteData));
         } else {

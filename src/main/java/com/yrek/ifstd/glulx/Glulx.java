@@ -47,15 +47,15 @@ public class Glulx implements Runnable, Serializable {
                 break;
             case Tick:
                 machine.glk.glk.tick();
+                if (suspend) {
+                    synchronized (machine) {
+                        suspended = true;
+                        machine.notifyAll();
+                    }
+                    return;
+                }
                 break;
             case Quit:
-                return;
-            }
-            if (suspend) {
-                synchronized (machine) {
-                    suspended = true;
-                    machine.notifyAll();
-                }
                 return;
             }
         }

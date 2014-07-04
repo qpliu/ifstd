@@ -149,7 +149,7 @@ class State implements Serializable {
         }
     }
 
-    void writeSave(DataOutput out) throws IOException {
+    void writeSave(DataInput in, DataOutput out) throws IOException {
         out.writeInt(0x464f524d); // FORM
         int length = 0;
         length += 4; // IFZS
@@ -160,7 +160,9 @@ class State implements Serializable {
         out.writeInt(0x49465a53); // IFZS
         out.writeInt(0x49466864); //IFhd
         out.writeInt(128);
-        out.write(memory, 0, 128);
+        byte[] header = new byte[128];
+        in.readFully(header);
+        out.write(header);
         out.writeInt(0x554d656d); // UMem
         out.writeInt(memory.length - ramStart);
         out.write(memory, ramStart, memory.length - ramStart);
@@ -230,21 +232,15 @@ class State implements Serializable {
     }
 
     void store8(int addr, int value) {
-        if (addr >= ramStart) {
-            memory[addr] = (byte) value;
-        }
+        memory[addr] = (byte) value;
     }
 
     void store16(int addr, int value) {
-        if (addr >= ramStart) {
-            store16(memory, addr, value);
-        }
+        store16(memory, addr, value);
     }
 
     void store32(int addr, int value) {
-        if (addr >= ramStart) {
-            store32(memory, addr, value);
-        }
+        store32(memory, addr, value);
     }
 
     int pop32() {
