@@ -23,8 +23,8 @@ public interface Glk {
     public GlkStream streamOpenFileUni(GlkFile file, int mode, int rock) throws IOException;
     public GlkStream streamOpenMemory(GlkByteArray memory, int mode, int rock);
     public GlkStream streamOpenMemoryUni(GlkIntArray memory, int mode, int rock);
-    public GlkStream streamOpenResource(int resourceId, int rock);
-    public GlkStream streamOpenResourceUni(int resourceId, int rock);
+    public GlkStream streamOpenResource(int resourceId, int rock) throws IOException;
+    public GlkStream streamOpenResourceUni(int resourceId, int rock) throws IOException;
     public void streamSetCurrent(GlkStream stream);
     public GlkStream streamGetCurrent();
     public void putChar(int ch) throws IOException;
