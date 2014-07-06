@@ -14,7 +14,7 @@ class State implements Serializable {
     int sp;
     int fp;
     byte[] memory;
-    byte[] stack;
+    int[] stack;
     int ramStart;
 
     void readFile(DataInput in, int protectStart, int protectLength) throws IOException {
@@ -46,10 +46,10 @@ class State implements Serializable {
         if (!verify()) {
             throw new IllegalArgumentException("Failed checksum");
         }
-        if (stack == null || stack.length < stackSize) {
-            stack = new byte[stackSize];
+        if (stack == null || stack.length < stackSize/4) {
+            stack = new int[stackSize/4];
         }
-        Arrays.fill(stack, 0, stack.length, (byte) 0);
+        Arrays.fill(stack, 0, stack.length, 0);
         if (protect != null) {
             System.arraycopy(protect, 0, memory, protectStart, protectLength);
         }
@@ -137,7 +137,9 @@ class State implements Serializable {
                     throw new IllegalArgumentException("No IFhd");
                 }
                 sp = size;
-                in.readFully(stack, 0, size);
+                for (int i = 0; i < size/4; i++) {
+                    stack[i] = in.readInt();
+                }
                 break;
             default:
                 in.skipBytes(size);
@@ -168,7 +170,9 @@ class State implements Serializable {
         out.write(memory, ramStart, memory.length - ramStart);
         out.writeInt(0x53746b73); // Stks
         out.writeInt(sp);
-        out.write(stack, 0, sp);
+        for (int i = 0; i < sp/4; i++) {
+            out.writeInt(stack[i]);
+        }
     }
 
     State copyTo(State saveState) {
@@ -245,36 +249,42 @@ class State implements Serializable {
 
     int pop32() {
         sp -= 4;
-        return load32(stack, sp);
+        return stack[sp/4];
     }
 
     void push32(int value) {
-        store32(stack, sp, value);
+        stack[sp/4] = value;
         sp += 4;
     }
 
     int sload8(int addr) {
-        return stack[addr];
+        return (stack[addr/4] >> (8*(3-addr%4))) & 255;
     }
 
     int sload16(int addr) {
-        return load16(stack, addr);
+        return (stack[addr/4] >> (16*(1-addr/2%2))) & 65535;
     }
 
     int sload32(int addr) {
-        return load32(stack, addr);
+        return stack[addr/4];
     }
 
     void sstore8(int addr, int value) {
-        stack[addr] = (byte) value;
+        int v = stack[addr/4];
+        v &= ~(255 << 8*(3-addr%4));
+        v |= (value&255) << 8*(3-addr%4);
+        stack[addr/4] = v;
     }
 
     void sstore16(int addr, int value) {
-        store16(stack, addr, value);
+        int v = stack[addr/4];
+        v &= ~(65535 << 16*(1-addr/2%2));
+        v |= (value&65535) << 16*(1-addr/2%2);
+        stack[addr/4] = v;
     }
 
     void sstore32(int addr, int value) {
-        store32(stack, addr, value);
+        stack[addr/4] = value;
     }
 
     static int load16(byte[] bytes, int index) {
@@ -322,10 +332,10 @@ class State implements Serializable {
         } else if (places < 0) {
             places += count;
         }
-        byte[] tmp = new byte[count*4];
-        System.arraycopy(stack, sp - count*4, tmp, 0, count*4);
-        System.arraycopy(tmp, (count - places)*4, stack, sp - count*4, places*4);
-        System.arraycopy(tmp, 0, stack, sp - (count - places)*4, (count - places)*4);
+        int[] tmp = new int[count];
+        System.arraycopy(stack, sp/4 - count, tmp, 0, count);
+        System.arraycopy(tmp, count - places, stack, sp/4 - count, places);
+        System.arraycopy(tmp, 0, stack, sp/4 - (count - places), count - places);
     }
 
     boolean verify() {
