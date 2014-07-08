@@ -9,7 +9,7 @@ class Acceleration implements Serializable {
 
     private static final Function[] table = new Function[14];
 
-    HashMap<Integer,Function> functions = new HashMap<Integer,Function>();
+    HashMap<Integer,Integer> functions = new HashMap<Integer,Integer>();
     int[] parameters = new int[9];
 
     boolean gestalt(int index) {
@@ -27,11 +27,15 @@ class Acceleration implements Serializable {
             functions.remove(addr);
             return;
         }
-        functions.put(addr, table[index]);
+        functions.put(addr, index);
     }
 
     Function get(int addr) {
-        return functions.get(addr);
+        Integer index = functions.get(addr);
+        if (index == null) {
+            return null;
+        }
+        return table[index];
     }
 
     private static final int WORDSIZE = 4;
