@@ -2,6 +2,7 @@ package com.yrek.ifstd.glk;
 
 import java.io.IOException;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
@@ -736,6 +737,22 @@ public class GlkDispatch {
         this.streams.saveToMap(streams);
         this.files.saveToMap(files);
         this.schannels.saveToMap(schannels);
+    }
+
+    public List<GlkWindow> windowList() {
+        return windows.toList();
+    }
+
+    public List<GlkStream> streamList() {
+        return streams.toList();
+    }
+
+    public List<GlkFile> fileList() {
+        return files.toList();
+    }
+
+    public List<GlkSChannel> sChannelList() {
+        return schannels.toList();
     }
 
     private static GlkByteArray withLength(GlkByteArray arg, int length) {

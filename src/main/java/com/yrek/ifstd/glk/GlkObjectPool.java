@@ -1,6 +1,7 @@
 package com.yrek.ifstd.glk;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class GlkObjectPool<T extends GlkObject> {
@@ -80,5 +81,15 @@ public class GlkObjectPool<T extends GlkObject> {
                 map.put(obj.getPointer(), obj);
             }
         }
+    }
+
+    public List<T> toList() {
+        ArrayList<T> list = new ArrayList<T>();
+        for (T obj : pool) {
+            if (obj != null && !obj.isDestroyed()) {
+                list.add(obj);
+            }
+        }
+        return list;
     }
 }
