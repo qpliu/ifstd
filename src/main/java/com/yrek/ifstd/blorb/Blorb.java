@@ -13,15 +13,42 @@ public abstract class Blorb implements Closeable {
     public static final int IFRS = 0x49465253;
     public static final int RIdx = 0x52496478;
     public static final int Pict = 0x50696374;
-    public static final int Snd  = 0x536e5420;
+    public static final int Snd  = 0x536e6420;
     public static final int Data = 0x44617461;
     public static final int Exec = 0x45786563;
+    public static final int IFhd = 0x49466864;
+    public static final int Plte = 0x506c7465;
+    public static final int Fspc = 0x46737063;
+    public static final int RDes = 0x52446573;
+    public static final int IFmd = 0x49466d64;
+    public static final int RelN = 0x52656c4e;
+    public static final int Reso = 0x5265736f;
+    public static final int APal = 0x4150616c;
+    public static final int Loop = 0x4c6f6f70;
+    public static final int AUTH = 0x41555448;
+    public static final int C    = 0x28432920;
+    public static final int ANNO = 0x414e4e4f;
+    public static final int SNam = 0x534e616d;
+
     public static final int PNG  = 0x504e4720;
     public static final int JPEG = 0x4a504547;
+    public static final int OGGV = 0x4f474756;
+    public static final int MOD  = 0x4d4f4420;
+    public static final int SONG = 0x534f4e47;
+    public static final int TEXT = 0x54455854;
+    public static final int BINA = 0x42494e41;
     public static final int ZCOD = 0x5a434f44;
     public static final int GLUL = 0x474c554c;
-    public static final int IFmd = 0x49466d64;
-    public static final int Fspc = 0x46737063;
+    public static final int TAD2 = 0x54414422;
+    public static final int TAD3 = 0x54414423;
+    public static final int HUGO = 0x4855474f;
+    public static final int ALAN = 0x414c414e;
+    public static final int ADRI = 0x41445249;
+    public static final int LEVE = 0x4c455645;
+    public static final int AGT  = 0x41475420;
+    public static final int MAGS = 0x4d414753;
+    public static final int ADVS = 0x41445653;
+    public static final int EXEC = 0x45584543;
 
     public static Blorb from(File file) throws IOException {
         return new FileBlorb(file);
