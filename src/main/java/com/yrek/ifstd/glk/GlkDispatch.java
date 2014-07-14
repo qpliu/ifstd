@@ -471,7 +471,7 @@ public class GlkDispatch {
             for (int i = 0; i < channels.length; i++) {
                 channels[i] = schannels.get(intArray.getIntElementAt(i));
             }
-            glk.sChannelPlayMulti(channels, toIntArray(args[2].getIntArray(), args[3].getInt()), args[4].getInt() != 0);
+            glk.sChannelPlayMulti(channels, toIntArray(args[2].getIntArray(), args[3].getInt()), args[4].getInt());
             return 0;
         case 0x00f8: // sChannelPlay
             schannel = schannels.get(args[0].getInt());
@@ -483,7 +483,7 @@ public class GlkDispatch {
             schannel = schannels.get(args[0].getInt());
             resourceId = args[1].getInt();
             int repeats = args[2].getInt();
-            boolean notify = args[3].getInt() != 0;
+            int notify = args[3].getInt();
             if (schannel != null) {
                 return schannel.playExt(resourceId, repeats, notify) ? 1 : 0;
             }
@@ -508,7 +508,7 @@ public class GlkDispatch {
             schannel = schannels.get(args[0].getInt());
             volume = args[1].getInt();
             int duration = args[2].getInt();
-            notify = args[3].getInt() != 0;
+            notify = args[3].getInt();
             if (schannel != null) {
                 schannel.setVolumeExt(volume, duration, notify);
             }
@@ -753,6 +753,26 @@ public class GlkDispatch {
 
     public List<GlkSChannel> sChannelList() {
         return schannels.toList();
+    }
+
+    public GlkWindow add(GlkWindow window) {
+        windows.add(window);
+        return window;
+    }
+
+    public GlkStream add(GlkStream stream) {
+        streams.add(stream);
+        return stream;
+    }
+
+    public GlkFile add(GlkFile file) {
+        files.add(file);
+        return file;
+    }
+
+    public GlkSChannel add(GlkSChannel sChannel) {
+        schannels.add(sChannel);
+        return sChannel;
     }
 
     private static GlkByteArray withLength(GlkByteArray arg, int length) {

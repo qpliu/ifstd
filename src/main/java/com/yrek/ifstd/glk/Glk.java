@@ -46,7 +46,7 @@ public interface Glk {
 
     public GlkSChannel sChannelCreate(int rock) throws IOException;
     public GlkSChannel sChannelCreateExt(int rock, int volume) throws IOException;
-    public int sChannelPlayMulti(GlkSChannel[] channels, int[] resourceIds, boolean notify);
+    public int sChannelPlayMulti(GlkSChannel[] channels, int[] resourceIds, int notify);
 
     public void soundLoadHint(int resourceId, boolean flag);
 
