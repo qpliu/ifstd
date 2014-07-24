@@ -62,6 +62,10 @@ public class GlkDispatch {
         case 0x0024: // windowClose
             pointer = args[0].getInt();
             window = windows.get(pointer);
+            if (window == null) {
+                setStreamResult(args[1], new GlkStreamResult(0, 0));
+                return 0;
+            }
             setStreamResult(args[1], window.close());
             GlkStream stream = window.getStream();
             if (stream != null) {
