@@ -32,7 +32,7 @@ abstract class Instruction {
         new Instruction("je", false, false, true, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
                 boolean eq = false;
-                short a0 = operands[0].getValue();
+                int a0 = operands[0].getValue();
                 for (int i = 1; i < operands.length; i++) {
                     if (operands[i].getValue() == a0) {
                         eq = true;
@@ -46,7 +46,7 @@ abstract class Instruction {
         },
         new Instruction("jl", false, false, true, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                if ((operands[0].getValue() < operands[1].getValue()) == cond) {
+                if (((short) operands[0].getValue() < (short) operands[1].getValue()) == cond) {
                     return doBranch(machine, branch);
                 }
                 return Result.Continue;
@@ -54,7 +54,7 @@ abstract class Instruction {
         },
         new Instruction("jg", false, false, true, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                if ((operands[0].getValue() > operands[1].getValue()) == cond) {
+                if (((short) operands[0].getValue() > (short) operands[1].getValue()) == cond) {
                     return doBranch(machine, branch);
                 }
                 return Result.Continue;
@@ -62,11 +62,11 @@ abstract class Instruction {
         },
         new Instruction("dec_chk", false, false, true, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                short a0 = operands[0].getValue();
-                short a1 = operands[1].getValue();
-                short val = (short) (machine.state.readVar(a0) - 1);
+                int a0 = operands[0].getValue();
+                int a1 = operands[1].getValue();
+                int val = machine.state.readVar(a0) - 1;
                 machine.state.storeVar(a0, val);
-                if ((val < a1) == cond) {
+                if (((short) val < (short) a1) == cond) {
                     return doBranch(machine, branch);
                 }
                 return Result.Continue;
@@ -74,11 +74,11 @@ abstract class Instruction {
         },
         new Instruction("inc_chk", false, false, true, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                short a0 = operands[0].getValue();
-                short a1 = operands[1].getValue();
-                short val = (short) (machine.state.readVar(a0) + 1);
+                int a0 = operands[0].getValue();
+                int a1 = operands[1].getValue();
+                int val = machine.state.readVar(a0) + 1;
                 machine.state.storeVar(a0, val);
-                if ((val > a1) == cond) {
+                if (((short) val > (short) a1) == cond) {
                     return doBranch(machine, branch);
                 }
                 return Result.Continue;
@@ -91,8 +91,8 @@ abstract class Instruction {
         },
         new Instruction("test", false, false, true, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                short a0 = operands[0].getValue();
-                short a1 = operands[1].getValue();
+                int a0 = operands[0].getValue();
+                int a1 = operands[1].getValue();
                 if (((a0 & a1) == a1) == cond) {
                     return doBranch(machine, branch);
                 }
@@ -101,13 +101,13 @@ abstract class Instruction {
         },
         new Instruction("or", false, true, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                machine.state.storeVar(store, (short) (operands[0].getValue() | operands[1].getValue()));
+                machine.state.storeVar(store, operands[0].getValue() | operands[1].getValue());
                 return Result.Continue;
             }
         },
         new Instruction("and", false, true, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                machine.state.storeVar(store, (short) (operands[0].getValue() & operands[1].getValue()));
+                machine.state.storeVar(store, operands[0].getValue() & operands[1].getValue());
                 return Result.Continue;
             }
         },
@@ -139,17 +139,17 @@ abstract class Instruction {
         },
         new Instruction("loadw", false, true, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                short a0 = operands[0].getValue();
-                short a1 = operands[1].getValue();
-                machine.state.storeVar(store, (short) machine.state.read16(a0 + 2*a1));
+                int a0 = operands[0].getValue();
+                int a1 = operands[1].getValue();
+                machine.state.storeVar(store, machine.state.read16(a0 + 2*a1));
                 return Result.Continue;
             }
         },
         new Instruction("loadb", false, true, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                short a0 = operands[0].getValue();
-                short a1 = operands[1].getValue();
-                machine.state.storeVar(store, (short) machine.state.read8(a0 + a1));
+                int a0 = operands[0].getValue();
+                int a1 = operands[1].getValue();
+                machine.state.storeVar(store, machine.state.read8(a0 + a1));
                 return Result.Continue;
             }
         },
@@ -170,31 +170,31 @@ abstract class Instruction {
         },
         new Instruction("add", false, true, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                machine.state.storeVar(store, (short) (operands[0].getValue() + operands[1].getValue()));
+                machine.state.storeVar(store, operands[0].getValue() + operands[1].getValue());
                 return Result.Continue;
             }
         },
         new Instruction("sub", false, true, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                machine.state.storeVar(store, (short) (operands[0].getValue() - operands[1].getValue()));
+                machine.state.storeVar(store, operands[0].getValue() - operands[1].getValue());
                 return Result.Continue;
             }
         },
         new Instruction("mul", false, true, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                machine.state.storeVar(store, (short) (operands[0].getValue() * operands[1].getValue()));
+                machine.state.storeVar(store, operands[0].getValue() * operands[1].getValue());
                 return Result.Continue;
             }
         },
         new Instruction("div", false, true, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                machine.state.storeVar(store, (short) (operands[0].getValue() / operands[1].getValue()));
+                machine.state.storeVar(store, operands[0].getValue() / operands[1].getValue());
                 return Result.Continue;
             }
         },
         new Instruction("mod", false, true, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                machine.state.storeVar(store, (short) (operands[0].getValue() % operands[1].getValue()));
+                machine.state.storeVar(store, operands[0].getValue() % operands[1].getValue());
                 return Result.Continue;
             }
         },
@@ -254,15 +254,15 @@ abstract class Instruction {
         },
         new Instruction("inc", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                short a0 = operands[0].getValue();
-                machine.state.storeVar(a0&65535, (short) (machine.state.readVar(a0) + 1));
+                int a0 = operands[0].getValue();
+                machine.state.storeVar(a0, machine.state.readVar(a0) + 1);
                 return Result.Continue;
             }
         },
         new Instruction("dec", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                short a0 = operands[0].getValue();
-                machine.state.storeVar(a0&65535, (short) (machine.state.readVar(a0) - 1));
+                int a0 = operands[0].getValue();
+                machine.state.storeVar(a0, machine.state.readVar(a0) - 1);
                 return Result.Continue;
             }
         },
@@ -314,7 +314,7 @@ abstract class Instruction {
             }
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
                 if (machine.version < 5) {
-                    machine.state.storeVar(store, (short) ~operands[0].getValue());
+                    machine.state.storeVar(store, ~operands[0].getValue());
                     return Result.Continue;
                 }
                 throw new RuntimeException("unimplemented");
@@ -458,7 +458,7 @@ abstract class Instruction {
         },
         new Instruction("random", false, true, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                short a0 = operands[0].getValue();
+                int a0 = operands[0].getValue();
                 int result = 0;
                 if (a0 == 0) {
                     machine.random.setSeed(System.nanoTime());
@@ -467,7 +467,7 @@ abstract class Instruction {
                 } else {
                     result = machine.random.nextInt(a0);
                 }
-                machine.state.storeVar(store, (short) result);
+                machine.state.storeVar(store, result);
                 return Result.Continue;
             }
         },
@@ -557,7 +557,7 @@ abstract class Instruction {
         },
         new Instruction("not", false, true, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                machine.state.storeVar(store, (short) ~operands[0].getValue());
+                machine.state.storeVar(store, ~operands[0].getValue());
                 return Result.Continue;
             }
         },
@@ -897,10 +897,10 @@ abstract class Instruction {
             }
         }
 
-        short getValue() {
+        int getValue() {
             switch (type) {
             case LARGE: case SMALL:
-                return (short) value;
+                return value;
             case VAR:
                 return machine.state.readVar(value);
             default:
@@ -924,7 +924,7 @@ abstract class Instruction {
         StackFrame frame = machine.state.frame;
         machine.state.frame = frame.parent;
         machine.state.pc = frame.returnAddress;
-        machine.state.storeVar(frame.returnAddress, (short) val);
+        machine.state.storeVar(frame.returnAddress, val);
         return Result.Tick;
     }
 }
