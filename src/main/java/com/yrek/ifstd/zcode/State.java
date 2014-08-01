@@ -50,13 +50,19 @@ class State implements Serializable {
     public static int EXTRA_HEADERS_FOREGROUND_COLOR = 5;
     public static int EXTRA_HEADERS_BACKGROUND_COLOR = 6;
 
+    public static int INTERPRETER_NUMBER_VALUE = 1;
+    public static int INTERPRETER_VERSION_VALUE = 49;
+    public static int REVISION_NUMBER_VALUE = 0x101;
+
     byte[] ram;
     int pc;
     StackFrame frame;
 
+    int version;
+
     void load(InputStream in) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        int version = in.read();
+        version = in.read();
         if (version < 1 || version > 8) {
             throw new IllegalArgumentException("Unrecognized Z-machine version: "+version);
         }
@@ -77,7 +83,19 @@ class State implements Serializable {
     }
 
     void init(int screenWidth, int screenHeight) throws IOException {
-        //...
+        //... FLAGS1
+        //... FLAGS2
+        store8(INTERPRETER_NUMBER, INTERPRETER_NUMBER_VALUE);
+        store8(INTERPRETER_VERSION, INTERPRETER_VERSION_VALUE);
+        store8(SCREEN_HEIGHT_CHARS, screenHeight);
+        store8(SCREEN_WIDTH_CHARS, screenWidth);
+        store16(SCREEN_WIDTH, screenWidth);
+        store16(SCREEN_HEIGHT, screenHeight);
+        store8(FONT_WIDTH, 1);
+        store8(FONT_HEIGHT, 1);
+        //... BACKGROUND_COLOR
+        //... FOREGROUND_COLOR
+        store16(REVISION_NUMBER, REVISION_NUMBER_VALUE);
     }
 
     void loadSave(DataInputStream in) throws IOException {
@@ -122,7 +140,7 @@ class State implements Serializable {
     }
 
     int unpack(int address, boolean forRoutine) {
-        switch (read8(VERSION)) {
+        switch (version) {
         case 1: case 2: case 3:
             return address*2;
         case 4: case 5:
@@ -136,7 +154,7 @@ class State implements Serializable {
         case 8:
             return address*8;
         default:
-            throw new IllegalArgumentException("Unrecognized Z-machine version: " + read8(VERSION));
+            throw new IllegalArgumentException("Unrecognized Z-machine version: " + version);
         }
     }
 
@@ -161,5 +179,316 @@ class State implements Serializable {
         } else {
             store16(read16(GLOBAL_VAR_TABLE) + 2*(var - 16), val);
         }
+    }
+
+    boolean objAttr(int obj, int attr) {
+        if (obj == 0) {
+            return false;
+        }
+        int objTable = read16(OBJECT_TABLE);
+        int objAddr;
+        if (version < 4) {
+            objAddr = objTable + 62 + 9*(obj - 1);
+        } else {
+            objAddr = objTable + 126 + 14*(obj - 1);
+        }
+        return (read8(objAddr + attr/8) & (128 >> (attr&7))) != 0;
+    }
+
+    void objSetAttr(int obj, int attr, boolean value) {
+        if (obj == 0) {
+            return;
+        }
+        int objTable = read16(OBJECT_TABLE);
+        int objAddr;
+        if (version < 4) {
+            objAddr = objTable + 62 + 9*(obj - 1);
+        } else {
+            objAddr = objTable + 126 + 14*(obj - 1);
+        }
+        int b = read8(objAddr + attr/8);
+        if (value) {
+            b |= 128 >> (attr&7);
+        } else {
+            b &= ~(128 >> (attr&7));
+        }
+        store8(objAddr + attr/8, b);
+    }
+
+    int objParent(int obj) {
+        if (obj == 0) {
+            return 0;
+        }
+        int objTable = read16(OBJECT_TABLE);
+        if (version < 4) {
+            return read8(objTable + 62 + 9*(obj - 1) + 4);
+        } else {
+            return read16(objTable + 126 + 14*(obj - 1) + 6);
+        }
+    }
+
+    void objSetParent(int obj, int parent) {
+        if (obj == 0) {
+            return;
+        }
+        int objTable = read16(OBJECT_TABLE);
+        if (version < 4) {
+            store8(objTable + 62 + 9*(obj - 1) + 4, parent);
+        } else {
+            store16(objTable + 126 + 14*(obj - 1) + 6, parent);
+        }
+    }
+
+    int objSibling(int obj) {
+        if (obj == 0) {
+            return 0;
+        }
+        int objTable = read16(OBJECT_TABLE);
+        if (version < 4) {
+            return read8(objTable + 62 + 9*(obj - 1) + 5);
+        } else {
+            return read16(objTable + 126 + 14*(obj - 1) + 8);
+        }
+    }
+
+    void objSetSibling(int obj, int sibling) {
+        if (obj == 0) {
+            return;
+        }
+        int objTable = read16(OBJECT_TABLE);
+        if (version < 4) {
+            store8(objTable + 62 + 9*(obj - 1) + 5, sibling);
+        } else {
+            store16(objTable + 126 + 14*(obj - 1) + 8, sibling);
+        }
+    }
+
+    int objChild(int obj) {
+        if (obj == 0) {
+            return 0;
+        }
+        int objTable = read16(OBJECT_TABLE);
+        if (version < 4) {
+            return read8(objTable + 62 + 9*(obj - 1) + 6);
+        } else {
+            return read16(objTable + 126 + 14*(obj - 1) + 10);
+        }
+    }
+
+    void objSetChild(int obj, int child) {
+        if (obj == 0) {
+            return;
+        }
+        int objTable = read16(OBJECT_TABLE);
+        if (version < 4) {
+            store8(objTable + 62 + 9*(obj - 1) + 6, child);
+        } else {
+            store16(objTable + 126 + 14*(obj - 1) + 10, child);
+        }
+    }
+
+    int objProperties(int obj) {
+        if (obj == 0) {
+            return 0;
+        }
+        int objTable = read16(OBJECT_TABLE);
+        if (version < 4) {
+            return read16(objTable + 62 + 9*(obj - 1) + 7);
+        } else {
+            return read16(objTable + 126 + 14*(obj - 1) + 12);
+        }
+    }
+
+    void objMove(int obj, int newParent) {
+        int oldParent = objParent(obj);
+        if (oldParent != 0) {
+            int oldSibling = objSibling(obj);
+            int child = objChild(oldParent);
+            if (child == obj) {
+                objSetChild(oldParent, oldSibling);
+            }
+            while (child != 0) {
+                int sibling = objSibling(child);
+                if (sibling == obj) {
+                    objSetSibling(child, oldSibling);
+                    break;
+                }
+                child = sibling;
+            }
+        }
+        objSetParent(obj, newParent);
+        if (newParent == 0) {
+            objSetSibling(obj, 0);
+        } else {
+            objSetSibling(obj, objChild(newParent));
+            objSetChild(newParent, obj);
+        }
+    }
+
+    int getProp(int obj, int prop) {
+        if (obj == 0 || prop == 0) {
+            return 0;
+        }
+        int objTable = read16(OBJECT_TABLE);
+        if (version < 4) {
+            int props = read16(objTable + 62 + 9*(obj - 1) + 7);
+            props += 1 + 2*read8(props);
+            for (int size = read8(props); size != 0; size = read8(props)) {
+                if ((size & 31) < prop) {
+                    props += 2 + (size >> 5);
+                    continue;
+                } else if ((size & 31) == prop) {
+                    if ((size >> 5) == 0) {
+                        return read8(props + 1);
+                    }
+                    return read16(props + 1);
+                } else {
+                    break;
+                }
+            }
+        } else {
+            int props = read16(objTable + 126 + 14*(obj - 1) + 12);
+            props += 1 + 2*read8(props);
+            for (int size = read8(props); size != 0; size = read8(props)) {
+                if ((size & 63) < prop) {
+                    switch (size & 192) {
+                    case 0:
+                        props += 2;
+                        continue;
+                    case 64:
+                        props += 3;
+                        continue;
+                    default:
+                        int len = read8(props + 1) & 63;
+                        if (len == 0) {
+                            len = 64;
+                        }
+                        props += 2 + len;
+                        continue;
+                    }
+                } else if ((size & 63) == prop) {
+                    switch (size & 192) {
+                    case 0:
+                        return read8(props + 1);
+                    case 64:
+                        return read16(props + 1);
+                    default:
+                        switch (read8(props + 1) & 63) {
+                        case 1:
+                            return read8(props + 2);
+                        default:
+                            return read16(props + 2);
+                        }
+                    }
+                } else {
+                    break;
+                }
+            }
+        }
+        return read16(objTable + (prop - 1)*2);
+    }
+
+    int getPropAddr(int obj, int prop) {
+        if (obj == 0 || prop == 0) {
+            return 0;
+        }
+        int objTable = read16(OBJECT_TABLE);
+        if (version < 4) {
+            int props = read16(objTable + 62 + 9*(obj - 1) + 7);
+            props += 1 + 2*read8(props);
+            for (int size = read8(props); size != 0; size = read8(props)) {
+                if ((size & 31) < prop) {
+                    props += 2 + (size >> 5);
+                    continue;
+                } else if ((size & 31) == prop) {
+                    return props + 1;
+                } else {
+                    break;
+                }
+            }
+        } else {
+            int props = read16(objTable + 126 + 14*(obj - 1) + 12);
+            props += 1 + 2*read8(props);
+            for (int size = read8(props); size != 0; size = read8(props)) {
+                if ((size & 63) < prop) {
+                    switch (size & 192) {
+                    case 0:
+                        props += 2;
+                        continue;
+                    case 64:
+                        props += 3;
+                        continue;
+                    default:
+                        int len = read8(props + 1) & 63;
+                        if (len == 0) {
+                            len = 64;
+                        }
+                        props += 2 + len;
+                        continue;
+                    }
+                } else if ((size & 63) == prop) {
+                    if ((size & 128) == 0) {
+                        return props + 1;
+                    } else {
+                        return props + 2;
+                    }
+                } else {
+                    break;
+                }
+            }
+        }
+        return 0;
+    }
+
+    int getNextProp(int obj, int prop) {
+        if (obj == 0) {
+            return 0;
+        }
+        int objTable = read16(OBJECT_TABLE);
+        boolean nextProp = prop == 0;
+        if (version < 4) {
+            int props = read16(objTable + 62 + 9*(obj - 1) + 7);
+            props += 1 + 2*read8(props);
+            for (int size = read8(props); size != 0; size = read8(props)) {
+                int p = size & 31;
+                if (nextProp) {
+                    return p;
+                } else if (p == prop) {
+                    nextProp = true;
+                } else if (p > prop) {
+                    break;
+                }
+                props += 2 + (size >> 5);
+            }
+        } else {
+            int props = read16(objTable + 126 + 14*(obj - 1) + 12);
+            props += 1 + 2*read8(props);
+            for (int size = read8(props); size != 0; size = read8(props)) {
+                int p = size & 63;
+                if (nextProp) {
+                    return p;
+                } else if (p == prop) {
+                    nextProp = true;
+                } else if (p > prop) {
+                    break;
+                }
+                switch (size & 192) {
+                case 0:
+                    props += 2;
+                    break;
+                case 64:
+                    props += 3;
+                    break;
+                default:
+                    int len = read8(props + 1) & 63;
+                    if (len == 0) {
+                        len = 64;
+                    }
+                    props += 2 + len;
+                    break;
+                }
+            }
+        }
+        return 0;
     }
 }

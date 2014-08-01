@@ -20,7 +20,6 @@ class Machine implements Serializable {
     transient GlkWindow mainWindow;
     transient GlkWindow upperWindow;
 
-    int version;
     State state;
     State undoState = null;
     Random random = new Random();
@@ -30,7 +29,6 @@ class Machine implements Serializable {
         this.fileData = fileData;
         setGlk(glk);
         state = load();
-        version = state.read8(State.VERSION);
     }
 
     void setGlk(GlkDispatch glk) {

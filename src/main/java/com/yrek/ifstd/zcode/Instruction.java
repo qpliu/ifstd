@@ -86,7 +86,12 @@ abstract class Instruction {
         },
         new Instruction("jin", false, false, true, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                int a0 = operands[0].getValue();
+                int a1 = operands[1].getValue();
+                if ((machine.state.objParent(a0) == a1) == cond) {
+                    return doBranch(machine, branch);
+                }
+                return Result.Continue;
             }
         },
         new Instruction("test", false, false, true, false) {
@@ -113,17 +118,28 @@ abstract class Instruction {
         },
         new Instruction("test_attr", false, false, true, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                int a0 = operands[0].getValue();
+                int a1 = operands[1].getValue();
+                if (machine.state.objAttr(a0, a1) == cond) {
+                    return doBranch(machine, branch);
+                }
+                return Result.Continue;
             }
         },
         new Instruction("set_attr", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                int a0 = operands[0].getValue();
+                int a1 = operands[1].getValue();
+                machine.state.objSetAttr(a0, a1, true);
+                return Result.Continue;
             }
         },
         new Instruction("clear_attr", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                int a0 = operands[0].getValue();
+                int a1 = operands[1].getValue();
+                machine.state.objSetAttr(a0, a1, false);
+                return Result.Continue;
             }
         },
         new Instruction("store", false, false, false, false) {
@@ -134,7 +150,8 @@ abstract class Instruction {
         },
         new Instruction("insert_obj", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                machine.state.objMove(operands[0].getValue(), operands[1].getValue());
+                return Result.Continue;
             }
         },
         new Instruction("loadw", false, true, false, false) {
@@ -155,17 +172,26 @@ abstract class Instruction {
         },
         new Instruction("get_prop", false, true, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                int a0 = operands[0].getValue();
+                int a1 = operands[1].getValue();
+                machine.state.storeVar(store, machine.state.getProp(a0, a1));
+                return Result.Continue;
             }
         },
         new Instruction("get_prop_addr", false, true, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                int a0 = operands[0].getValue();
+                int a1 = operands[1].getValue();
+                machine.state.storeVar(store, machine.state.getPropAddr(a0, a1));
+                return Result.Continue;
             }
         },
         new Instruction("get_next_prop", false, true, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                int a0 = operands[0].getValue();
+                int a1 = operands[1].getValue();
+                machine.state.storeVar(store, machine.state.getNextProp(a0, a1));
+                return Result.Continue;
             }
         },
         new Instruction("add", false, true, false, false) {
@@ -313,7 +339,7 @@ abstract class Instruction {
                 return version < 5;
             }
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                if (machine.version < 5) {
+                if (machine.state.version < 5) {
                     machine.state.storeVar(store, ~operands[0].getValue());
                     return Result.Continue;
                 }
@@ -385,7 +411,7 @@ abstract class Instruction {
                 return version >= 5;
             }
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                if (machine.version < 5) {
+                if (machine.state.version < 5) {
                     machine.state.frame.pop();
                     return Result.Continue;
                 }
@@ -838,13 +864,13 @@ abstract class Instruction {
             }
         }
         int store = 0;
-        if (insn.store(machine.version)) {
+        if (insn.store(machine.state.version)) {
             store = machine.state.read8(machine.state.pc);
             machine.state.pc++;
         }
         boolean cond = false;
         int branch = 0;
-        if (insn.branch(machine.version)) {
+        if (insn.branch(machine.state.version)) {
             branch = machine.state.read8(machine.state.pc);
             cond = (branch & 128) != 0;
             branch &= 127;
