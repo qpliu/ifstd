@@ -226,12 +226,12 @@ abstract class Instruction {
         },
         new Instruction("call_2s", false, true, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                return doCall(machine, operands[0].getValue(), operands[1].getValue(), 0, 0, 0, 0, 0, 0, 1, store);
             }
         },
         new Instruction("call_2n", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                return doCall(machine, operands[0].getValue(), operands[1].getValue(), 0, 0, 0, 0, 0, 0, 1, -1);
             }
         },
         new Instruction("set_colour", false, false, false, false) {
@@ -241,7 +241,12 @@ abstract class Instruction {
         },
         new Instruction("throw", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                int a0 = operands[0].getValue();
+                int a1 = operands[1].getValue();
+                while (machine.state.frame.index > a1) {
+                    machine.state.frame = machine.state.frame.parent;
+                }
+                return retVal(machine, a0);
             }
         },
         null,
@@ -260,22 +265,34 @@ abstract class Instruction {
         },
         new Instruction("get_sibling", false, true, true, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                int result = machine.state.objSibling(operands[0].getValue());
+                machine.state.storeVar(store, result);
+                if (result != 0) {
+                    return doBranch(machine, branch);
+                }
+                return Result.Continue;
             }
         },
         new Instruction("get_child", false, true, true, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                int result = machine.state.objChild(operands[0].getValue());
+                machine.state.storeVar(store, result);
+                if (result != 0) {
+                    return doBranch(machine, branch);
+                }
+                return Result.Continue;
             }
         },
         new Instruction("get_parent", false, true, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                machine.state.storeVar(store, machine.state.objParent(operands[0].getValue()));
+                return Result.Continue;
             }
         },
         new Instruction("get_prop_len", false, true, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                machine.state.storeVar(store, machine.state.getPropLen(operands[0].getValue()));
+                return Result.Continue;
             }
         },
         new Instruction("inc", false, false, false, false) {
@@ -294,22 +311,29 @@ abstract class Instruction {
         },
         new Instruction("print_addr", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                StringBuilder sb = new StringBuilder();
+                ZSCII.decode(sb, machine.state, operands[0].getValue());
+                machine.glk.glk.putString(sb);
+                return Result.Continue;
             }
         },
         new Instruction("call_1s", false, true, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                return doCall(machine, operands[0].getValue(), 0, 0, 0, 0, 0, 0, 0, 0, store);
             }
         },
         new Instruction("remove_obj", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                machine.state.objMove(operands[0].getValue(), 0);
+                return Result.Continue;
             }
         },
         new Instruction("print_obj", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                StringBuilder sb = new StringBuilder();
+                ZSCII.decode(sb, machine.state, machine.state.objProperties(operands[0].getValue()) + 1);
+                machine.glk.glk.putString(sb);
+                return Result.Continue;
             }
         },
         new Instruction("ret", false, false, false, false) {
@@ -325,7 +349,10 @@ abstract class Instruction {
         },
         new Instruction("print_paddr", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                StringBuilder sb = new StringBuilder();
+                ZSCII.decode(sb, machine.state, machine.state.unpack(operands[0].getValue(), false));
+                machine.glk.glk.putString(sb);
+                return Result.Continue;
             }
         },
         new Instruction("load", false, true, false, false) {
@@ -343,7 +370,7 @@ abstract class Instruction {
                     machine.state.storeVar(store, ~operands[0].getValue());
                     return Result.Continue;
                 }
-                throw new RuntimeException("unimplemented");
+                return doCall(machine, operands[0].getValue(), 0, 0, 0, 0, 0, 0, 0, 0, -1);
             }
         },
     };
@@ -361,12 +388,14 @@ abstract class Instruction {
         },
         new Instruction("print", false, false, false, true) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                machine.glk.glk.putString(literalString);
+                return Result.Continue;
             }
         },
         new Instruction("print_ret", false, false, false, true) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                machine.glk.glk.putString(literalString.append('\n'));
+                return retVal(machine, 1);
             }
         },
         new Instruction("nop", false, false, false, false) {
@@ -415,7 +444,8 @@ abstract class Instruction {
                     machine.state.frame.pop();
                     return Result.Continue;
                 }
-                throw new RuntimeException("unimplemented");
+                machine.state.storeVar(store, machine.state.frame.index);
+                return Result.Continue;
             }
         },
         new Instruction("quit", false, false, false, false) {
@@ -425,7 +455,8 @@ abstract class Instruction {
         },
         new Instruction("new_line", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                machine.glk.glk.putChar('\n');
+                return retVal(machine, 1);
             }
         },
         new Instruction("verify", false, false, true, false) {
@@ -444,7 +475,12 @@ abstract class Instruction {
     private static final Instruction[] VAR = new Instruction[] {
         new Instruction("call", false, true, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                return doCall(machine, operands[0].getValue(),
+                              operands.length > 1 ? operands[1].getValue() : 0,
+                              operands.length > 2 ? operands[2].getValue() : 0,
+                              operands.length > 3 ? operands[3].getValue() : 0,
+                              0, 0, 0, 0,
+                              operands.length - 1, store);
             }
         },
         new Instruction("storew", false, false, false, false) {
@@ -461,7 +497,21 @@ abstract class Instruction {
         },
         new Instruction("put_prop", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                int a0 = operands[0].getValue();
+                int a1 = operands[1].getValue();
+                int a2 = operands[2].getValue();
+                int addr = machine.state.getPropAddr(a0, a1);
+                switch (machine.state.getPropLen(addr)) {
+                case 1:
+                    machine.state.store8(addr, a2);
+                    break;
+                case 2:
+                    machine.state.store16(addr, a2);
+                    break;
+                default:
+                    throw new IllegalArgumentException();
+                }
+                return Result.Continue;
             }
         },
         new Instruction("sread", false, false, false, false) {
@@ -474,12 +524,20 @@ abstract class Instruction {
         },
         new Instruction("print_char", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                StringBuilder sb = new StringBuilder();
+                ZSCII.appendZSCII(sb, machine.state, operands[0].getValue());
+                machine.glk.glk.putString(sb);
+                return Result.Continue;
             }
         },
         new Instruction("print_num", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                int a0 = operands[0].getValue() & 65535;
+                if (a0 >= 32768) {
+                    a0 -= 65536;
+                }
+                machine.glk.glk.putString(String.valueOf(a0));
+                return Result.Continue;
             }
         },
         new Instruction("random", false, true, false, false) {
@@ -508,6 +566,10 @@ abstract class Instruction {
                 return version == 6;
             }
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
+                if (machine.state.version != 6) {
+                    machine.state.storeVar(store, machine.state.frame.pop());
+                    return Result.Continue;
+                }
                 throw new RuntimeException("unimplemented");
             }
         },
@@ -523,7 +585,15 @@ abstract class Instruction {
         },
         new Instruction("call_vs2", true, true, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                return doCall(machine, operands[0].getValue(),
+                              operands.length > 1 ? operands[1].getValue() : 0,
+                              operands.length > 2 ? operands[2].getValue() : 0,
+                              operands.length > 3 ? operands[3].getValue() : 0,
+                              operands.length > 4 ? operands[4].getValue() : 0,
+                              operands.length > 5 ? operands[5].getValue() : 0,
+                              operands.length > 6 ? operands[6].getValue() : 0,
+                              operands.length > 7 ? operands[7].getValue() : 0,
+                              operands.length - 1, store);
             }
         },
         new Instruction("erase_window", false, false, false, false) {
@@ -589,12 +659,25 @@ abstract class Instruction {
         },
         new Instruction("call_vn", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                return doCall(machine, operands[0].getValue(),
+                              operands.length > 1 ? operands[1].getValue() : 0,
+                              operands.length > 2 ? operands[2].getValue() : 0,
+                              operands.length > 3 ? operands[3].getValue() : 0,
+                              0, 0, 0, 0,
+                              operands.length - 1, -1);
             }
         },
         new Instruction("call_vn2", true, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                return doCall(machine, operands[0].getValue(),
+                              operands.length > 1 ? operands[1].getValue() : 0,
+                              operands.length > 2 ? operands[2].getValue() : 0,
+                              operands.length > 3 ? operands[3].getValue() : 0,
+                              operands.length > 4 ? operands[4].getValue() : 0,
+                              operands.length > 5 ? operands[5].getValue() : 0,
+                              operands.length > 6 ? operands[6].getValue() : 0,
+                              operands.length > 7 ? operands[7].getValue() : 0,
+                              operands.length - 1, -1);
             }
         },
         new Instruction("tokenise", false, false, false, false) {
@@ -950,7 +1033,41 @@ abstract class Instruction {
         StackFrame frame = machine.state.frame;
         machine.state.frame = frame.parent;
         machine.state.pc = frame.returnAddress;
-        machine.state.storeVar(frame.returnAddress, val);
+        if (frame.result >= 0) {
+            machine.state.storeVar(frame.result, val);
+        }
+        return Result.Tick;
+    }
+
+    @SuppressWarnings("fallthrough")
+    private static Result doCall(Machine machine, int addr, int a1, int a2, int a3, int a4, int a5, int a6, int a7, int argc, int result) {
+        if (addr == 0) {
+            if (result >= 0) {
+                machine.state.storeVar(result, 0);
+            }
+            return Result.Tick;
+        }
+        addr = machine.state.unpack(addr, true);
+        StackFrame frame = new StackFrame(machine.state.frame, machine.state.pc, result, 127 >> (7-argc), machine.state.read8(addr));
+        addr++;
+        if (machine.state.version < 5) {
+            for (int i = 0; i < frame.locals.length; i++) {
+                frame.locals[i] = machine.state.read16(addr);
+                addr += 2;
+            }
+        }
+        switch (Math.min(argc, frame.locals.length)) {
+        default: frame.locals[6] = a7; /*FALLTHROUGH*/
+        case 6: frame.locals[5] = a6; /*FALLTHROUGH*/
+        case 5: frame.locals[4] = a5; /*FALLTHROUGH*/
+        case 4: frame.locals[3] = a4; /*FALLTHROUGH*/
+        case 3: frame.locals[2] = a3; /*FALLTHROUGH*/
+        case 2: frame.locals[1] = a2; /*FALLTHROUGH*/
+        case 1: frame.locals[0] = a1; /*FALLTHROUGH*/
+        case 0:
+        }
+        machine.state.frame = frame;
+        machine.state.pc = addr;
         return Result.Tick;
     }
 }

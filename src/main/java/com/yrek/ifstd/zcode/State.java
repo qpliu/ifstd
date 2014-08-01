@@ -491,4 +491,27 @@ class State implements Serializable {
         }
         return 0;
     }
+
+    int getPropLen(int propAddr) {
+        if (propAddr == 0) {
+            return 0;
+        }
+        if (version < 4) {
+            return read8(propAddr - 1) >> 5;
+        } else {
+            int size = read8(propAddr - 1);
+            switch (size & 192) {
+            case 0:
+                return 1;
+            case 64:
+                return 2;
+            default:
+                size &= 63;
+                if (size == 0) {
+                    size = 64;
+                }
+                return size;
+            }
+        }
+    }
 }

@@ -45,10 +45,9 @@ class ZSCII {
     };
 
     public static void decode(Appendable result, State state, int offset) throws IOException {
-        int version = state.read8(State.VERSION);
         byte[] alphabetTable;
         int alphabetTableOffset = 0;
-        switch (version) {
+        switch (state.version) {
         case 1:
             alphabetTable = ALPHABET_V1;
             break;
@@ -98,7 +97,7 @@ class ZSCII {
                     currentAlphabet = shiftLock;
                     break;
                 case 1:
-                    switch (version) {
+                    switch (state.version) {
                     case 1:
                         result.append('\n');
                         currentAlphabet = shiftLock;
@@ -110,7 +109,7 @@ class ZSCII {
                     }
                     break;
                 case 2: case 3:
-                    switch (version) {
+                    switch (state.version) {
                     case 1: case 2:
                         currentAlphabet = (currentAlphabet + chunk[i] - 1) % 3;
                         break;
@@ -122,7 +121,7 @@ class ZSCII {
                     break;
                 case 4: case 5:
                     currentAlphabet = (currentAlphabet + chunk[i] - 3) % 3;
-                    switch (version) {
+                    switch (state.version) {
                     case 1: case 2:
                         shiftLock = currentAlphabet;
                         break;
@@ -150,7 +149,7 @@ class ZSCII {
         }
     }
 
-    private static void appendZSCII(Appendable result, State state, int code) throws IOException {
+    public static void appendZSCII(Appendable result, State state, int code) throws IOException {
         switch (code) {
         case 0:
             return;
@@ -187,7 +186,7 @@ class ZSCII {
         case 218: case 219: case 220: case 221: case 222: case 223:
             byte[] table;
             int tableOffset = 0;
-            switch (state.read8(State.VERSION)) {
+            switch (state.version) {
             case 1: case 2: case 3: case 4:
                 table = EXTRA;
                 break;
@@ -216,10 +215,9 @@ class ZSCII {
     }
 
     public long encode(State state, String string) {
-        int version = state.read8(State.VERSION);
         byte[] alphabetTable;
         int alphabetTableOffset = 0;
-        switch (version) {
+        switch (state.version) {
         case 1:
             alphabetTable = ALPHABET_V1;
             break;
@@ -236,7 +234,7 @@ class ZSCII {
             break;
         }
         string = string.toLowerCase();
-        int[] chars = new int[version < 4 ? 6 : 9];
+        int[] chars = new int[state.version < 4 ? 6 : 9];
         Arrays.fill(chars, 5);
         int shiftLock = 0;
         for (int i = 0, j = 0; i < string.length() && j < chars.length; i++) {
@@ -264,7 +262,7 @@ class ZSCII {
                 j++;
                 continue;
             }
-            if (version >= 3) {
+            if (state.version >= 3) {
                 chars[j] = shift + 1;
                 j++;
                 if (j >= chars.length) {
