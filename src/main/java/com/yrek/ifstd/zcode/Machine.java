@@ -40,6 +40,7 @@ class Machine implements Serializable {
     State load() throws IOException {
         State newState = new State();
         newState.load(getData());
+        //... init
         return newState;
     }
 

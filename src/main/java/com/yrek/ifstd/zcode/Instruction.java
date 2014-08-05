@@ -2,6 +2,9 @@ package com.yrek.ifstd.zcode;
 
 import java.io.IOException;
 
+import com.yrek.ifstd.glk.GlkFile;
+import com.yrek.ifstd.glk.GlkStream;
+
 abstract class Instruction {
     private final String name;
     private final boolean call7;
@@ -405,13 +408,13 @@ abstract class Instruction {
         },
         new Instruction("save", false, false, false, false) {
             @Override boolean store(int version) {
-                return version >= 4;
+                return version > 4;
             }
             @Override boolean branch(int version) {
-                return version < 4;
+                return version <= 4;
             }
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                return doSave(machine, store, cond, branch);
             }
         },
         new Instruction("restore", false, false, false, false) {
@@ -422,12 +425,13 @@ abstract class Instruction {
                 return version < 4;
             }
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                return doRestore(machine, store);
             }
         },
         new Instruction("restart", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                machine.state.copyFrom(machine.load(), false, true);
+                return Result.Continue;
             }
         },
         new Instruction("ret_popped", false, false, false, false) {
@@ -687,7 +691,19 @@ abstract class Instruction {
         },
         new Instruction("encode_text", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                int a0 = operands[0].getValue();
+                int a1 = operands[1].getValue();
+                int a2 = operands[2].getValue();
+                int a3 = operands[3].getValue();
+                StringBuilder sb = new StringBuilder();
+                for (int i = a2; i < a1 + a2; i++) {
+                    ZSCII.appendZSCII(sb, machine.state, machine.state.read8(i));
+                }
+                long encoded = ZSCII.encode(machine.state, sb.toString());
+                machine.state.store16(a3, (int) (encoded >> 32));
+                machine.state.store16(a3 + 2, (int) (encoded >> 16));
+                machine.state.store16(a3 + 4, (int) encoded);
+                return Result.Continue;
             }
         },
         new Instruction("copy_table", false, false, false, false) {
@@ -702,7 +718,11 @@ abstract class Instruction {
         },
         new Instruction("check_arg_count", false, false, true, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                int a0 = operands[0].getValue();
+                if (((machine.state.frame.args & (1 << (a0 - 1))) != 0) == cond) {
+                    return doBranch(machine, branch);
+                }
+                return Result.Continue;
             }
         },
     };
@@ -710,22 +730,34 @@ abstract class Instruction {
     private static final Instruction[] EXT = new Instruction[] {
         new Instruction("save", false, true, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                for (Operand operand : operands) {
+                    operand.getValue();
+                }
+                return doSave(machine, store, cond, branch);
             }
         },
-        new Instruction("result", false, true, false, false) {
+        new Instruction("restore", false, true, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                for (Operand operand : operands) {
+                    operand.getValue();
+                }
+                return doRestore(machine, store);
             }
         },
         new Instruction("log_shift", false, true, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                int a0 = operands[0].getValue();
+                int a1 = (short) operands[1].getValue();
+                machine.state.storeVar(store, a1 > 0 ? a0 >>> a1 : a0 << -a1);
+                return Result.Continue;
             }
         },
         new Instruction("art_shift", false, true, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                int a0 = (short) operands[0].getValue();
+                int a1 = (short) operands[1].getValue();
+                machine.state.storeVar(store, a1 > 0 ? a0 >> a1 : a0 << -a1);
+                return Result.Continue;
             }
         },
         new Instruction("set_font", false, true, false, false) {
@@ -750,12 +782,22 @@ abstract class Instruction {
         },
         new Instruction("save_undo", false, true, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                if (machine.undoState == null) {
+                    machine.undoState = new State();
+                }
+                machine.undoState.copyFrom(machine.state, true, false);
+                machine.undoState.storeVar(store, 2);
+                machine.state.storeVar(store, 1);
+                return Result.Continue;
             }
         },
         new Instruction("restore_undo", false, true, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                if (machine.undoState == null) {
+                    return Result.Continue;
+                }
+                machine.state.copyFrom(machine.undoState, true, false);
+                return Result.Continue;
             }
         },
         new Instruction("print_unicode", false, false, false, false) {
@@ -1069,5 +1111,65 @@ abstract class Instruction {
         machine.state.frame = frame;
         machine.state.pc = addr;
         return Result.Tick;
+    }
+
+    private static Result doSave(Machine machine, int store, boolean cond, int branch) throws IOException {
+        GlkFile file = machine.glk.glk.fileCreateByPrompt(GlkFile.UsageSavedGame, GlkFile.ModeWrite, 0);
+        GlkStream stream = null;
+        if (file != null) {
+            stream = machine.glk.glk.streamOpenFile(file, GlkFile.ModeWrite, 0);
+        }
+        if (stream == null) {
+            if (machine.state.version <= 4) {
+                if (!cond) {
+                    doBranch(machine, branch);
+                }
+            } else {
+                machine.state.storeVar(store, 0);
+            }
+            return Result.Continue;
+        }
+        try {
+            if (machine.state.version <= 4) {
+                if (cond) {
+                    doBranch(machine, branch);
+                }
+                machine.state.writeSave(stream.getDataOutput());
+            } else {
+                State saveState = new State();
+                saveState.copyFrom(machine.state, true, false);
+                saveState.storeVar(store, 2);
+                saveState.writeSave(stream.getDataOutput());
+                machine.state.storeVar(store, 1);
+            }
+        } finally {
+            stream.close();
+        }
+        return Result.Continue;
+    }
+
+    private static Result doRestore(Machine machine, int store) throws IOException {
+        GlkFile file = machine.glk.glk.fileCreateByPrompt(GlkFile.UsageSavedGame, GlkFile.ModeRead, 0);
+        GlkStream stream = null;
+        if (file != null) {
+            stream = machine.glk.glk.streamOpenFile(file, GlkFile.ModeRead, 0);
+        }
+        if (stream == null) {
+            if (machine.state.version >= 4) {
+                machine.state.storeVar(store, 0);
+            }
+            return Result.Continue;
+        }
+        try {
+            if (!machine.state.loadSave(stream.getDataInput(), true)) {
+                if (machine.state.version >= 4) {
+                    machine.state.storeVar(store, 0);
+                }
+                return Result.Continue;
+            }
+        } finally {
+            stream.close();
+        }
+        return Result.Continue;
     }
 }

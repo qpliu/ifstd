@@ -1,8 +1,8 @@
 package com.yrek.ifstd.zcode;
 
-import java.io.InputStream;
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.Serializable;
 
 class StackFrame implements Serializable {
@@ -50,31 +50,32 @@ class StackFrame implements Serializable {
         this.sp = original.sp;
     }
 
-    private StackFrame(StackFrame parent, InputStream in) throws IOException {
+    private StackFrame(StackFrame parent, DataInput in) throws IOException {
         this.parent = parent;
         this.index = parent == null ? 0 : parent.index + 1;
-        this.returnAddress = read24(in);
-        int flags = read8(in);
+        this.returnAddress = (in.readByte() & 255) << 16;
+        this.returnAddress |= in.readShort() & 65535;
+        int flags = in.readByte()&255;
         this.locals = new int[flags & 15];
-        int result = read8(in);
+        int result = in.readByte()&255;
         if ((flags & 16) != 0) {
             result = -1;
         }
         this.result = result;
-        this.args = read8(in);
-        this.sp = read16(in);
+        this.args = in.readByte()&255;
+        this.sp = in.readShort()&65535;
         for (int i = 0; i < locals.length; i++) {
-            locals[i] = read16(in);
+            locals[i] = in.readShort()&65535;
         }
         if (sp > 0) {
             stack = new int[sp];
             for (int i = 0; i < sp; i++) {
-                stack[i] = read16(in);
+                stack[i] = in.readShort()&65535;
             }
         }
     }
 
-    static StackFrame read(InputStream in, int size) throws IOException {
+    static StackFrame read(DataInput in, int size) throws IOException {
         StackFrame frame = null;
         while (size > 0) {
             frame = new StackFrame(frame, in);
@@ -83,85 +84,38 @@ class StackFrame implements Serializable {
         return frame;
     }
 
-    private int read24(InputStream in) throws IOException {
-        int b = in.read();
-        if (b < 0) {
-            throw new IOException();
-        }
-        int result = b << 16;
-        b = in.read();
-        if (b < 0) {
-            throw new IOException();
-        }
-        result |= b << 8;
-        b = in.read();
-        if (b < 0) {
-            throw new IOException();
-        }
-        return result | b;
-    }
-
-    private int read16(InputStream in) throws IOException {
-        int b = in.read();
-        if (b < 0) {
-            throw new IOException();
-        }
-        int result = b << 8;
-        b = in.read();
-        if (b < 0) {
-            throw new IOException();
-        }
-        return result | b;
-    }
-
-    private int read8(InputStream in) throws IOException {
-        int b = in.read();
-        if (b < 0) {
-            throw new IOException();
-        }
-        return b;
-    }
-
     private int saveSize() {
         return 8 + 2*locals.length + 2*sp;
     }
 
-    private int totalSaveSize() {
+    int totalSaveSize() {
         if (parent != null) {
             return saveSize() + parent.totalSaveSize();
         }
         return saveSize();
     }
 
-    void save(OutputStream out) throws IOException {
-        out.write(0x53); out.write(0x74); out.write(0x6b); out.write(0x73); // Stks
-        int size = totalSaveSize();
-        out.write(size >> 24);
-        out.write(size >> 16);
-        out.write(size >> 8);
-        out.write(size);
+    void save(DataOutput out) throws IOException {
+        out.writeInt(0x53746b73); // Stks
+        out.writeInt(totalSaveSize());
         saveFrames(out);
     }
 
-    private void saveFrames(OutputStream out) throws IOException {
+    private void saveFrames(DataOutput out) throws IOException {
         if (parent != null) {
             parent.saveFrames(out);
         }
         out.write(returnAddress >> 16);
-        out.write(returnAddress >> 8);
-        out.write(returnAddress);
+        out.writeShort(returnAddress);
         out.write((result < 0 ? 16 : 0) | locals.length);
         out.write(result < 0 ? 0 : result);
         out.write(args);
-        out.write(sp >> 8);
-        out.write(sp);
+        out.writeShort(sp);
         for (int i = 0; i < locals.length; i++) {
-            out.write(locals[i] >> 8);
-            out.write(locals[i]);
+            out.writeShort(locals[i]);
         }
         for (int i = 0; i < sp; i++) {
-            out.write(stack[i] >> 8);
-            out.write(stack[i]);
+            out.writeShort(stack[i]);
         }
     }
 

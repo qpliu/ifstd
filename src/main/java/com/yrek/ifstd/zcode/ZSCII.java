@@ -214,7 +214,7 @@ class ZSCII {
         }
     }
 
-    public long encode(State state, String string) {
+    public static long encode(State state, String string) {
         byte[] alphabetTable;
         int alphabetTableOffset = 0;
         switch (state.version) {

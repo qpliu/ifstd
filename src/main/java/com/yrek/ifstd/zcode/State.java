@@ -1,8 +1,8 @@
 package com.yrek.ifstd.zcode;
 
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.Serializable;
@@ -14,6 +14,7 @@ class State implements Serializable {
 
     public static int VERSION = 0x0;
     public static int FLAGS1 = 0x1;
+    public static int RELEASE_NUMBER = 0x2;
     public static int HIGH_MEMORY = 0x4;
     public static int INITIAL_PC = 0x6;
     public static int DICTIONARY = 0x8;
@@ -21,6 +22,7 @@ class State implements Serializable {
     public static int GLOBAL_VAR_TABLE = 0xc;
     public static int STATIC_MEMORY = 0xe;
     public static int FLAGS2 = 0x10;
+    public static int SERIAL_NUMBER = 0x12;
     public static int ABBREVIATION_TABLE = 0x18;
     public static int LENGTH = 0x1a;
     public static int CHECKSUM = 0x1c;
@@ -98,22 +100,126 @@ class State implements Serializable {
         store16(REVISION_NUMBER, REVISION_NUMBER_VALUE);
     }
 
-    void loadSave(DataInputStream in) throws IOException {
-        //...
+    boolean loadSave(DataInput in, boolean preserveFlags) throws IOException {
+        if (in.readInt() != 0x464f524d) { // FORM
+            return false;
+        }
+        int size = in.readInt();
+        byte[] readRam = null;
+        StackFrame readFrame = null;
+        int readPc = 0;
+        boolean gotHd = false;
+        boolean gotMem = false;
+        boolean gotStks = false;
+        byte[] hd = new byte[] {
+            (byte) read8(RELEASE_NUMBER),
+            (byte) read8(RELEASE_NUMBER+1),
+            (byte) read8(SERIAL_NUMBER),
+            (byte) read8(SERIAL_NUMBER+1),
+            (byte) read8(SERIAL_NUMBER+2),
+            (byte) read8(SERIAL_NUMBER+3),
+            (byte) read8(SERIAL_NUMBER+4),
+            (byte) read8(SERIAL_NUMBER+5),
+            (byte) read8(CHECKSUM),
+            (byte) read8(CHECKSUM+1),
+        };
+        int count = 0;
+        while (count < size) {
+            int id = in.readInt();
+            int len = in.readInt();
+            count += 8 + ((len + 1)/2)*2;
+            switch (id) {
+            case 0x49466864: // IFhd
+                if (gotHd || len != 13) {
+                    return false;
+                }
+                gotHd = true;
+                for (byte b : hd) {
+                    if (b != in.readByte()) {
+                        return false;
+                    }
+                }
+                readPc = (in.readByte()&255) << 16;
+                readPc += in.readShort() & 65535;
+                in.readByte();
+                break;
+            case 0x554d656d: // UMem
+                if (gotMem) {
+                    return false;
+                }
+                gotMem = true;
+                readRam = new byte[len];
+                in.readFully(readRam);
+                if (len % 2 != 0) {
+                    in.readByte();
+                }
+                break;
+            case 0x434d656d: // CMem
+                if (gotMem) {
+                    return false;
+                }
+                gotMem = true;
+                throw new RuntimeException("not implemented");
+            case 0x53746b73: // Stks
+                if (gotStks) {
+                    return false;
+                }
+                gotStks = true;
+                readFrame = StackFrame.read(in, len);
+                break;
+            default:
+                in.skipBytes(((len+1)/2)*2);
+                break;
+            }
+        }
+        if (!gotHd || !gotMem || !gotStks) {
+            return false;
+        }
+        ram = readRam;
+        frame = readFrame;
+        pc = readPc;
+        return true;
     }
 
-    void writeSave(DataOutputStream in) throws IOException {
-        //...
+    void writeSave(DataOutput out) throws IOException {
+        out.writeInt(0x464f524d); // FORM
+        int size = 0;
+        size += 8 + 14; // IFhd
+        size += 8 + ((ram.length + 1)/2)*2; // UMem
+        size += 8 + ((frame.totalSaveSize()+1)/2)*2; // Stks
+        out.writeInt(size);
+        out.writeInt(0x49466864); // IFhd
+        out.writeInt(13);
+        out.writeShort(read16(RELEASE_NUMBER));
+        out.writeShort(read16(SERIAL_NUMBER));
+        out.writeShort(read16(SERIAL_NUMBER)+2);
+        out.writeShort(read16(SERIAL_NUMBER)+4);
+        out.writeShort(read16(CHECKSUM));
+        out.write(pc >> 16);
+        out.writeShort(pc);
+        out.write(0);
+        out.writeInt(0x554d656d); // UMem
+        out.writeInt(ram.length);
+        out.write(ram, 0, ram.length);
+        if ((ram.length % 2) != 0) {
+            out.write(0);
+        }
+        frame.save(out);
     }
 
     void copyFrom(State state, boolean deepCopyStack, boolean preserveFlags) {
         preserveFlags = preserveFlags && ram != null;
-        //...
+        int preserve = 0;
+        if (preserveFlags) {
+            preserve = read8(FLAGS2) & 3;
+        }
         if (ram == null || ram.length != state.ram.length) {
             ram = new byte[state.ram.length];
         }
         System.arraycopy(state.ram, 0, ram, 0, ram.length);
-        //...
+        if (preserveFlags) {
+            store8(FLAGS2, (read8(FLAGS2) & 252) | preserve);
+        }
         pc = state.pc;
         if (!deepCopyStack) {
             frame = state.frame;
