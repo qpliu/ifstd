@@ -2,6 +2,7 @@ package com.yrek.ifstd.zcode;
 
 import java.io.IOException;
 
+import com.yrek.ifstd.glk.GlkEvent;
 import com.yrek.ifstd.glk.GlkFile;
 import com.yrek.ifstd.glk.GlkStream;
 
@@ -523,7 +524,35 @@ abstract class Instruction {
                 return version >= 5;
             }
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                int a0 = operands[0].getValue();
+                int a1 = operands[1].getValue();
+                int a2 = operands.length > 2 ? operands[2].getValue() : 0;
+                int a3 = operands.length > 3 ? operands[3].getValue() : 0;
+                int bufferAddress = machine.state.version < 5 ? a0+1 : a0+2;
+                machine.mainWindow.requestLineEvent(machine.state.getBuffer(bufferAddress, machine.state.read8(a0)), 0);
+                GlkEvent event;
+                for (;;) {
+                    event = machine.glk.glk.select();
+                    if (event.type == GlkEvent.TypeLineInput) {
+                        break;
+                    }
+                    machine.handleEvent(event);
+                }
+                if (machine.state.version < 5) {
+                    machine.state.store8(a0+1+event.val1, 0);
+                } else {
+                    machine.state.store8(a0+1, event.val1);
+                }
+                for (int i = 0; i < event.val1; i++) {
+                    machine.state.store8(bufferAddress+i, Character.toLowerCase(machine.state.read8(bufferAddress+i)));
+                }
+                if (a1 != 0) {
+                    machine.state.getDictionary().parse(bufferAddress, event.val1, a1);
+                }
+                if (machine.state.version >= 5) {
+                    machine.state.storeVar(store, 13);
+                }
+                return Result.Continue;
             }
         },
         new Instruction("print_char", false, false, false, false) {
@@ -647,7 +676,20 @@ abstract class Instruction {
         },
         new Instruction("read_char", false, true, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                int a0 = operands[0].getValue();
+                int a1 = operands.length > 1 ? operands[1].getValue() : 0;
+                int a2 = operands.length > 2 ? operands[2].getValue() : 0;
+                machine.mainWindow.requestCharEvent();
+                GlkEvent event;
+                for (;;) {
+                    event = machine.glk.glk.select();
+                    if (event.type == GlkEvent.TypeCharInput) {
+                        break;
+                    }
+                    machine.handleEvent(event);
+                }
+                machine.state.storeVar(store, event.val1);
+                return Result.Continue;
             }
         },
         new Instruction("scan_table", false, true, true, false) {

@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.io.Serializable;
 
+import com.yrek.ifstd.glk.GlkByteArray;
 import com.yrek.ifstd.glk.GlkDispatch;
 
 class State implements Serializable {
@@ -59,8 +60,8 @@ class State implements Serializable {
     byte[] ram;
     int pc;
     StackFrame frame;
-
     int version;
+    private transient Dictionary dictionary;
 
     void load(InputStream in) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -619,5 +620,52 @@ class State implements Serializable {
                 return size;
             }
         }
+    }
+
+    GlkByteArray getBuffer(final int addr, final int length) {
+        return new GlkByteArray() {
+            int readIndex = 0;
+            int writeIndex = 0;
+            @Override public int getByteElement() {
+                readIndex++;
+                return read8(addr+readIndex-1);
+            }
+            @Override public void setByteElement(int element) {
+                writeIndex++;
+                store8(addr+writeIndex-1, element);
+            }
+            @Override public int getByteElementAt(int index) {
+                return read8(addr+index);
+            }
+            @Override public void setByteElementAt(int index, int element) {
+                store8(addr+index, element);
+            }
+            @Override public int getReadArrayIndex() {
+                return readIndex;
+            }
+            @Override public int setReadArrayIndex(int index) {
+                readIndex = index;
+                return index;
+            }
+            @Override public int getWriteArrayIndex() {
+                return writeIndex;
+            }
+            @Override public int setWriteArrayIndex(int index) {
+                writeIndex = index;
+                return index;
+            }
+            @Override public int getArrayLength() {
+                return length;
+            }
+            @Override public void setArrayLength(int length) {
+            }
+        };
+    }
+
+    Dictionary getDictionary() {
+        if (dictionary == null) {
+            dictionary = new Dictionary(this);
+        }
+        return dictionary;
     }
 }

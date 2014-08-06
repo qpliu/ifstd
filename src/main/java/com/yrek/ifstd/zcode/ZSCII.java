@@ -214,7 +214,7 @@ class ZSCII {
         }
     }
 
-    public static long encode(State state, String string) {
+    public static long encode(State state, CharSequence string) {
         byte[] alphabetTable;
         int alphabetTableOffset = 0;
         switch (state.version) {
@@ -233,12 +233,11 @@ class ZSCII {
             }
             break;
         }
-        string = string.toLowerCase();
         int[] chars = new int[state.version < 4 ? 6 : 9];
         Arrays.fill(chars, 5);
         int shiftLock = 0;
         for (int i = 0, j = 0; i < string.length() && j < chars.length; i++) {
-            int ch = (int) string.charAt(i);
+            int ch = (int) Character.toLowerCase(string.charAt(i));
             if (ch == ' ') {
                 chars[j] = 0;
                 j++;

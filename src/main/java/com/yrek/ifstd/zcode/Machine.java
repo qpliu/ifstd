@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.util.Random;
 
 import com.yrek.ifstd.glk.GlkDispatch;
+import com.yrek.ifstd.glk.GlkEvent;
 import com.yrek.ifstd.glk.GlkWindow;
 
 class Machine implements Serializable {
@@ -50,5 +51,8 @@ class Machine implements Serializable {
         } else {
             return new FileInputStream(fileData);
         }
+    }
+
+    void handleEvent(GlkEvent event) {
     }
 }
