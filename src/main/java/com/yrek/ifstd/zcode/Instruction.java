@@ -4,7 +4,9 @@ import java.io.IOException;
 
 import com.yrek.ifstd.glk.GlkEvent;
 import com.yrek.ifstd.glk.GlkFile;
+import com.yrek.ifstd.glk.GlkGestalt;
 import com.yrek.ifstd.glk.GlkStream;
+import com.yrek.ifstd.glk.GlkWindow;
 
 abstract class Instruction {
     private final String name;
@@ -238,9 +240,31 @@ abstract class Instruction {
                 return doCall(machine, operands[0].getValue(), operands[1].getValue(), 0, 0, 0, 0, 0, 0, 1, -1);
             }
         },
-        new Instruction("set_colour", false, false, false, false) {
+        new Instruction("set_color", false, false, false, false) {
+            private final int[] colors = new int[] {
+                -2, // current
+                -1, // default
+                0x00000000, // black
+                0x00e80000, // red
+                0x0000d000, // green
+                0x00e8e800, // yellow
+                0x000000d0, // blue
+                0x00f800f8, // magenta
+                0x0000e8e8, // cyan
+                0x00f8f8f8, // white
+                0x00b0b0b0, // light gray
+                0x00888888, // medium gray
+                0x00585858, // dark gray
+                -1,
+                -1,
+                -4, // transparent
+            };
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                int a0 = operands[0].getValue();
+                int a1 = operands[1].getValue();
+                int a2 = operands.length > 2 ? operands[2].getValue() : -1;
+                setColors(machine, a2, colors[a0], colors[a1]);
+                return Result.Continue;
             }
         },
         new Instruction("throw", false, false, false, false) {
@@ -694,7 +718,35 @@ abstract class Instruction {
         },
         new Instruction("scan_table", false, true, true, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                int a0 = operands[0].getValue();
+                int a1 = operands[1].getValue();
+                int a2 = operands[2].getValue();
+                int a3 = operands.length > 3 ? operands[3].getValue() : 0x82;
+                int table = a1;
+                int entrySize = a3 & 127;
+                int result = 0;
+                if ((a3 & 128) != 0) {
+                    for (int i = 0; i < a2; i++) {
+                        if (a0 == machine.state.read16(table)) {
+                            result = table;
+                            break;
+                        }
+                        table += entrySize;
+                    }
+                } else {
+                    for (int i = 0; i < a2; i++) {
+                        if (a0 == machine.state.read8(table)) {
+                            result = table;
+                            break;
+                        }
+                        table += entrySize;
+                    }
+                }
+                machine.state.storeVar(store, result);
+                if ((table != 0) == cond) {
+                    return doBranch(machine, branch);
+                }
+                return Result.Continue;
             }
         },
         new Instruction("not", false, true, false, false) {
@@ -728,7 +780,21 @@ abstract class Instruction {
         },
         new Instruction("tokenise", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                int a0 = operands[0].getValue();
+                int a1 = operands[1].getValue();
+                int a2 = operands[2].getValue();
+                int a3 = operands[3].getValue();
+                int bufferAddress = machine.state.version < 5 ? a0+1 : a0+2;
+                int bufferLength = machine.state.read8(bufferAddress-1);
+                if (machine.state.version < 5) {
+                    for (int i = 0; i < bufferLength; i++) {
+                        if (machine.state.read8(bufferAddress+i) == 0) {
+                            bufferLength = i;
+                        }
+                    }
+                }
+                machine.state.getDictionary().parse(a2, bufferAddress, bufferLength, a1, a3 != 0);
+                return Result.Continue;
             }
         },
         new Instruction("encode_text", false, false, false, false) {
@@ -750,7 +816,28 @@ abstract class Instruction {
         },
         new Instruction("copy_table", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                int a0 = operands[0].getValue();
+                int a1 = operands[1].getValue();
+                int a2 = operands[2].getValue();
+                boolean forward = false;
+                if (a2 >= 32768) {
+                    a2 = 65536 - a2;
+                    forward = true;
+                }
+                if (a1 == 0) {
+                    for (int i = 0; i < a2; i++) {
+                        machine.state.store8(a0+i, 0);
+                    }
+                } else if (forward || a0 < a1) {
+                    for (int i = 0; i < a2; i++) {
+                        machine.state.store8(a0+i, machine.state.read8(a1+i));
+                    }
+                } else {
+                    for (int i = a2-1; i >= 0; i--) {
+                        machine.state.store8(a0+i, machine.state.read8(a1+i));
+                    }
+                }                
+                return Result.Continue;
             }
         },
         new Instruction("print_table", false, false, false, false) {
@@ -844,17 +931,33 @@ abstract class Instruction {
         },
         new Instruction("print_unicode", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                machine.glk.glk.putCharUni(operands[0].getValue());
+                return Result.Continue;
             }
         },
         new Instruction("check_unicode", false, true, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                int a0 = operands[0].getValue();
+                int result = 0;
+                if (machine.glk.glk.gestalt(GlkGestalt.CharOutput, a0) != 0) {
+                    result |= 1;
+                }
+                if (machine.glk.glk.gestalt(GlkGestalt.CharInput, a0) != 0) {
+                    result |= 2;
+                }
+                machine.state.storeVar(store, result);
+                return Result.Continue;
             }
         },
         new Instruction("set_true_color", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                int a0 = operands[0].getValue();
+                int a1 = operands[1].getValue();
+                int a2 = operands.length > 2 ? operands[2].getValue() : -1;
+                int fg = a0 < 0 ? a0 : (a0 & 31) << 19 | (a0 & 992) << 6 | (a0 & 31744) >>> 7;
+                int bg = a1 < 0 ? a1 : (a1 & 31) << 19 | (a1 & 992) << 6 | (a1 & 31744) >>> 7;
+                setColors(machine, a2, fg, bg);
+                return Result.Continue;
             }
         },
         null,
@@ -924,7 +1027,7 @@ abstract class Instruction {
                 throw new RuntimeException("unimplemented");
             }
         },
-        new Instruction("buffer_string", false, true, false, false) {
+        new Instruction("buffer_screen", false, true, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
                 throw new RuntimeException("unimplemented");
             }
@@ -1213,5 +1316,43 @@ abstract class Instruction {
             stream.close();
         }
         return Result.Continue;
+    }
+
+    private static void setColors(Machine machine, int window, int foreground, int background) {
+        setColor(machine, GlkWindow.TypeTextBuffer, GlkStream.StyleHintTextColor, foreground);
+        setColor(machine, GlkWindow.TypeTextGrid, GlkStream.StyleHintTextColor, foreground);
+        setColor(machine, GlkWindow.TypeTextBuffer, GlkStream.StyleHintBackColor, background);
+        setColor(machine, GlkWindow.TypeTextGrid, GlkStream.StyleHintBackColor, background);
+    }
+
+    private static void setColor(Machine machine, int windowType, int styleHint, int color) {
+        if (color == -2) {
+            return;
+        }
+        if (color < 0) {
+            machine.glk.glk.styleHintClear(windowType, GlkStream.StyleNormal, styleHint);
+            machine.glk.glk.styleHintClear(windowType, GlkStream.StyleEmphasized, styleHint);
+            machine.glk.glk.styleHintClear(windowType, GlkStream.StylePreformatted, styleHint);
+            machine.glk.glk.styleHintClear(windowType, GlkStream.StyleHeader, styleHint);
+            machine.glk.glk.styleHintClear(windowType, GlkStream.StyleSubheader, styleHint);
+            machine.glk.glk.styleHintClear(windowType, GlkStream.StyleAlert, styleHint);
+            machine.glk.glk.styleHintClear(windowType, GlkStream.StyleNote, styleHint);
+            machine.glk.glk.styleHintClear(windowType, GlkStream.StyleBlockQuote, styleHint);
+            machine.glk.glk.styleHintClear(windowType, GlkStream.StyleInput, styleHint);
+            machine.glk.glk.styleHintClear(windowType, GlkStream.StyleUser1, styleHint);
+            machine.glk.glk.styleHintClear(windowType, GlkStream.StyleUser2, styleHint);
+        } else {
+            machine.glk.glk.styleHintSet(windowType, GlkStream.StyleNormal, styleHint, color);
+            machine.glk.glk.styleHintSet(windowType, GlkStream.StyleEmphasized, styleHint, color);
+            machine.glk.glk.styleHintSet(windowType, GlkStream.StylePreformatted, styleHint, color);
+            machine.glk.glk.styleHintSet(windowType, GlkStream.StyleHeader, styleHint, color);
+            machine.glk.glk.styleHintSet(windowType, GlkStream.StyleSubheader, styleHint, color);
+            machine.glk.glk.styleHintSet(windowType, GlkStream.StyleAlert, styleHint, color);
+            machine.glk.glk.styleHintSet(windowType, GlkStream.StyleNote, styleHint, color);
+            machine.glk.glk.styleHintSet(windowType, GlkStream.StyleBlockQuote, styleHint, color);
+            machine.glk.glk.styleHintSet(windowType, GlkStream.StyleInput, styleHint, color);
+            machine.glk.glk.styleHintSet(windowType, GlkStream.StyleUser1, styleHint, color);
+            machine.glk.glk.styleHintSet(windowType, GlkStream.StyleUser2, styleHint, color);
+        }
     }
 }
