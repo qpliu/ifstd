@@ -60,9 +60,9 @@ public class ZCode implements Runnable, Serializable {
         }
     }
 
-    public void resume(GlkDispatch glk) {
+    public void resume(GlkDispatch glk) throws IOException {
         assert suspended;
-        machine.glk = glk;
+        machine.setGlk(glk);
     }
 
     public boolean suspending() {

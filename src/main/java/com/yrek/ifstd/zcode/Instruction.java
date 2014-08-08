@@ -7,6 +7,7 @@ import com.yrek.ifstd.glk.GlkFile;
 import com.yrek.ifstd.glk.GlkGestalt;
 import com.yrek.ifstd.glk.GlkStream;
 import com.yrek.ifstd.glk.GlkWindow;
+import com.yrek.ifstd.glk.GlkWindowArrangement;
 
 abstract class Instruction {
     private final String name;
@@ -552,6 +553,7 @@ abstract class Instruction {
                 int a1 = operands[1].getValue();
                 int a2 = operands.length > 2 ? operands[2].getValue() : 0;
                 int a3 = operands.length > 3 ? operands[3].getValue() : 0;
+                updateWindowsPreInput(machine);
                 int bufferAddress = machine.state.version < 5 ? a0+1 : a0+2;
                 machine.mainWindow.requestLineEvent(machine.state.getBuffer(bufferAddress, machine.state.read8(a0)), 0);
                 GlkEvent event;
@@ -576,6 +578,7 @@ abstract class Instruction {
                 if (machine.state.version >= 5) {
                     machine.state.storeVar(store, 13);
                 }
+                updateWindowsPostInput(machine);
                 return Result.Continue;
             }
         },
@@ -632,12 +635,35 @@ abstract class Instruction {
         },
         new Instruction("split_window", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                int a0 = operands[0].getValue();
+                if (a0 == 0) {
+                    if (machine.upperWindow != null) {
+                        machine.upperWindow.close();
+                        machine.upperWindow = null;
+                    }
+                } else if (machine.upperWindow == null) {
+                    machine.upperWindow = machine.glk.glk.windowOpen(machine.mainWindow, GlkWindowArrangement.MethodAbove | GlkWindowArrangement.MethodFixed | GlkWindowArrangement.MethodNoBorder, a0, GlkWindow.TypeTextGrid, 1);
+                    machine.glk.add(machine.upperWindow);
+                } else {
+                    machine.upperWindow.getParent().setArrangement(GlkWindowArrangement.MethodAbove | GlkWindowArrangement.MethodFixed | GlkWindowArrangement.MethodNoBorder, a0, machine.upperWindow);
+                    if (machine.state.version <= 3) {
+                        machine.upperWindow.clear();
+                    }
+                }
+                return Result.Continue;
             }
         },
         new Instruction("set_window", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                int a0 = operands[0].getValue();
+                if (a0 != 0 && machine.upperWindow != null) {
+                    machine.currentWindow = 1;
+                    machine.glk.glk.setWindow(machine.upperWindow);
+                } else {
+                    machine.currentWindow = 0;
+                    machine.glk.glk.setWindow(machine.mainWindow);
+                }
+                return Result.Continue;
             }
         },
         new Instruction("call_vs2", true, true, false, false) {
@@ -655,7 +681,24 @@ abstract class Instruction {
         },
         new Instruction("erase_window", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                int a0 = operands[0].getValue();
+                if (a0 == 0) {
+                    machine.mainWindow.clear();
+                } else if (a0 == -1) {
+                    if (machine.upperWindow != null) {
+                        machine.upperWindow.close();
+                        machine.upperWindow = null;
+                    }
+                    machine.mainWindow.clear();
+                } else if (a0 == -2) {
+                    if (machine.upperWindow != null) {
+                        machine.upperWindow.clear();
+                    }
+                    machine.mainWindow.clear();
+                } else if (machine.upperWindow != null) {
+                    machine.upperWindow.clear();
+                }
+                return Result.Continue;
             }
         },
         new Instruction("erase_line", false, false, false, false) {
@@ -703,6 +746,7 @@ abstract class Instruction {
                 int a0 = operands[0].getValue();
                 int a1 = operands.length > 1 ? operands[1].getValue() : 0;
                 int a2 = operands.length > 2 ? operands[2].getValue() : 0;
+                updateWindowsPreInput(machine);
                 machine.mainWindow.requestCharEvent();
                 GlkEvent event;
                 for (;;) {
@@ -713,6 +757,7 @@ abstract class Instruction {
                     machine.handleEvent(event);
                 }
                 machine.state.storeVar(store, event.val1);
+                updateWindowsPostInput(machine);
                 return Result.Continue;
             }
         },
@@ -1354,5 +1399,39 @@ abstract class Instruction {
             machine.glk.glk.styleHintSet(windowType, GlkStream.StyleUser1, styleHint, color);
             machine.glk.glk.styleHintSet(windowType, GlkStream.StyleUser2, styleHint, color);
         }
+    }
+
+    private static void updateWindowsPreInput(Machine machine) throws IOException {
+        if (machine.state.version <= 3) {
+            int vars = machine.state.read16(State.GLOBAL_VAR_TABLE);
+            int obj = machine.state.read16(vars);
+            int s1 = machine.state.read16(vars+2);
+            int s2 = machine.state.read16(vars+4);
+            int objProperties = machine.state.objProperties(obj);
+            StringBuilder sb = new StringBuilder();
+            ZSCII.decode(sb, machine.state, objProperties+1);
+            if (machine.upperWindow == null) {
+                machine.upperWindow = machine.glk.glk.windowOpen(machine.mainWindow, GlkWindowArrangement.MethodAbove | GlkWindowArrangement.MethodFixed | GlkWindowArrangement.MethodNoBorder, 1, GlkWindow.TypeTextGrid, 1);
+                machine.glk.add(machine.upperWindow);
+            }
+            String score;
+            if (machine.state.version < 3 || (machine.state.read8(State.FLAGS1) & 2) == 0) {
+                score = " " + s1 + "/" + s2;
+            } else {
+                score = String.format(" %d:%02d", s1 % 24, s2 % 60);
+            }
+            while (sb.length() + score.length() < machine.screenWidth) {
+                sb.append(' ');
+            }
+            sb.setLength(Math.max(0,machine.screenWidth - score.length()));
+            sb.append(score);
+            machine.upperWindow.moveCursor(0, 0);
+            machine.upperWindow.getStream().putString(sb);
+        }
+        //... handle delayed upperwindow manipulation for quote boxes
+    }
+
+    private static void updateWindowsPostInput(Machine machine) throws IOException {
+        //... handle delayed upperwindow manipulation for quote boxes
     }
 }
