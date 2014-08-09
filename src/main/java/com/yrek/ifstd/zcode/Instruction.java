@@ -8,6 +8,8 @@ import com.yrek.ifstd.glk.GlkGestalt;
 import com.yrek.ifstd.glk.GlkStream;
 import com.yrek.ifstd.glk.GlkWindow;
 import com.yrek.ifstd.glk.GlkWindowArrangement;
+import com.yrek.ifstd.glk.GlkWindowSize;
+import com.yrek.ifstd.glk.UnicodeString;
 
 abstract class Instruction {
     private final String name;
@@ -342,7 +344,7 @@ abstract class Instruction {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
                 StringBuilder sb = new StringBuilder();
                 ZSCII.decode(sb, machine.state, operands[0].getValue());
-                machine.glk.glk.putString(sb);
+                machine.glk.glk.putStringUni(new UnicodeString.US(sb));
                 return Result.Continue;
             }
         },
@@ -361,7 +363,7 @@ abstract class Instruction {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
                 StringBuilder sb = new StringBuilder();
                 ZSCII.decode(sb, machine.state, machine.state.objProperties(operands[0].getValue()) + 1);
-                machine.glk.glk.putString(sb);
+                machine.glk.glk.putStringUni(new UnicodeString.US(sb));
                 return Result.Continue;
             }
         },
@@ -380,7 +382,7 @@ abstract class Instruction {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
                 StringBuilder sb = new StringBuilder();
                 ZSCII.decode(sb, machine.state, machine.state.unpack(operands[0].getValue(), false));
-                machine.glk.glk.putString(sb);
+                machine.glk.glk.putStringUni(new UnicodeString.US(sb));
                 return Result.Continue;
             }
         },
@@ -586,7 +588,7 @@ abstract class Instruction {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
                 StringBuilder sb = new StringBuilder();
                 ZSCII.appendZSCII(sb, machine.state, operands[0].getValue());
-                machine.glk.glk.putString(sb);
+                machine.glk.glk.putStringUni(new UnicodeString.US(sb));
                 return Result.Continue;
             }
         },
@@ -703,27 +705,75 @@ abstract class Instruction {
         },
         new Instruction("erase_line", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                int a0 = operands[0].getValue();
+                if (a0 != 1 || machine.currentWindow == 0 || machine.upperWindow == null) {
+                    return Result.Continue;
+                }
+                int x = machine.upperWindow.getCursorX();
+                int y = machine.upperWindow.getCursorY();
+                for (int i = y; i < machine.screenWidth; i++) {
+                    machine.upperWindow.getStream().putChar(' ');
+                }
+                machine.upperWindow.moveCursor(x, y);
+                return Result.Continue;
             }
         },
         new Instruction("set_cursor", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                int a0 = operands[0].getValue();
+                int a1 = operands[1].getValue();
+                if (machine.currentWindow != 0 && machine.upperWindow != null) {
+                    GlkWindowSize size = machine.upperWindow.getSize();
+                    int x = a0 >= 32768 ? size.width - a0 - 65536 : a0 - 1;
+                    int y = a1 >= 32768 ? size.height - a1 - 65536 : a1 - 1;
+                    machine.upperWindow.moveCursor(x, y);
+                }
+                return Result.Continue;
             }
         },
         new Instruction("get_cursor", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                int a0 = operands[0].getValue();
+                int x;
+                int y;
+                if (machine.currentWindow != 0 && machine.upperWindow != null) {
+                    x = machine.upperWindow.getCursorX();
+                    y = machine.upperWindow.getCursorY();
+                } else {
+                    x = machine.mainWindow.getCursorX();
+                    y = machine.mainWindow.getCursorY();
+                }
+                machine.state.store16(a0, y+1);
+                machine.state.store16(a0+2, x+1);
+                return Result.Continue;
             }
         },
         new Instruction("set_text_style", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                int style;
+                switch (operands[0].getValue()) {
+                case 0: style = GlkStream.StyleNormal; break;
+                case 1: style = GlkStream.StyleAlert; break;
+                case 2: style = GlkStream.StyleHeader; break;
+                case 3: style = GlkStream.StyleUser1; break;
+                case 4: style = GlkStream.StyleEmphasized; break;
+                case 5: style = GlkStream.StyleBlockQuote; break;
+                case 6: style = GlkStream.StyleSubheader; break;
+                case 7: style = GlkStream.StyleUser2; break;
+                default: 
+                    style = GlkStream.StylePreformatted;
+                    break;
+                }
+                machine.mainWindow.getStream().setStyle(style);
+                if (machine.upperWindow != null) {
+                    machine.upperWindow.getStream().setStyle(style);
+                }
+                return Result.Continue;
             }
         },
         new Instruction("buffer_mode", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                return Result.Continue;
             }
         },
         new Instruction("output_stream", false, false, false, false) {
@@ -887,7 +937,25 @@ abstract class Instruction {
         },
         new Instruction("print_table", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString) throws IOException {
-                throw new RuntimeException("unimplemented");
+                int a0 = operands[0].getValue();
+                int a1 = operands[1].getValue();
+                int a2 = operands.length > 2 ? operands[2].getValue() : 1;
+                int a3 = operands.length > 3 ? operands[3].getValue() : 0;
+                GlkWindow window = machine.currentWindow == 0 || machine.upperWindow == null ? machine.mainWindow : machine.upperWindow;
+                int x = window.getCursorX();
+                int y = window.getCursorY();
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < a2; i++) {
+                    sb.setLength(0);
+                    for (int j = 0; j < a1; j++) {
+                        ZSCII.appendZSCII(sb, machine.state, machine.state.read8(a0));
+                        a0++;
+                    }
+                    window.moveCursor(x, y + i);
+                    window.getStream().putStringUni(new UnicodeString.US(sb));
+                    a0 += a3;
+                }
+                return Result.Continue;
             }
         },
         new Instruction("check_arg_count", false, false, true, false) {

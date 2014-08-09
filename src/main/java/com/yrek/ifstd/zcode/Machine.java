@@ -75,7 +75,7 @@ class Machine implements Serializable {
         }
         if (glk.glk.gestalt(GlkGestalt.Timer, 0) != 0) {
             glk.glk.requestTimerEvents(1);
-            glk.glk.select();
+            handleEvent(glk.glk.select());
             glk.glk.requestTimerEvents(0);
         }
         GlkWindowSize windowSize = mainWindow.getSize();
@@ -104,5 +104,19 @@ class Machine implements Serializable {
     }
 
     void handleEvent(GlkEvent event) {
+        if (event.type == GlkEvent.TypeArrange) {
+            GlkWindowSize windowSize = mainWindow.getSize();
+            screenWidth = windowSize.width;
+            screenHeight = windowSize.height;
+            if (upperWindow != null) {
+                windowSize = upperWindow.getSize();
+                screenWidth = windowSize.width;
+                screenHeight += windowSize.height;
+            }
+            state.store8(State.SCREEN_HEIGHT_CHARS, screenHeight);
+            state.store8(State.SCREEN_WIDTH_CHARS, screenWidth);
+            state.store16(State.SCREEN_WIDTH, screenWidth);
+            state.store16(State.SCREEN_HEIGHT, screenHeight);
+        }
     }
 }
