@@ -86,6 +86,11 @@ class Machine implements Serializable {
             screenWidth = windowSize.width;
             screenHeight += windowSize.height;
         }
+        if (currentWindow == 0 || upperWindow == null) {
+            glk.glk.setWindow(mainWindow);
+        } else {
+            glk.glk.setWindow(upperWindow);
+        }
     }
 
     State load() throws IOException {
