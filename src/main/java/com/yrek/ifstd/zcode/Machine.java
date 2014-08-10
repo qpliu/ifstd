@@ -29,6 +29,7 @@ class Machine implements Serializable {
     transient GlkWindow upperWindow;
     transient int screenWidth;
     transient int screenHeight;
+    transient boolean suspending;
 
     State state;
     State undoState = null;

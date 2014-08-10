@@ -25,6 +25,7 @@ public class ZCode implements Runnable, Serializable {
     public void run() {
         suspended = false;
         suspending = false;
+        machine.suspending = false;
         try {
             for (;;) {
                 switch (Instruction.executeNext(machine)) {
@@ -51,6 +52,7 @@ public class ZCode implements Runnable, Serializable {
 
     public void suspend(boolean wait) throws InterruptedException {
         suspending = true;
+        machine.suspending = true;
         if (wait) {
             synchronized (machine) {
                 while (!suspended) {
