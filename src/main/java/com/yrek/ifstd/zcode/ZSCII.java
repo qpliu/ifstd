@@ -136,9 +136,11 @@ class ZSCII {
                         break;
                     }
                     result.append((char) (alphabetTable[alphabetTableOffset + currentAlphabet*26 + chunk[i] - 6] & 255));
+                    currentAlphabet = shiftLock;
                     break;
                 default:
                     result.append((char) (alphabetTable[alphabetTableOffset + currentAlphabet*26 + chunk[i] - 6] & 255));
+                    currentAlphabet = shiftLock;
                     break;
                 }
             }
@@ -262,7 +264,7 @@ class ZSCII {
                 continue;
             }
             if (state.version >= 3) {
-                chars[j] = shift + 1;
+                chars[j] = shift + 3;
                 j++;
                 if (j >= chars.length) {
                     break;
@@ -276,9 +278,9 @@ class ZSCII {
         }
         long result = 0;
         for (int i = 0; i < chars.length; i += 3) {
-            result <<= 8;
+            result <<= 16;
             result |= ((chars[i]&31) << 10) | ((chars[i+1]&31) << 5) | (chars[i+2]&31);
         }
-        return result | 128;
+        return result | 32768;
     }
 }

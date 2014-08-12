@@ -139,4 +139,11 @@ class StackFrame implements Serializable {
         sp--;
         return stack[sp];
     }
+
+    int peek() {
+        if (sp <= 0 || stack == null) {
+            return 0;
+        }
+        return stack[sp-1];
+    }
 }

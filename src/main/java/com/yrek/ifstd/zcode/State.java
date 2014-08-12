@@ -61,6 +61,7 @@ class State implements Serializable {
     int pc;
     StackFrame frame;
     int version;
+    int globalVarTable;
     private transient Dictionary dictionary;
 
     void load(InputStream in) throws IOException {
@@ -83,6 +84,7 @@ class State implements Serializable {
             frame = new StackFrame(null, 0, 0, 0, read8(pc));
             pc++;
         }
+        globalVarTable = read16(GLOBAL_VAR_TABLE);
     }
 
     void init(int screenWidth, int screenHeight) throws IOException {
@@ -273,7 +275,19 @@ class State implements Serializable {
         } else if (var < 16) {
             return frame.locals[var - 1];
         } else {
-            return read16(read16(GLOBAL_VAR_TABLE) + 2*(var - 16));
+            return read16(globalVarTable + 2*(var - 16));
+        }
+    }
+
+    String peekVar(int var) {
+        if (var == 0) {
+            return String.format("(-SP)=%x",frame.peek());
+        } else if (var < 0 || var >= 256) {
+            return String.format("?=%x",var);
+        } else if (var < 16) {
+            return String.format("l%x=%x",var,frame.locals[var-1]);
+        } else {
+            return String.format("g%x=%x",var-16,read16(globalVarTable + 2*(var - 16)));
         }
     }
 
@@ -284,7 +298,7 @@ class State implements Serializable {
         } else if (var < 16) {
             frame.locals[var-1] = val;
         } else {
-            store16(read16(GLOBAL_VAR_TABLE) + 2*(var - 16), val);
+            store16(globalVarTable + 2*(var - 16), val);
         }
     }
 
@@ -504,7 +518,7 @@ class State implements Serializable {
             int props = read16(objTable + 62 + 9*(obj - 1) + 7);
             props += 1 + 2*read8(props);
             for (int size = read8(props); size != 0; size = read8(props)) {
-                if ((size & 31) < prop) {
+                if ((size & 31) > prop) {
                     props += 2 + (size >> 5);
                     continue;
                 } else if ((size & 31) == prop) {
@@ -517,7 +531,7 @@ class State implements Serializable {
             int props = read16(objTable + 126 + 14*(obj - 1) + 12);
             props += 1 + 2*read8(props);
             for (int size = read8(props); size != 0; size = read8(props)) {
-                if ((size & 63) < prop) {
+                if ((size & 63) > prop) {
                     switch (size & 192) {
                     case 0:
                         props += 2;

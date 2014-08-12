@@ -12,6 +12,8 @@ import com.yrek.ifstd.glk.GlkWindowSize;
 import com.yrek.ifstd.glk.UnicodeString;
 
 abstract class Instruction {
+    private static final boolean TRACE = false;
+
     private final String name;
     private final boolean call7;
     private final boolean store;
@@ -374,7 +376,11 @@ abstract class Instruction {
         },
         new Instruction("jump", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                machine.state.pc += operands[0].getValue() - 2;
+                int a0 = operands[0].getValue();
+                if (a0 >= 32768) {
+                    a0 -= 65536;
+                }
+                machine.state.pc += a0 - 2;
                 return Result.Tick;
             }
         },
@@ -488,7 +494,7 @@ abstract class Instruction {
         new Instruction("new_line", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 machine.glk.glk.putChar('\n');
-                return retVal(machine, 1);
+                return Result.Continue;
             }
         },
         new Instruction("verify", false, false, true, false) {
@@ -1262,6 +1268,7 @@ abstract class Instruction {
         int branch = 0;
         if (insn.branch(machine.state.version)) {
             branch = machine.state.read8(machine.state.pc);
+            machine.state.pc++;
             cond = (branch & 128) != 0;
             branch &= 127;
             if ((branch & 64) != 0) {
@@ -1282,6 +1289,37 @@ abstract class Instruction {
                 machine.state.pc += 2;
             }
             machine.state.pc += 2;
+        }
+        if (TRACE) {
+            System.out.print(String.format("%04x:%s", oldPc, insn.name));
+            for (int i = 0; i < operands.length; i++) {
+                System.out.print(String.format(" %s",operands[i].peekValue()));
+            }
+            if (insn.store(machine.state.version)) {
+                if (store == 0) {
+                    System.out.print(" ->(SP+)");
+                } else if (store < 0 || store >= 256) {
+                    System.out.print(String.format(" ->?=%x",store));
+                } else if (store < 16) {
+                    System.out.print(String.format(" ->l%x",store));
+                } else {
+                    System.out.print(String.format(" ->g%x",store-16));
+                }
+            }
+            if (insn.branch(machine.state.version)) {
+                System.out.print(String.format(" %s:%x->", cond, branch));
+                switch (branch) {
+                case 0: System.out.print("rfalse"); break;
+                case 1: System.out.print("rtrue"); break;
+                default:
+                    System.out.print(String.format("%04x",machine.state.pc+branch-2));
+                    break;
+                }
+            }
+            if (insn.literalString) {
+                System.out.print(String.format(" str:%s", literalString));
+            }
+            System.out.println();
         }
         return insn.execute(machine, operands, store, cond, branch, literalString, oldPc);
     }
@@ -1319,6 +1357,17 @@ abstract class Instruction {
                 return value;
             case VAR:
                 return machine.state.readVar(value);
+            default:
+                throw new AssertionError();
+            }
+        }
+
+        String peekValue() {
+            switch (type) {
+            case LARGE: case SMALL:
+                return String.format("#%x", value);
+            case VAR:
+                return machine.state.peekVar(value);
             default:
                 throw new AssertionError();
             }

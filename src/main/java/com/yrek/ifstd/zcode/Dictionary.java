@@ -19,6 +19,7 @@ class Dictionary {
             address++;
             wordChars.add(state.read8(address));
         }
+        address++;
         int entryLength = state.read8(address);
         int entryCount = state.read16(address+1);
         if (entryCount > 32767) {
@@ -32,7 +33,7 @@ class Dictionary {
             }
         } else {
             for (int i = 0; i < entryCount; i++) {
-                table.put(((long) state.read16(address)) << 32 | ((long) state.read16(address)) << 16 | (long) state.read16(address+2), address);
+                table.put(((long) state.read16(address)) << 32 | ((long) state.read16(address+2)) << 16 | (long) state.read16(address+4), address);
                 address += entryLength;
             }
         }
@@ -76,6 +77,7 @@ class Dictionary {
             ends.add(bufferLength);
         }
         int count = Math.min(starts.size(), state.read8(parseAddress));
+        state.store8(parseAddress+1,count);
         for (int i = 0; i < count; i++) {
             final int start = starts.get(i);
             final int end = ends.get(i);
@@ -99,13 +101,13 @@ class Dictionary {
             });
             Integer entry = table.get(encoded);
             if (entry != null) {
-                state.store16(bufferAddress+1+4*i, entry);
-                state.store8(bufferAddress+3+4*i, start);
-                state.store8(bufferAddress+4+4*i, end);
+                state.store16(parseAddress+2+4*i, entry);
+                state.store8(parseAddress+4+4*i, start);
+                state.store8(parseAddress+5+4*i, end);
             } else if (!flag) {
-                state.store16(bufferAddress+1+4*i, 0);
-                state.store8(bufferAddress+3+4*i, start);
-                state.store8(bufferAddress+4+4*i, end);
+                state.store16(parseAddress+2+4*i, 0);
+                state.store8(parseAddress+4+4*i, start);
+                state.store8(parseAddress+5+4*i, end);
             }
         }
     }

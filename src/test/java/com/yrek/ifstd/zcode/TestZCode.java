@@ -5,7 +5,6 @@ import java.io.StringReader;
 import java.io.StringWriter;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.yrek.ifstd.glk.GlkDispatch;
@@ -57,10 +56,10 @@ public class TestZCode {
     };
 
     private static final String[] praxixOutro = new String[] {
+        "\n",
         "Goodbye.\n",
     };
 
-    @Ignore
     @Test
     public void praxix() throws Exception {
         testFile("/praxix.z5", praxixIntro, praxixOutro, new String[][] {
@@ -68,7 +67,7 @@ public class TestZCode {
         }, null, null);
     }
 
-    @Ignore
+    @org.junit.Ignore
     @Test
     public void praxixOperand() throws Exception {
         testFile("/praxix.z5", praxixIntro, praxixOutro, new String[][] {
