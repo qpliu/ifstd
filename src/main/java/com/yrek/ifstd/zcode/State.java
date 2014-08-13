@@ -229,6 +229,7 @@ class State implements Serializable {
         } else {
             frame = new StackFrame(state.frame);
         }
+        globalVarTable = read16(GLOBAL_VAR_TABLE);
     }
 
     int read8(int location) {
@@ -279,7 +280,19 @@ class State implements Serializable {
         }
     }
 
-    String peekVar(int var) {
+    int peekVar(int var) {
+        if (var == 0) {
+            return frame.pop();
+        } else if (var < 0 || var >= 256) {
+            return 0;
+        } else if (var < 16) {
+            return frame.locals[var - 1];
+        } else {
+            return read16(globalVarTable + 2*(var - 16));
+        }
+    }
+
+    String traceVar(int var) {
         if (var == 0) {
             return String.format("(-SP)=%x",frame.peek());
         } else if (var < 0 || var >= 256) {
@@ -293,6 +306,18 @@ class State implements Serializable {
 
     void storeVar(int var, int val) {
         if (var == 0) {
+            frame.push(val);
+        } else if (var < 0 || var >= 256) {
+        } else if (var < 16) {
+            frame.locals[var-1] = val;
+        } else {
+            store16(globalVarTable + 2*(var - 16), val);
+        }
+    }
+
+    void overwriteVar(int var, int val) {
+        if (var == 0) {
+            frame.pop();
             frame.push(val);
         } else if (var < 0 || var >= 256) {
         } else if (var < 16) {
