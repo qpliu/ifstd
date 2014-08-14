@@ -294,11 +294,24 @@ public class TestZCode {
         }, null, null);
     }
 
-    @org.junit.Ignore
     @Test
     public void praxixMultiundo() throws Exception {
         testFile("/praxix.z5", praxixIntro, praxixOutro, new String[][] {
             new String[] { ">", "multiundo\n" },
+            new String[] { "Multi-level undo:" },
+            new String[] { "(Note: this capability is not required by the spec.)" },
+            new String[] { "" },
+            new String[] { "Interpreter claims to support undo." },
+            new String[] { "" },
+            new String[] { "Undo 1 saved..." },
+            new String[] { "Undo 2 saved..." },
+            new String[] { "Restoring undo 2..." },
+            new String[] { "Undo 2 succeeded, return value 2." },
+            new String[] { "loc=77 glob=777" },
+            new String[] { "Restoring undo 1..." },
+            new String[] { "Undo 1 succeeded, return value 2." },
+            new String[] { "loc=99 glob=999" },
+            new String[] { "" },
             new String[] { "Passed." },
             new String[] { "" },
             new String[] { ">", "quit\n" },

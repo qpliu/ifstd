@@ -32,7 +32,8 @@ class Machine implements Serializable {
     transient boolean suspending;
 
     State state;
-    State undoState = null;
+    State[] undoStates = new State[2];
+    int undoStateIndex = 0;
     Random random = new Random();
 
     Machine(byte[] byteData, File fileData, GlkDispatch glk) throws IOException {

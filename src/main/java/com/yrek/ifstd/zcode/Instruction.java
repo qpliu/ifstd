@@ -882,8 +882,8 @@ abstract class Instruction {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 int a0 = operands[0].getValue();
                 int a1 = operands[1].getValue();
-                int a2 = operands[2].getValue();
-                int a3 = operands[3].getValue();
+                int a2 = operands.length > 2 ? operands[2].getValue() : 0;
+                int a3 = operands.length > 3 ? operands[3].getValue() : 0;
                 int bufferAddress = machine.state.version < 5 ? a0+1 : a0+2;
                 int bufferLength = machine.state.read8(bufferAddress-1);
                 if (machine.state.version < 5) {
@@ -1034,22 +1034,35 @@ abstract class Instruction {
         },
         new Instruction("save_undo", false, true, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                if (machine.undoState == null) {
-                    machine.undoState = new State();
+                State undoState;
+                if (machine.undoStateIndex >= machine.undoStates.length) {
+                    undoState = machine.undoStates[0];
+                    for (int i = 0; i < machine.undoStates.length-1; i++) {
+                        machine.undoStates[i] = machine.undoStates[i+1];
+                    }
+                    machine.undoStates[machine.undoStates.length-1] = undoState;
+                } else {
+                    undoState = machine.undoStates[machine.undoStateIndex];
+                    if (undoState == null) {
+                        undoState = new State();
+                    }
+                    machine.undoStates[machine.undoStateIndex] = undoState;
+                    machine.undoStateIndex++;
                 }
-                machine.undoState.copyFrom(machine.state, true, false);
-                machine.undoState.storeVar(store, 2);
+                undoState.copyFrom(machine.state, true, false);
+                undoState.storeVar(store, 2);
                 machine.state.storeVar(store, 1);
                 return Result.Continue;
             }
         },
         new Instruction("restore_undo", false, true, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                if (machine.undoState == null) {
+                if (machine.undoStateIndex <= 0) {
                     machine.state.storeVar(store, 0);
                     return Result.Continue;
                 }
-                machine.state.copyFrom(machine.undoState, true, false);
+                machine.undoStateIndex--;
+                machine.state.copyFrom(machine.undoStates[machine.undoStateIndex], true, false);
                 return Result.Continue;
             }
         },
@@ -1228,7 +1241,7 @@ abstract class Instruction {
                 count++;
                 types <<= 2;
             }
-            if (insn.call7 && count == 4) {
+            if (insn.call7) {
                 types = machine.state.read8(machine.state.pc+1);
                 for (int i = 0; i < 4; i++) {
                     if ((types & 192) == 192) {
@@ -1246,15 +1259,13 @@ abstract class Instruction {
                     operands[i] = new Operand(machine, (types >> (6 - 2*i))&3);
                 }
             } else {
+                int types2 = machine.state.read8(machine.state.pc);
                 machine.state.pc++;
                 for (int i = 0; i < Math.min(count, 4); i++) {
                     operands[i] = new Operand(machine, (types >> (6 - 2*i))&3);
                 }
-                if (count > 4) {
-                    types = machine.state.read8(machine.state.pc-1);
-                    for (int i = 4; i < count; i++) {
-                        operands[i] = new Operand(machine, (types >> (14 - 2*i))&3);
-                    }
+                for (int i = 4; i < count; i++) {
+                    operands[i] = new Operand(machine, (types2 >> (14 - 2*i))&3);
                 }
             }
         }

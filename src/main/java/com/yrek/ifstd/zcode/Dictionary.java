@@ -44,6 +44,10 @@ class Dictionary {
     }
 
     void parse(int userDictionary, int bufferAddress, int bufferLength, int parseAddress, boolean flag) {
+        if (userDictionary == 0) {
+            parse(state, table, wordChars, bufferAddress, bufferLength, parseAddress, false);
+            return;
+        }
         HashMap<Long,Integer> table = new HashMap<Long,Integer>();
         HashSet<Integer> wordChars = new HashSet<Integer>();
         init(state, userDictionary, table, wordChars);
