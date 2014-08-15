@@ -345,9 +345,18 @@ abstract class Instruction {
         },
         new Instruction("print_addr", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                StringBuilder sb = new StringBuilder();
-                ZSCII.decode(sb, machine.state, operands[0].getValue());
-                machine.glk.glk.putStringUni(new UnicodeString.US(sb));
+                int a0 = operands[0].getValue();
+                Stream3 stream3 = machine.getStream3();
+                if (stream3 != null) {
+                    ZSCII.decode(stream3, machine.state, a0);
+                    return Result.Continue;
+                }
+                GlkStream stream = machine.getOutputStream();
+                if (stream != null) {
+                    StringBuilder sb = new StringBuilder();
+                    ZSCII.decode(sb, machine.state, a0);
+                    stream.putStringUni(new UnicodeString.US(sb));
+                }
                 return Result.Continue;
             }
         },
@@ -364,9 +373,18 @@ abstract class Instruction {
         },
         new Instruction("print_obj", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                StringBuilder sb = new StringBuilder();
-                ZSCII.decode(sb, machine.state, machine.state.objProperties(operands[0].getValue()) + 1);
-                machine.glk.glk.putStringUni(new UnicodeString.US(sb));
+                int a0 = operands[0].getValue();
+                Stream3 stream3 = machine.getStream3();
+                if (stream3 != null) {
+                    ZSCII.decode(stream3, machine.state, machine.state.objProperties(a0) + 1);
+                    return Result.Continue;
+                }
+                GlkStream stream = machine.getOutputStream();
+                if (stream != null) {
+                    StringBuilder sb = new StringBuilder();
+                    ZSCII.decode(sb, machine.state, machine.state.objProperties(a0) + 1);
+                    stream.putStringUni(new UnicodeString.US(sb));
+                }
                 return Result.Continue;
             }
         },
@@ -383,9 +401,18 @@ abstract class Instruction {
         },
         new Instruction("print_paddr", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                StringBuilder sb = new StringBuilder();
-                ZSCII.decode(sb, machine.state, machine.state.unpack(operands[0].getValue(), false));
-                machine.glk.glk.putStringUni(new UnicodeString.US(sb));
+                int a0 = operands[0].getValue();
+                Stream3 stream3 = machine.getStream3();
+                if (stream3 != null) {
+                    ZSCII.decode(stream3, machine.state, machine.state.unpack(a0, false));
+                    return Result.Continue;
+                }
+                GlkStream stream = machine.getOutputStream();
+                if (stream != null) {
+                    StringBuilder sb = new StringBuilder();
+                    ZSCII.decode(sb, machine.state, machine.state.unpack(a0, false));
+                    stream.putStringUni(new UnicodeString.US(sb));
+                }
                 return Result.Continue;
             }
         },
@@ -422,13 +449,30 @@ abstract class Instruction {
         },
         new Instruction("print", false, false, false, true) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                machine.glk.glk.putString(literalString);
+                Stream3 stream3 = machine.getStream3();
+                if (stream3 != null) {
+                    stream3.append(literalString);
+                    return Result.Continue;
+                }
+                GlkStream stream = machine.getOutputStream();
+                if (stream != null) {
+                    stream.putString(literalString);
+                }
                 return Result.Continue;
             }
         },
         new Instruction("print_ret", false, false, false, true) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                machine.glk.glk.putString(literalString.append('\n'));
+                Stream3 stream3 = machine.getStream3();
+                if (stream3 != null) {
+                    stream3.append(literalString);
+                    stream3.append('\n');
+                    return retVal(machine, 1);
+                }
+                GlkStream stream = machine.getOutputStream();
+                if (stream != null) {
+                    stream.putString(literalString.append('\n'));
+                }
                 return retVal(machine, 1);
             }
         },
@@ -490,10 +534,19 @@ abstract class Instruction {
         },
         new Instruction("new_line", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                machine.glk.glk.putChar('\n');
+                Stream3 stream3 = machine.getStream3();
+                if (stream3 != null) {
+                    stream3.append('\n');
+                    return Result.Continue;
+                }
+                GlkStream stream = machine.getOutputStream();
+                if (stream != null) {
+                    stream.putChar('\n');
+                }
                 return Result.Continue;
             }
         },
+        null,
         new Instruction("verify", false, false, true, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 return doBranch(machine, branch);
@@ -592,15 +645,33 @@ abstract class Instruction {
         },
         new Instruction("print_char", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                StringBuilder sb = new StringBuilder();
-                ZSCII.appendZSCII(sb, machine.state, operands[0].getValue());
-                machine.glk.glk.putStringUni(new UnicodeString.US(sb));
+                int a0 = operands[0].getValue();
+                Stream3 stream3 = machine.getStream3();
+                if (stream3 != null) {
+                    ZSCII.appendZSCII(stream3, machine.state, a0);
+                    return Result.Continue;
+                }
+                GlkStream stream = machine.getOutputStream();
+                if (stream != null) {
+                    StringBuilder sb = new StringBuilder();
+                    ZSCII.appendZSCII(sb, machine.state, a0);
+                    machine.glk.glk.putStringUni(new UnicodeString.US(sb));
+                }
                 return Result.Continue;
             }
         },
         new Instruction("print_num", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                machine.glk.glk.putString(String.valueOf(operands[0].getSignedValue()));
+                int a0 = operands[0].getSignedValue();
+                Stream3 stream3 = machine.getStream3();
+                if (stream3 != null) {
+                    stream3.append(String.valueOf(a0));
+                    return Result.Continue;
+                }
+                GlkStream stream = machine.getOutputStream();
+                if (stream != null) {
+                    stream.putString(String.valueOf(a0));
+                }
                 return Result.Continue;
             }
         },
@@ -659,14 +730,7 @@ abstract class Instruction {
         },
         new Instruction("set_window", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
-                if (a0 != 0 && machine.upperWindow != null) {
-                    machine.currentWindow = 1;
-                    machine.glk.glk.setWindow(machine.upperWindow);
-                } else {
-                    machine.currentWindow = 0;
-                    machine.glk.glk.setWindow(machine.mainWindow);
-                }
+                machine.currentWindow = operands[0].getValue();
                 return Result.Continue;
             }
         },
@@ -780,7 +844,27 @@ abstract class Instruction {
         },
         new Instruction("output_stream", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                throw new RuntimeException("unimplemented");
+                int a0 = operands[0].getSignedValue();
+                int a1 = operands.length > 1 ? operands[1].getValue() : 0;
+                switch (a0) {
+                case 1:
+                    machine.stream1 = true;
+                    break;
+                case -1:
+                    machine.stream1 = false;
+                    break;
+                case 3:
+                    machine.stream3[machine.stream3Index] = new Stream3(a1);
+                    machine.stream3Index++;
+                    break;
+                case -3:
+                    machine.stream3Index--;
+                    machine.stream3[machine.stream3Index].deselect(machine.state);
+                    break;
+                default:
+                    break;
+                }
+                return Result.Continue;
             }
         },
         new Instruction("input_stream", false, false, false, false) {
@@ -1551,21 +1635,25 @@ abstract class Instruction {
             ZSCII.decode(sb, machine.state, objProperties+1);
             if (machine.upperWindow == null) {
                 machine.upperWindow = machine.glk.glk.windowOpen(machine.mainWindow, GlkWindowArrangement.MethodAbove | GlkWindowArrangement.MethodFixed | GlkWindowArrangement.MethodNoBorder, 1, GlkWindow.TypeTextGrid, 1);
-                machine.glk.add(machine.upperWindow);
+                if (machine.upperWindow != null) {
+                    machine.glk.add(machine.upperWindow);
+                }
             }
-            String score;
-            if (machine.state.version < 3 || (machine.state.read8(State.FLAGS1) & 2) == 0) {
-                score = " " + s1 + "/" + s2;
-            } else {
-                score = String.format(" %d:%02d", s1 % 24, s2 % 60);
+            if (machine.upperWindow != null) {
+                String score;
+                if (machine.state.version < 3 || (machine.state.read8(State.FLAGS1) & 2) == 0) {
+                    score = " " + s1 + "/" + s2;
+                } else {
+                    score = String.format(" %d:%02d", s1 % 24, s2 % 60);
+                }
+                while (sb.length() + score.length() < machine.screenWidth) {
+                    sb.append(' ');
+                }
+                sb.setLength(Math.max(0,machine.screenWidth - score.length()));
+                sb.append(score);
+                machine.upperWindow.moveCursor(0, 0);
+                machine.upperWindow.getStream().putString(sb);
             }
-            while (sb.length() + score.length() < machine.screenWidth) {
-                sb.append(' ');
-            }
-            sb.setLength(Math.max(0,machine.screenWidth - score.length()));
-            sb.append(score);
-            machine.upperWindow.moveCursor(0, 0);
-            machine.upperWindow.getStream().putString(sb);
         }
         //... handle delayed upperwindow manipulation for quote boxes
     }

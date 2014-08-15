@@ -23,7 +23,7 @@ class Machine implements Serializable {
 
     final byte[] byteData;
     final File fileData;
-    int currentWindow;
+
     transient GlkDispatch glk;
     transient GlkWindow mainWindow;
     transient GlkWindow upperWindow;
@@ -35,6 +35,10 @@ class Machine implements Serializable {
     State[] undoStates = new State[2];
     int undoStateIndex = 0;
     Random random = new Random();
+    int currentWindow;
+    boolean stream1 = true;
+    int stream3Index = 0;
+    Stream3[] stream3 = new Stream3[16];
 
     Machine(byte[] byteData, File fileData, GlkDispatch glk) throws IOException {
         this.byteData = byteData;
@@ -125,5 +129,22 @@ class Machine implements Serializable {
             state.store16(State.SCREEN_WIDTH, screenWidth);
             state.store16(State.SCREEN_HEIGHT, screenHeight);
         }
+    }
+
+    Stream3 getStream3() {
+        return stream3Index > 0 ? stream3[stream3Index-1] : null;
+    }
+
+    GlkStream getOutputStream() {
+        if (!stream1) {
+            return null;
+        }
+        if (currentWindow == 0) {
+            return mainWindow.getStream();
+        }
+        if (upperWindow != null) {
+            return upperWindow.getStream();
+        }
+        return null;
     }
 }

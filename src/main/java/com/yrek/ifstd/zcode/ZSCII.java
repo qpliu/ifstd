@@ -87,7 +87,7 @@ class ZSCII {
                     continue;
                 }
                 if (abbreviation != 0) {
-                    decode(result, state, state.read16(State.ABBREVIATION_TABLE) + 32*(abbreviation - 1) + chunk[i]);
+                    decode(result, state, 2*state.read16(state.read16(State.ABBREVIATION_TABLE) + 64*(abbreviation - 1) + 2*chunk[i]));
                     abbreviation = 0;
                     continue;
                 }
@@ -254,7 +254,7 @@ class ZSCII {
             }
             if (zchar == -1) {
                 //... try looking up in unicode table
-                return 0;
+                throw new RuntimeException("unimplemented");
             }
             int shift = zchar/26;
             zchar = zchar%26 + 6;
@@ -282,5 +282,54 @@ class ZSCII {
             result |= ((chars[i]&31) << 10) | ((chars[i+1]&31) << 5) | (chars[i+2]&31);
         }
         return result | 32768;
+    }
+
+    public static int writeToRam(State state, CharSequence string, int destination) {
+        byte[] extraTable = EXTRA;
+        int extraTableOffset = 0;
+        int extraTableLength = EXTRA.length;
+        switch (state.version) {
+        case 1: case 2:
+            throw new IllegalArgumentException();
+        case 3: case 4:
+            break;
+        default:
+            int ext = state.read16(State.EXTRA_HEADERS);
+            if (ext == 0 || state.read16(ext + State.EXTRA_HEADERS_SIZE*2) < State.EXTRA_HEADERS_UNICODE_TABLE) {
+                break;
+            } else {
+                extraTableOffset = state.read16(ext + State.EXTRA_HEADERS_UNICODE_TABLE*2);
+                if (extraTableOffset == 0) {
+                    break;
+                } else {
+                    extraTable = state.ram;
+                    extraTableLength = state.read8(extraTableOffset);
+                    extraTableOffset++;
+                }
+            }
+            break;
+        }
+        int len = 0;
+        for (int i = 0; i < string.length(); i++) {
+            char ch = string.charAt(i);
+            if (ch == '\n') {
+                state.store8(destination+len, 13);
+                len++;
+                continue;
+            }
+            if (ch < 128) {
+                state.store8(destination+len, (int) ch);
+                len++;
+                continue;
+            }
+            for (int j = 0; j < extraTableLength; j += 2) {
+                if ((ch&255) == (extraTable[extraTableOffset+j+1]&255) && ((ch>>8)&255) == (extraTable[extraTableOffset+j]&255)) {
+                    state.store8(destination+len, 155+j);
+                    len++;
+                    break;
+                }
+            }
+        }
+        return len;
     }
 }

@@ -317,4 +317,18 @@ public class TestZCode {
             new String[] { ">", "quit\n" },
         }, null, null);
     }
+
+    @org.junit.Ignore
+    @Test
+    public void czech() throws Exception {
+        testFile("/czech.z5", new String[] {
+            "CZECH: the Comprehensive Z-machine Emulation CHecker, version 0.8",
+            "Test numbers appear in [brackets].",
+            "",
+            "print works or you wouldn't be seeing this.",
+            "",
+            "Didn't crash: hooray!",
+            "Last test: quit!",
+        }, new String[0], new String[0][], null, null);
+    }
 }

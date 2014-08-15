@@ -480,7 +480,7 @@ class State implements Serializable {
             int props = read16(objTable + 62 + 9*(obj - 1) + 7);
             props += 1 + 2*read8(props);
             for (int size = read8(props); size != 0; size = read8(props)) {
-                if ((size & 31) < prop) {
+                if ((size & 31) > prop) {
                     props += 2 + (size >> 5);
                     continue;
                 } else if ((size & 31) == prop) {
@@ -496,7 +496,7 @@ class State implements Serializable {
             int props = read16(objTable + 126 + 14*(obj - 1) + 12);
             props += 1 + 2*read8(props);
             for (int size = read8(props); size != 0; size = read8(props)) {
-                if ((size & 63) < prop) {
+                if ((size & 63) > prop) {
                     switch (size & 192) {
                     case 0:
                         props += 2;
@@ -601,7 +601,7 @@ class State implements Serializable {
                     return p;
                 } else if (p == prop) {
                     nextProp = true;
-                } else if (p > prop) {
+                } else if (p < prop) {
                     break;
                 }
                 props += 2 + (size >> 5);
@@ -615,7 +615,7 @@ class State implements Serializable {
                     return p;
                 } else if (p == prop) {
                     nextProp = true;
-                } else if (p > prop) {
+                } else if (p < prop) {
                     break;
                 }
                 switch (size & 192) {
