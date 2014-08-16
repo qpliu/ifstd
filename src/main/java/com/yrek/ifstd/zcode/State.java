@@ -282,7 +282,7 @@ class State implements Serializable {
 
     int peekVar(int var) {
         if (var == 0) {
-            return frame.pop();
+            return frame.peek();
         } else if (var < 0 || var >= 256) {
             return 0;
         } else if (var < 16) {
@@ -643,7 +643,7 @@ class State implements Serializable {
             return 0;
         }
         if (version < 4) {
-            return read8(propAddr - 1) >> 5;
+            return 1 + (read8(propAddr - 1) >> 5);
         } else {
             int size = read8(propAddr - 1);
             switch (size & 192) {

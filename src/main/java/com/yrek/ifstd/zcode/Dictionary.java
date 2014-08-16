@@ -106,12 +106,12 @@ class Dictionary {
             Integer entry = table.get(encoded);
             if (entry != null) {
                 state.store16(parseAddress+2+4*i, entry);
-                state.store8(parseAddress+4+4*i, start);
-                state.store8(parseAddress+5+4*i, end);
+                state.store8(parseAddress+4+4*i, end-start);
+                state.store8(parseAddress+5+4*i, start+1);
             } else if (!flag) {
                 state.store16(parseAddress+2+4*i, 0);
-                state.store8(parseAddress+4+4*i, start);
-                state.store8(parseAddress+5+4*i, end);
+                state.store8(parseAddress+4+4*i, end-start);
+                state.store8(parseAddress+5+4*i, start+1);
             }
         }
     }

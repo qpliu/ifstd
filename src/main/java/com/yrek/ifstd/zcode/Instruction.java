@@ -231,7 +231,6 @@ abstract class Instruction {
         },
         new Instruction("mod", false, true, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
                 machine.state.storeVar(store, (operands[0].getSignedValue() % operands[1].getSignedValue())&65535);
                 return Result.Continue;
             }
@@ -301,7 +300,7 @@ abstract class Instruction {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 int result = machine.state.objSibling(operands[0].getValue());
                 machine.state.storeVar(store, result);
-                if (result != 0) {
+                if ((result != 0) == cond) {
                     return doBranch(machine, branch);
                 }
                 return Result.Continue;
@@ -311,7 +310,7 @@ abstract class Instruction {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 int result = machine.state.objChild(operands[0].getValue());
                 machine.state.storeVar(store, result);
-                if (result != 0) {
+                if ((result != 0) == cond) {
                     return doBranch(machine, branch);
                 }
                 return Result.Continue;
@@ -677,7 +676,7 @@ abstract class Instruction {
         },
         new Instruction("random", false, true, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
+                int a0 = operands[0].getSignedValue();
                 int result = 0;
                 if (a0 == 0) {
                     machine.random.setSeed(System.nanoTime());
