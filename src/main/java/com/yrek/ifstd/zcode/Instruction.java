@@ -683,7 +683,7 @@ abstract class Instruction {
                 } else if (a0 < 0) {
                     machine.random.setSeed(-a0);
                 } else {
-                    result = machine.random.nextInt(a0);
+                    result = machine.random.nextInt(a0) + 1;
                 }
                 machine.state.storeVar(store, result);
                 return Result.Continue;

@@ -82,6 +82,7 @@ class Dictionary {
         }
         int count = Math.min(starts.size(), state.read8(parseAddress));
         state.store8(parseAddress+1,count);
+        int textHeader = state.version < 5 ? 1 : 2;
         for (int i = 0; i < count; i++) {
             final int start = starts.get(i);
             final int end = ends.get(i);
@@ -107,11 +108,11 @@ class Dictionary {
             if (entry != null) {
                 state.store16(parseAddress+2+4*i, entry);
                 state.store8(parseAddress+4+4*i, end-start);
-                state.store8(parseAddress+5+4*i, start+1);
+                state.store8(parseAddress+5+4*i, start+textHeader);
             } else if (!flag) {
                 state.store16(parseAddress+2+4*i, 0);
                 state.store8(parseAddress+4+4*i, end-start);
-                state.store8(parseAddress+5+4*i, start+1);
+                state.store8(parseAddress+5+4*i, start+textHeader);
             }
         }
     }
