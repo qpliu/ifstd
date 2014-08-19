@@ -195,8 +195,8 @@ class State implements Serializable {
         out.writeInt(13);
         out.writeShort(read16(RELEASE_NUMBER));
         out.writeShort(read16(SERIAL_NUMBER));
-        out.writeShort(read16(SERIAL_NUMBER)+2);
-        out.writeShort(read16(SERIAL_NUMBER)+4);
+        out.writeShort(read16(SERIAL_NUMBER+2));
+        out.writeShort(read16(SERIAL_NUMBER+4));
         out.writeShort(read16(CHECKSUM));
         out.write(pc >> 16);
         out.writeShort(pc);

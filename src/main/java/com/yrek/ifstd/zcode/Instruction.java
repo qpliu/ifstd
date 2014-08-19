@@ -785,12 +785,12 @@ abstract class Instruction {
         },
         new Instruction("set_cursor", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
-                int a1 = operands[1].getValue();
+                int a0 = operands.length > 0 ? operands[0].getSignedValue() : 0;
+                int a1 = operands.length > 1 ? operands[1].getSignedValue() : 0;
                 if (machine.currentWindow != 0 && machine.upperWindow != null) {
                     GlkWindowSize size = machine.upperWindow.getSize();
-                    int x = a0 >= 32768 ? size.width - a0 - 65536 : a0 - 1;
-                    int y = a1 >= 32768 ? size.height - a1 - 65536 : a1 - 1;
+                    int x = a1 > 0 ? a1 - 1 : a1 < 0 ? size.width + a1 : machine.upperWindow.getCursorX();
+                    int y = a0 > 0 ? a0 - 1 : a0 < 0 ? size.height - a0 : machine.upperWindow.getCursorY();
                     machine.upperWindow.moveCursor(x, y);
                 }
                 return Result.Continue;
