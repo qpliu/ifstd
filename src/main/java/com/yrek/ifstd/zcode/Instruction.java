@@ -710,21 +710,17 @@ abstract class Instruction {
         new Instruction("split_window", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 int a0 = operands[0].getValue();
-                if (a0 == 0) {
-                    if (machine.upperWindow != null) {
-                        machine.upperWindow.close();
-                        machine.upperWindow = null;
-                    }
-                } else if (machine.upperWindow == null) {
-                    machine.upperWindow = machine.glk.glk.windowOpen(machine.mainWindow, GlkWindowArrangement.MethodAbove | GlkWindowArrangement.MethodFixed | GlkWindowArrangement.MethodNoBorder, a0, GlkWindow.TypeTextGrid, 1);
-                    machine.glk.add(machine.upperWindow);
+                int upperWindowHeight = 0;
+                if (machine.upperWindow != null) {
+                    upperWindowHeight = machine.upperWindow.getSize().height;
+                }
+                if (a0 >= upperWindowHeight || upperWindowHeight <= machine.upperWindowInitialHeight) {
+                    resizeUpperWindow(machine, a0);
                 } else {
-                    machine.upperWindow.getParent().setArrangement(GlkWindowArrangement.MethodAbove | GlkWindowArrangement.MethodFixed | GlkWindowArrangement.MethodNoBorder, a0, machine.upperWindow);
-                    if (machine.state.version <= 3) {
-                        machine.upperWindow.clear();
-                    }
+                    machine.upperWindowTargetHeight = a0;
                 }
                 return Result.Continue;
+                
             }
         },
         new Instruction("set_window", false, false, false, false) {
@@ -1654,10 +1650,35 @@ abstract class Instruction {
                 machine.upperWindow.getStream().putString(sb);
             }
         }
-        //... handle delayed upperwindow manipulation for quote boxes
     }
 
     private static void updateWindowsPostInput(Machine machine) throws IOException {
-        //... handle delayed upperwindow manipulation for quote boxes
+        if (machine.state.version > 3) {
+            int upperWindowHeight = 0;
+            if (machine.upperWindow != null) {
+                upperWindowHeight = machine.upperWindow.getSize().height;
+            }
+            if (upperWindowHeight != machine.upperWindowTargetHeight) {
+                resizeUpperWindow(machine, machine.upperWindowTargetHeight);
+            }
+            machine.upperWindowInitialHeight = upperWindowHeight;
+        }
+    }
+
+    private static void resizeUpperWindow(Machine machine, int height) throws IOException {
+        if (height == 0) {
+            if (machine.upperWindow != null) {
+                machine.upperWindow.close();
+                machine.upperWindow = null;
+            }
+        } else if (machine.upperWindow == null) {
+            machine.upperWindow = machine.glk.glk.windowOpen(machine.mainWindow, GlkWindowArrangement.MethodAbove | GlkWindowArrangement.MethodFixed | GlkWindowArrangement.MethodNoBorder, height, GlkWindow.TypeTextGrid, 1);
+            machine.glk.add(machine.upperWindow);
+        } else {
+            machine.upperWindow.getParent().setArrangement(GlkWindowArrangement.MethodAbove | GlkWindowArrangement.MethodFixed | GlkWindowArrangement.MethodNoBorder, height, machine.upperWindow);
+            if (machine.state.version <= 3) {
+                machine.upperWindow.clear();
+            }
+        }
     }
 }

@@ -39,6 +39,8 @@ class Machine implements Serializable {
     boolean stream1 = true;
     int stream3Index = 0;
     Stream3[] stream3 = new Stream3[16];
+    int upperWindowInitialHeight = 0;
+    int upperWindowTargetHeight = 0;
 
     Machine(byte[] byteData, File fileData, GlkDispatch glk) throws IOException {
         this.byteData = byteData;

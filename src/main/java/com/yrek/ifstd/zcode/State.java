@@ -100,7 +100,9 @@ class State implements Serializable {
         store8(FONT_HEIGHT, 1);
         //... BACKGROUND_COLOR
         //... FOREGROUND_COLOR
-        store16(REVISION_NUMBER, REVISION_NUMBER_VALUE);
+        if (version != 6) {
+            store16(REVISION_NUMBER, REVISION_NUMBER_VALUE);
+        }
     }
 
     boolean loadSave(DataInput in, boolean preserveFlags) throws IOException {
