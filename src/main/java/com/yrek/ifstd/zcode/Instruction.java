@@ -654,7 +654,7 @@ abstract class Instruction {
                 if (stream != null) {
                     StringBuilder sb = new StringBuilder();
                     ZSCII.appendZSCII(sb, machine.state, a0);
-                    machine.glk.glk.putStringUni(new UnicodeString.US(sb));
+                    stream.putStringUni(new UnicodeString.US(sb));
                 }
                 return Result.Continue;
             }
@@ -710,17 +710,11 @@ abstract class Instruction {
         new Instruction("split_window", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 int a0 = operands[0].getValue();
-                int upperWindowHeight = 0;
-                if (machine.upperWindow != null) {
-                    upperWindowHeight = machine.upperWindow.getSize().height;
-                }
-                if (a0 >= upperWindowHeight || upperWindowHeight <= machine.upperWindowInitialHeight) {
+                if (a0 >= machine.upperWindowCurrentHeight) {
                     resizeUpperWindow(machine, a0);
-                } else {
-                    machine.upperWindowTargetHeight = a0;
                 }
+                machine.upperWindowTargetHeight = a0;
                 return Result.Continue;
-                
             }
         },
         new Instruction("set_window", false, false, false, false) {
@@ -1654,18 +1648,15 @@ abstract class Instruction {
 
     private static void updateWindowsPostInput(Machine machine) throws IOException {
         if (machine.state.version > 3) {
-            int upperWindowHeight = 0;
-            if (machine.upperWindow != null) {
-                upperWindowHeight = machine.upperWindow.getSize().height;
-            }
-            if (upperWindowHeight != machine.upperWindowTargetHeight) {
+            if (machine.upperWindowCurrentHeight != machine.upperWindowTargetHeight) {
                 resizeUpperWindow(machine, machine.upperWindowTargetHeight);
             }
-            machine.upperWindowInitialHeight = upperWindowHeight;
+            machine.upperWindowInitialHeight = machine.upperWindowCurrentHeight;
         }
     }
 
     private static void resizeUpperWindow(Machine machine, int height) throws IOException {
+        machine.upperWindowCurrentHeight = height;
         if (height == 0) {
             if (machine.upperWindow != null) {
                 machine.upperWindow.close();

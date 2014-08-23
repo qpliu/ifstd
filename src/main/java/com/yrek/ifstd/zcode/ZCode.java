@@ -21,6 +21,11 @@ public class ZCode implements Runnable, Serializable {
         machine = new Machine(null, fileData, glk);
     }
 
+    public ZCode initGlk(int foregroundColor, int backgroundColor) throws IOException {
+        machine.initGlk(foregroundColor, backgroundColor);
+        return this;
+    }
+
     @Override
     public void run() {
         suspended = false;
@@ -53,6 +58,10 @@ public class ZCode implements Runnable, Serializable {
     public void suspend(boolean wait) throws InterruptedException {
         suspending = true;
         machine.suspending = true;
+        if (machine.mainWindow != null) {
+            machine.mainWindow.cancelCharEvent();
+            machine.mainWindow.cancelLineEvent();
+        }
         if (wait) {
             synchronized (machine) {
                 while (!suspended) {
@@ -64,7 +73,7 @@ public class ZCode implements Runnable, Serializable {
 
     public void resume(GlkDispatch glk) throws IOException {
         assert suspended;
-        machine.setGlk(glk);
+        machine.glk = glk;
     }
 
     public boolean suspending() {

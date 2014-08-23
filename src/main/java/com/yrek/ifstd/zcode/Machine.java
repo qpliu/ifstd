@@ -40,17 +40,17 @@ class Machine implements Serializable {
     int stream3Index = 0;
     Stream3[] stream3 = new Stream3[16];
     int upperWindowInitialHeight = 0;
+    int upperWindowCurrentHeight = 0;
     int upperWindowTargetHeight = 0;
 
     Machine(byte[] byteData, File fileData, GlkDispatch glk) throws IOException {
         this.byteData = byteData;
         this.fileData = fileData;
-        setGlk(glk);
+        this.glk = glk;
         state = load();
     }
 
-    void setGlk(GlkDispatch glk) throws IOException {
-        this.glk = glk;
+    void initGlk(int foregroundColor, int backgroundColor) throws IOException {
         for (GlkWindow window : glk.windowList()) {
             switch (window.getType()) {
             case GlkWindow.TypePair:
@@ -81,11 +81,6 @@ class Machine implements Serializable {
         for (GlkSChannel schannel : glk.sChannelList()) {
             schannel.destroyChannel();
         }
-        if (glk.glk.gestalt(GlkGestalt.Timer, 0) != 0) {
-            glk.glk.requestTimerEvents(1);
-            handleEvent(glk.glk.select());
-            glk.glk.requestTimerEvents(0);
-        }
         GlkWindowSize windowSize = mainWindow.getSize();
         screenWidth = windowSize.width;
         screenHeight = windowSize.height;
@@ -99,6 +94,27 @@ class Machine implements Serializable {
         } else {
             glk.glk.setWindow(upperWindow);
         }
+        if (state.version <= 3) {
+            int[] styles = new int[] {
+                GlkStream.StyleNormal,
+                GlkStream.StyleEmphasized,
+                GlkStream.StylePreformatted,
+                GlkStream.StyleHeader,
+                GlkStream.StyleSubheader,
+                GlkStream.StyleAlert,
+                GlkStream.StyleNote,
+                GlkStream.StyleBlockQuote,
+                GlkStream.StyleInput,
+                GlkStream.StyleUser1,
+                GlkStream.StyleUser2,
+            };
+            for (int style : styles) {
+                glk.glk.styleHintSet(GlkWindow.TypeTextGrid, style, GlkStream.StyleHintTextColor, backgroundColor);
+                glk.glk.styleHintSet(GlkWindow.TypeTextGrid, style, GlkStream.StyleHintBackColor, foregroundColor);
+            }
+        }
+        // translate Glk-colors to Z-colors
+        state.setScreen(screenWidth, screenHeight, foregroundColor, backgroundColor);
     }
 
     State load() throws IOException {

@@ -87,7 +87,7 @@ class State implements Serializable {
         globalVarTable = read16(GLOBAL_VAR_TABLE);
     }
 
-    void init(int screenWidth, int screenHeight) throws IOException {
+    void init(int screenWidth, int screenHeight) {
         //... FLAGS1
         //... FLAGS2
         store8(INTERPRETER_NUMBER, INTERPRETER_NUMBER_VALUE);
@@ -98,11 +98,18 @@ class State implements Serializable {
         store16(SCREEN_HEIGHT, screenHeight);
         store8(FONT_WIDTH, 1);
         store8(FONT_HEIGHT, 1);
-        //... BACKGROUND_COLOR
-        //... FOREGROUND_COLOR
         if (version != 6) {
             store16(REVISION_NUMBER, REVISION_NUMBER_VALUE);
         }
+    }
+
+    void setScreen(int width, int height, int backgroundColor, int foregroundColor) {
+        store8(SCREEN_HEIGHT_CHARS, height);
+        store8(SCREEN_WIDTH_CHARS, width);
+        store16(SCREEN_WIDTH, width);
+        store16(SCREEN_HEIGHT, height);
+        //... BACKGROUND_COLOR
+        //... FOREGROUND_COLOR
     }
 
     boolean loadSave(DataInput in, boolean preserveFlags) throws IOException {

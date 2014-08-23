@@ -35,7 +35,7 @@ public class TestZCode {
         StringReader in = new StringReader(input.toString());
         StringWriter out = new StringWriter();
         TestGlk glk = new TestGlk(in, null, out);
-        ZCode zcode = new ZCode(new File(getClass().getResource(file).toURI()), new GlkDispatch(glk));
+        ZCode zcode = new ZCode(new File(getClass().getResource(file).toURI()), new GlkDispatch(glk)).initGlk(0,0);
         zcode.run();
         String result = out.toString();
         if (replaceRegex != null) {
