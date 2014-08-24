@@ -714,12 +714,18 @@ abstract class Instruction {
                     resizeUpperWindow(machine, a0);
                 }
                 machine.upperWindowTargetHeight = a0;
+                if (machine.upperWindow != null) {
+                    machine.upperWindow.moveCursor(0, 0);
+                }
                 return Result.Continue;
             }
         },
         new Instruction("set_window", false, false, false, false) {
             @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 machine.currentWindow = operands[0].getValue();
+                if (machine.currentWindow != 0 && machine.upperWindow != null) {
+                    machine.upperWindow.moveCursor(0, 0);
+                }
                 return Result.Continue;
             }
         },
@@ -1019,6 +1025,10 @@ abstract class Instruction {
                 int a1 = operands[1].getValue();
                 int a2 = operands.length > 2 ? operands[2].getValue() : 1;
                 int a3 = operands.length > 3 ? operands[3].getValue() : 0;
+                GlkStream stream = machine.getOutputStream();
+                if (stream == null) {
+                    return Result.Continue;
+                }
                 GlkWindow window = machine.currentWindow == 0 || machine.upperWindow == null ? machine.mainWindow : machine.upperWindow;
                 int x = window.getCursorX();
                 int y = window.getCursorY();
@@ -1030,7 +1040,7 @@ abstract class Instruction {
                         a0++;
                     }
                     window.moveCursor(x, y + i);
-                    window.getStream().putStringUni(new UnicodeString.US(sb));
+                    stream.putStringUni(new UnicodeString.US(sb));
                     a0 += a3;
                 }
                 return Result.Continue;
