@@ -1,6 +1,8 @@
 package com.yrek.ifstd.zcode;
 
-class Stream3 implements Appendable {
+import java.io.Serializable;
+
+class Stream3 implements Appendable, Serializable {
     final StringBuilder sb = new StringBuilder();
     final int table;
 
