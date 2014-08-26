@@ -3,6 +3,8 @@ package com.yrek.ifstd.zcode;
 import java.io.Serializable;
 
 class Stream3 implements Appendable, Serializable {
+    private static final long serialVersionUID = 0L;
+
     final StringBuilder sb = new StringBuilder();
     final int table;
 
