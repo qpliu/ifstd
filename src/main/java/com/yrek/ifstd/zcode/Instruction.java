@@ -756,10 +756,12 @@ abstract class Instruction {
                 } else if (a0 == -2) {
                     if (machine.upperWindow != null) {
                         machine.upperWindow.clear();
+                        machine.upperWindow.moveCursor(0, 0);
                     }
                     machine.mainWindow.clear();
                 } else if (machine.upperWindow != null) {
                     machine.upperWindow.clear();
+                    machine.upperWindow.moveCursor(0, 0);
                 }
                 return Result.Continue;
             }
