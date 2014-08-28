@@ -36,16 +36,16 @@ abstract class Instruction {
         return branch;
     }
 
-    abstract Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException;
+    abstract Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException;
 
     private static final Instruction[] _2OP = new Instruction[] {
         null,
         new Instruction("je", false, false, true, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 boolean eq = false;
-                int a0 = operands[0].getValue();
-                for (int i = 1; i < operands.length; i++) {
-                    if (operands[i].getValue() == a0) {
+                int a0 = machine.operands[0].getValue();
+                for (int i = 1; i < machine.noperands; i++) {
+                    if (machine.operands[i].getValue() == a0) {
                         eq = true;
                     }
                 }
@@ -56,25 +56,25 @@ abstract class Instruction {
             }
         },
         new Instruction("jl", false, false, true, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                if (((short) operands[0].getValue() < (short) operands[1].getValue()) == cond) {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                if (((short) machine.operands[0].getValue() < (short) machine.operands[1].getValue()) == cond) {
                     return doBranch(machine, branch);
                 }
                 return Result.Continue;
             }
         },
         new Instruction("jg", false, false, true, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                if (((short) operands[0].getValue() > (short) operands[1].getValue()) == cond) {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                if (((short) machine.operands[0].getValue() > (short) machine.operands[1].getValue()) == cond) {
                     return doBranch(machine, branch);
                 }
                 return Result.Continue;
             }
         },
         new Instruction("dec_chk", false, false, true, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
-                int a1 = operands[1].getSignedValue();
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getValue();
+                int a1 = machine.operands[1].getSignedValue();
                 short val = (short) (machine.state.readVar(a0) - 1);
                 machine.state.storeVar(a0, val&65535);
                 if (((int) val < a1) == cond) {
@@ -84,9 +84,9 @@ abstract class Instruction {
             }
         },
         new Instruction("inc_chk", false, false, true, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
-                int a1 = operands[1].getSignedValue();
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getValue();
+                int a1 = machine.operands[1].getSignedValue();
                 short val = (short) (machine.state.readVar(a0) + 1);
                 machine.state.storeVar(a0, val&65535);
                 if (((int) val > a1) == cond) {
@@ -96,9 +96,9 @@ abstract class Instruction {
             }
         },
         new Instruction("jin", false, false, true, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
-                int a1 = operands[1].getValue();
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getValue();
+                int a1 = machine.operands[1].getValue();
                 if ((machine.state.objParent(a0) == a1) == cond) {
                     return doBranch(machine, branch);
                 }
@@ -106,9 +106,9 @@ abstract class Instruction {
             }
         },
         new Instruction("test", false, false, true, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
-                int a1 = operands[1].getValue();
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getValue();
+                int a1 = machine.operands[1].getValue();
                 if (((a0 & a1) == a1) == cond) {
                     return doBranch(machine, branch);
                 }
@@ -116,21 +116,21 @@ abstract class Instruction {
             }
         },
         new Instruction("or", false, true, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                machine.state.storeVar(store, operands[0].getValue() | operands[1].getValue());
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                machine.state.storeVar(store, machine.operands[0].getValue() | machine.operands[1].getValue());
                 return Result.Continue;
             }
         },
         new Instruction("and", false, true, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                machine.state.storeVar(store, operands[0].getValue() & operands[1].getValue());
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                machine.state.storeVar(store, machine.operands[0].getValue() & machine.operands[1].getValue());
                 return Result.Continue;
             }
         },
         new Instruction("test_attr", false, false, true, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
-                int a1 = operands[1].getValue();
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getValue();
+                int a1 = machine.operands[1].getValue();
                 if (machine.state.objAttr(a0, a1) == cond) {
                     return doBranch(machine, branch);
                 }
@@ -138,111 +138,111 @@ abstract class Instruction {
             }
         },
         new Instruction("set_attr", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
-                int a1 = operands[1].getValue();
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getValue();
+                int a1 = machine.operands[1].getValue();
                 machine.state.objSetAttr(a0, a1, true);
                 return Result.Continue;
             }
         },
         new Instruction("clear_attr", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
-                int a1 = operands[1].getValue();
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getValue();
+                int a1 = machine.operands[1].getValue();
                 machine.state.objSetAttr(a0, a1, false);
                 return Result.Continue;
             }
         },
         new Instruction("store", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                machine.state.overwriteVar(operands[0].getValue(), operands[1].getValue());
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                machine.state.overwriteVar(machine.operands[0].getValue(), machine.operands[1].getValue());
                 return Result.Continue;
             }
         },
         new Instruction("insert_obj", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                machine.state.objMove(operands[0].getValue(), operands[1].getValue());
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                machine.state.objMove(machine.operands[0].getValue(), machine.operands[1].getValue());
                 return Result.Continue;
             }
         },
         new Instruction("loadw", false, true, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
-                int a1 = operands[1].getValue();
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getValue();
+                int a1 = machine.operands[1].getValue();
                 machine.state.storeVar(store, machine.state.read16((a0 + 2*a1)&65535));
                 return Result.Continue;
             }
         },
         new Instruction("loadb", false, true, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
-                int a1 = operands[1].getValue();
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getValue();
+                int a1 = machine.operands[1].getValue();
                 machine.state.storeVar(store, machine.state.read8((a0 + a1)&65535));
                 return Result.Continue;
             }
         },
         new Instruction("get_prop", false, true, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
-                int a1 = operands[1].getValue();
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getValue();
+                int a1 = machine.operands[1].getValue();
                 machine.state.storeVar(store, machine.state.getProp(a0, a1));
                 return Result.Continue;
             }
         },
         new Instruction("get_prop_addr", false, true, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
-                int a1 = operands[1].getValue();
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getValue();
+                int a1 = machine.operands[1].getValue();
                 machine.state.storeVar(store, machine.state.getPropAddr(a0, a1));
                 return Result.Continue;
             }
         },
         new Instruction("get_next_prop", false, true, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
-                int a1 = operands[1].getValue();
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getValue();
+                int a1 = machine.operands[1].getValue();
                 machine.state.storeVar(store, machine.state.getNextProp(a0, a1));
                 return Result.Continue;
             }
         },
         new Instruction("add", false, true, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                machine.state.storeVar(store, (operands[0].getSignedValue() + operands[1].getSignedValue())&65535);
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                machine.state.storeVar(store, (machine.operands[0].getSignedValue() + machine.operands[1].getSignedValue())&65535);
                 return Result.Continue;
             }
         },
         new Instruction("sub", false, true, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                machine.state.storeVar(store, (operands[0].getSignedValue() - operands[1].getSignedValue())&65535);
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                machine.state.storeVar(store, (machine.operands[0].getSignedValue() - machine.operands[1].getSignedValue())&65535);
                 return Result.Continue;
             }
         },
         new Instruction("mul", false, true, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                machine.state.storeVar(store, (operands[0].getSignedValue() * operands[1].getSignedValue())&65535);
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                machine.state.storeVar(store, (machine.operands[0].getSignedValue() * machine.operands[1].getSignedValue())&65535);
                 return Result.Continue;
             }
         },
         new Instruction("div", false, true, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                machine.state.storeVar(store, (operands[0].getSignedValue() / operands[1].getSignedValue())&65535);
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                machine.state.storeVar(store, (machine.operands[0].getSignedValue() / machine.operands[1].getSignedValue())&65535);
                 return Result.Continue;
             }
         },
         new Instruction("mod", false, true, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                machine.state.storeVar(store, (operands[0].getSignedValue() % operands[1].getSignedValue())&65535);
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                machine.state.storeVar(store, (machine.operands[0].getSignedValue() % machine.operands[1].getSignedValue())&65535);
                 return Result.Continue;
             }
         },
         new Instruction("call_2s", false, true, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                return doCall(machine, operands[0].getValue(), operands[1].getValue(), 0, 0, 0, 0, 0, 0, 1, store);
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                return doCall(machine, machine.operands[0].getValue(), machine.operands[1].getValue(), 0, 0, 0, 0, 0, 0, 1, store);
             }
         },
         new Instruction("call_2n", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                return doCall(machine, operands[0].getValue(), operands[1].getValue(), 0, 0, 0, 0, 0, 0, 1, -1);
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                return doCall(machine, machine.operands[0].getValue(), machine.operands[1].getValue(), 0, 0, 0, 0, 0, 0, 1, -1);
             }
         },
         new Instruction("set_color", false, false, false, false) {
@@ -264,18 +264,18 @@ abstract class Instruction {
                 -1,
                 -4, // transparent
             };
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
-                int a1 = operands[1].getValue();
-                int a2 = operands.length > 2 ? operands[2].getValue() : -1;
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getValue();
+                int a1 = machine.operands[1].getValue();
+                int a2 = machine.operands[2].getValue(-1);
                 setColors(machine, a2, colors[a0], colors[a1]);
                 return Result.Continue;
             }
         },
         new Instruction("throw", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
-                int a1 = operands[1].getValue();
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getValue();
+                int a1 = machine.operands[1].getValue();
                 while (machine.state.frame.index > a1) {
                     machine.state.frame = machine.state.frame.parent;
                 }
@@ -289,16 +289,16 @@ abstract class Instruction {
 
     private static final Instruction[] _1OP = new Instruction[] {
         new Instruction("jz", false, false, true, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                if ((operands[0].getValue() == 0) == cond) {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                if ((machine.operands[0].getValue() == 0) == cond) {
                     return doBranch(machine, branch);
                 }
                 return Result.Continue;
             }
         },
         new Instruction("get_sibling", false, true, true, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int result = machine.state.objSibling(operands[0].getValue());
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int result = machine.state.objSibling(machine.operands[0].getValue());
                 machine.state.storeVar(store, result);
                 if ((result != 0) == cond) {
                     return doBranch(machine, branch);
@@ -307,8 +307,8 @@ abstract class Instruction {
             }
         },
         new Instruction("get_child", false, true, true, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int result = machine.state.objChild(operands[0].getValue());
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int result = machine.state.objChild(machine.operands[0].getValue());
                 machine.state.storeVar(store, result);
                 if ((result != 0) == cond) {
                     return doBranch(machine, branch);
@@ -317,34 +317,34 @@ abstract class Instruction {
             }
         },
         new Instruction("get_parent", false, true, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                machine.state.storeVar(store, machine.state.objParent(operands[0].getValue()));
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                machine.state.storeVar(store, machine.state.objParent(machine.operands[0].getValue()));
                 return Result.Continue;
             }
         },
         new Instruction("get_prop_len", false, true, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                machine.state.storeVar(store, machine.state.getPropLen(operands[0].getValue()));
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                machine.state.storeVar(store, machine.state.getPropLen(machine.operands[0].getValue()));
                 return Result.Continue;
             }
         },
         new Instruction("inc", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getValue();
                 machine.state.storeVar(a0, (machine.state.readVar(a0) + 1)&65535);
                 return Result.Continue;
             }
         },
         new Instruction("dec", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getValue();
                 machine.state.storeVar(a0, (machine.state.readVar(a0) - 1)&65535);
                 return Result.Continue;
             }
         },
         new Instruction("print_addr", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getValue();
                 Stream3 stream3 = machine.getStream3();
                 if (stream3 != null) {
                     ZSCII.decode(stream3, machine.state, a0);
@@ -360,19 +360,19 @@ abstract class Instruction {
             }
         },
         new Instruction("call_1s", false, true, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                return doCall(machine, operands[0].getValue(), 0, 0, 0, 0, 0, 0, 0, 0, store);
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                return doCall(machine, machine.operands[0].getValue(), 0, 0, 0, 0, 0, 0, 0, 0, store);
             }
         },
         new Instruction("remove_obj", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                machine.state.objMove(operands[0].getValue(), 0);
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                machine.state.objMove(machine.operands[0].getValue(), 0);
                 return Result.Continue;
             }
         },
         new Instruction("print_obj", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getValue();
                 Stream3 stream3 = machine.getStream3();
                 if (stream3 != null) {
                     ZSCII.decode(stream3, machine.state, machine.state.objProperties(a0) + 1);
@@ -388,19 +388,19 @@ abstract class Instruction {
             }
         },
         new Instruction("ret", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                return retVal(machine, operands[0].getValue());
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                return retVal(machine, machine.operands[0].getValue());
             }
         },
         new Instruction("jump", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                machine.state.pc += operands[0].getSignedValue() - 2;
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                machine.state.pc += machine.operands[0].getSignedValue() - 2;
                 return Result.Tick;
             }
         },
         new Instruction("print_paddr", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getValue();
                 Stream3 stream3 = machine.getStream3();
                 if (stream3 != null) {
                     ZSCII.decode(stream3, machine.state, machine.state.unpack(a0, false));
@@ -416,8 +416,8 @@ abstract class Instruction {
             }
         },
         new Instruction("load", false, true, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                machine.state.storeVar(store, machine.state.peekVar(operands[0].getValue()&65535));
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                machine.state.storeVar(store, machine.state.peekVar(machine.operands[0].getValue()&65535));
                 return Result.Continue;
             }
         },
@@ -425,29 +425,29 @@ abstract class Instruction {
             @Override boolean store(int version) {
                 return version < 5;
             }
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 if (machine.state.version < 5) {
-                    machine.state.storeVar(store, ~operands[0].getValue());
+                    machine.state.storeVar(store, ~machine.operands[0].getValue());
                     return Result.Continue;
                 }
-                return doCall(machine, operands[0].getValue(), 0, 0, 0, 0, 0, 0, 0, 0, -1);
+                return doCall(machine, machine.operands[0].getValue(), 0, 0, 0, 0, 0, 0, 0, 0, -1);
             }
         },
     };
 
     private static final Instruction[] _0OP = new Instruction[] {
         new Instruction("rtrue", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 return retVal(machine, 1);
             }
         },
         new Instruction("rfalse", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 return retVal(machine, 0);
             }
         },
         new Instruction("print", false, false, false, true) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 Stream3 stream3 = machine.getStream3();
                 if (stream3 != null) {
                     stream3.append(literalString);
@@ -461,7 +461,7 @@ abstract class Instruction {
             }
         },
         new Instruction("print_ret", false, false, false, true) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 Stream3 stream3 = machine.getStream3();
                 if (stream3 != null) {
                     stream3.append(literalString);
@@ -476,7 +476,7 @@ abstract class Instruction {
             }
         },
         new Instruction("nop", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 return Result.Continue;
             }
         },
@@ -487,7 +487,7 @@ abstract class Instruction {
             @Override boolean branch(int version) {
                 return version <= 4;
             }
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 return doSave(machine, store, cond, branch);
             }
         },
@@ -498,18 +498,18 @@ abstract class Instruction {
             @Override boolean branch(int version) {
                 return version < 4;
             }
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 return doRestore(machine, store);
             }
         },
         new Instruction("restart", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 machine.state.copyFrom(machine.load(), false, true);
                 return Result.Continue;
             }
         },
         new Instruction("ret_popped", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 return retVal(machine, machine.state.frame.pop());
             }
         },
@@ -517,7 +517,7 @@ abstract class Instruction {
             @Override boolean store(int version) {
                 return version >= 5;
             }
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 if (machine.state.version < 5) {
                     machine.state.frame.pop();
                     return Result.Continue;
@@ -527,12 +527,12 @@ abstract class Instruction {
             }
         },
         new Instruction("quit", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 return Result.Quit;
             }
         },
         new Instruction("new_line", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 Stream3 stream3 = machine.getStream3();
                 if (stream3 != null) {
                     stream3.append('\n');
@@ -547,13 +547,13 @@ abstract class Instruction {
         },
         null,
         new Instruction("verify", false, false, true, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 return doBranch(machine, branch);
             }
         },
         null,
         new Instruction("piracy", false, false, true, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 return doBranch(machine, branch);
             }
         },
@@ -561,32 +561,32 @@ abstract class Instruction {
 
     private static final Instruction[] VAR = new Instruction[] {
         new Instruction("call", false, true, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                return doCall(machine, operands[0].getValue(),
-                              operands.length > 1 ? operands[1].getValue() : 0,
-                              operands.length > 2 ? operands[2].getValue() : 0,
-                              operands.length > 3 ? operands[3].getValue() : 0,
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                return doCall(machine, machine.operands[0].getValue(),
+                              machine.operands[1].getValue(),
+                              machine.operands[2].getValue(),
+                              machine.operands[3].getValue(),
                               0, 0, 0, 0,
-                              operands.length - 1, store);
+                              machine.noperands - 1, store);
             }
         },
         new Instruction("storew", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                machine.state.store16((operands[0].getValue() + 2*operands[1].getValue())&65535, operands[2].getValue());
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                machine.state.store16((machine.operands[0].getValue() + 2*machine.operands[1].getValue())&65535, machine.operands[2].getValue());
                 return Result.Continue;
             }
         },
         new Instruction("storeb", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                machine.state.store8((operands[0].getValue() + operands[1].getValue())&65535, operands[2].getValue());
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                machine.state.store8((machine.operands[0].getValue() + machine.operands[1].getValue())&65535, machine.operands[2].getValue());
                 return Result.Continue;
             }
         },
         new Instruction("put_prop", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
-                int a1 = operands[1].getValue();
-                int a2 = operands[2].getValue();
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getValue();
+                int a1 = machine.operands[1].getValue();
+                int a2 = machine.operands[2].getValue();
                 int addr = machine.state.getPropAddr(a0, a1);
                 switch (machine.state.getPropLen(addr)) {
                 case 1:
@@ -605,11 +605,11 @@ abstract class Instruction {
             @Override boolean store(int version) {
                 return version >= 5;
             }
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
-                int a1 = operands[1].getValue();
-                int a2 = operands.length > 2 ? operands[2].getValue() : 0;
-                int a3 = operands.length > 3 ? operands[3].getValue() : 0;
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getValue();
+                int a1 = machine.operands[1].getValue();
+                int a2 = machine.operands[2].getValue();
+                int a3 = machine.operands[3].getValue();
                 updateWindowsPreInput(machine);
                 int bufferAddress = machine.state.version < 5 ? a0+1 : a0+2;
                 machine.mainWindow.requestLineEvent(machine.state.getBuffer(bufferAddress, machine.state.read8(a0)), 0);
@@ -643,8 +643,8 @@ abstract class Instruction {
             }
         },
         new Instruction("print_char", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getValue();
                 Stream3 stream3 = machine.getStream3();
                 if (stream3 != null) {
                     ZSCII.appendZSCII(stream3, machine.state, a0);
@@ -660,8 +660,8 @@ abstract class Instruction {
             }
         },
         new Instruction("print_num", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getSignedValue();
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getSignedValue();
                 Stream3 stream3 = machine.getStream3();
                 if (stream3 != null) {
                     stream3.append(String.valueOf(a0));
@@ -675,8 +675,8 @@ abstract class Instruction {
             }
         },
         new Instruction("random", false, true, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getSignedValue();
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getSignedValue();
                 int result = 0;
                 if (a0 == 0) {
                     machine.random.setSeed(System.nanoTime());
@@ -690,8 +690,8 @@ abstract class Instruction {
             }
         },
         new Instruction("push", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                machine.state.frame.push(operands[0].getValue());
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                machine.state.frame.push(machine.operands[0].getValue());
                 return Result.Continue;
             }
         },
@@ -699,17 +699,17 @@ abstract class Instruction {
             @Override boolean store(int version) {
                 return version == 6;
             }
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 if (machine.state.version != 6) {
-                    machine.state.overwriteVar(operands[0].getValue(), machine.state.frame.pop());
+                    machine.state.overwriteVar(machine.operands[0].getValue(), machine.state.frame.pop());
                     return Result.Continue;
                 }
                 throw new RuntimeException("unimplemented");
             }
         },
         new Instruction("split_window", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getValue();
                 if (a0 >= machine.upperWindowCurrentHeight) {
                     resizeUpperWindow(machine, a0);
                 }
@@ -721,8 +721,8 @@ abstract class Instruction {
             }
         },
         new Instruction("set_window", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                machine.currentWindow = operands[0].getValue();
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                machine.currentWindow = machine.operands[0].getValue();
                 if (machine.currentWindow != 0 && machine.upperWindow != null) {
                     machine.upperWindow.moveCursor(0, 0);
                 }
@@ -730,21 +730,21 @@ abstract class Instruction {
             }
         },
         new Instruction("call_vs2", true, true, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                return doCall(machine, operands[0].getValue(),
-                              operands.length > 1 ? operands[1].getValue() : 0,
-                              operands.length > 2 ? operands[2].getValue() : 0,
-                              operands.length > 3 ? operands[3].getValue() : 0,
-                              operands.length > 4 ? operands[4].getValue() : 0,
-                              operands.length > 5 ? operands[5].getValue() : 0,
-                              operands.length > 6 ? operands[6].getValue() : 0,
-                              operands.length > 7 ? operands[7].getValue() : 0,
-                              operands.length - 1, store);
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                return doCall(machine, machine.operands[0].getValue(),
+                              machine.operands[1].getValue(),
+                              machine.operands[2].getValue(),
+                              machine.operands[3].getValue(),
+                              machine.operands[4].getValue(),
+                              machine.operands[5].getValue(),
+                              machine.operands[6].getValue(),
+                              machine.operands[7].getValue(),
+                              machine.noperands - 1, store);
             }
         },
         new Instruction("erase_window", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getValue();
                 if (a0 == 0) {
                     machine.mainWindow.clear();
                 } else if (a0 == -1) {
@@ -767,8 +767,8 @@ abstract class Instruction {
             }
         },
         new Instruction("erase_line", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getValue();
                 if (a0 != 1 || machine.currentWindow == 0 || machine.upperWindow == null) {
                     return Result.Continue;
                 }
@@ -782,9 +782,9 @@ abstract class Instruction {
             }
         },
         new Instruction("set_cursor", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands.length > 0 ? operands[0].getSignedValue() : 0;
-                int a1 = operands.length > 1 ? operands[1].getSignedValue() : 0;
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getSignedValue();
+                int a1 = machine.operands[1].getSignedValue();
                 if (machine.currentWindow != 0 && machine.upperWindow != null) {
                     GlkWindowSize size = machine.upperWindow.getSize();
                     int x = a1 > 0 ? a1 - 1 : a1 < 0 ? size.width + a1 : machine.upperWindow.getCursorX();
@@ -795,8 +795,8 @@ abstract class Instruction {
             }
         },
         new Instruction("get_cursor", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getValue();
                 int x;
                 int y;
                 if (machine.currentWindow != 0 && machine.upperWindow != null) {
@@ -812,9 +812,9 @@ abstract class Instruction {
             }
         },
         new Instruction("set_text_style", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 int style;
-                switch (operands[0].getValue()) {
+                switch (machine.operands[0].getValue()) {
                 case 0: style = GlkStream.StyleNormal; break;
                 case 1: style = GlkStream.StyleAlert; break;
                 case 2: style = GlkStream.StyleHeader; break;
@@ -835,14 +835,14 @@ abstract class Instruction {
             }
         },
         new Instruction("buffer_mode", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 return Result.Continue;
             }
         },
         new Instruction("output_stream", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getSignedValue();
-                int a1 = operands.length > 1 ? operands[1].getValue() : 0;
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getSignedValue();
+                int a1 = machine.operands[1].getValue();
                 switch (a0) {
                 case 1:
                     machine.stream1 = true;
@@ -865,20 +865,20 @@ abstract class Instruction {
             }
         },
         new Instruction("input_stream", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 throw new RuntimeException("unimplemented");
             }
         },
         new Instruction("sound_effect", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 throw new RuntimeException("unimplemented");
             }
         },
         new Instruction("read_char", false, true, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
-                int a1 = operands.length > 1 ? operands[1].getValue() : 0;
-                int a2 = operands.length > 2 ? operands[2].getValue() : 0;
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getValue();
+                int a1 = machine.operands[1].getValue();
+                int a2 = machine.operands[2].getValue();
                 updateWindowsPreInput(machine);
                 machine.mainWindow.requestCharEvent();
                 GlkEvent event;
@@ -898,11 +898,11 @@ abstract class Instruction {
             }
         },
         new Instruction("scan_table", false, true, true, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
-                int a1 = operands[1].getValue();
-                int a2 = operands[2].getValue();
-                int a3 = operands.length > 3 ? operands[3].getValue() : 0x82;
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getValue();
+                int a1 = machine.operands[1].getValue();
+                int a2 = machine.operands[2].getValue();
+                int a3 = machine.operands[3].getValue(0x82);
                 int table = a1;
                 int entrySize = a3 & 127;
                 int result = 0;
@@ -931,40 +931,40 @@ abstract class Instruction {
             }
         },
         new Instruction("not", false, true, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                machine.state.storeVar(store, operands[0].getValue()^65535);
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                machine.state.storeVar(store, machine.operands[0].getValue()^65535);
                 return Result.Continue;
             }
         },
         new Instruction("call_vn", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                return doCall(machine, operands[0].getValue(),
-                              operands.length > 1 ? operands[1].getValue() : 0,
-                              operands.length > 2 ? operands[2].getValue() : 0,
-                              operands.length > 3 ? operands[3].getValue() : 0,
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                return doCall(machine, machine.operands[0].getValue(),
+                              machine.operands[1].getValue(),
+                              machine.operands[2].getValue(),
+                              machine.operands[3].getValue(),
                               0, 0, 0, 0,
-                              operands.length - 1, -1);
+                              machine.noperands - 1, -1);
             }
         },
         new Instruction("call_vn2", true, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                return doCall(machine, operands[0].getValue(),
-                              operands.length > 1 ? operands[1].getValue() : 0,
-                              operands.length > 2 ? operands[2].getValue() : 0,
-                              operands.length > 3 ? operands[3].getValue() : 0,
-                              operands.length > 4 ? operands[4].getValue() : 0,
-                              operands.length > 5 ? operands[5].getValue() : 0,
-                              operands.length > 6 ? operands[6].getValue() : 0,
-                              operands.length > 7 ? operands[7].getValue() : 0,
-                              operands.length - 1, -1);
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                return doCall(machine, machine.operands[0].getValue(),
+                              machine.operands[1].getValue(),
+                              machine.operands[2].getValue(),
+                              machine.operands[3].getValue(),
+                              machine.operands[4].getValue(),
+                              machine.operands[5].getValue(),
+                              machine.operands[6].getValue(),
+                              machine.operands[7].getValue(),
+                              machine.noperands - 1, -1);
             }
         },
         new Instruction("tokenise", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
-                int a1 = operands[1].getValue();
-                int a2 = operands.length > 2 ? operands[2].getValue() : 0;
-                int a3 = operands.length > 3 ? operands[3].getValue() : 0;
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getValue();
+                int a1 = machine.operands[1].getValue();
+                int a2 = machine.operands[2].getValue();
+                int a3 = machine.operands[3].getValue();
                 int bufferAddress = machine.state.version < 5 ? a0+1 : a0+2;
                 int bufferLength = machine.state.read8(bufferAddress-1);
                 if (machine.state.version < 5) {
@@ -979,11 +979,11 @@ abstract class Instruction {
             }
         },
         new Instruction("encode_text", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
-                int a1 = operands[1].getValue();
-                int a2 = operands[2].getValue();
-                int a3 = operands[3].getValue();
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getValue();
+                int a1 = machine.operands[1].getValue();
+                int a2 = machine.operands[2].getValue();
+                int a3 = machine.operands[3].getValue();
                 StringBuilder sb = new StringBuilder();
                 for (int i = a2; i < a1 + a2; i++) {
                     ZSCII.appendZSCII(sb, machine.state, machine.state.read8(i));
@@ -996,10 +996,10 @@ abstract class Instruction {
             }
         },
         new Instruction("copy_table", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
-                int a1 = operands[1].getValue();
-                int a2 = operands[2].getValue();
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getValue();
+                int a1 = machine.operands[1].getValue();
+                int a2 = machine.operands[2].getValue();
                 boolean forward = false;
                 if (a2 >= 32768) {
                     a2 = 65536 - a2;
@@ -1022,11 +1022,11 @@ abstract class Instruction {
             }
         },
         new Instruction("print_table", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
-                int a1 = operands[1].getValue();
-                int a2 = operands.length > 2 ? operands[2].getValue() : 1;
-                int a3 = operands.length > 3 ? operands[3].getValue() : 0;
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getValue();
+                int a1 = machine.operands[1].getValue();
+                int a2 = machine.operands[2].getValue(1);
+                int a3 = machine.operands[3].getValue(0);
                 GlkStream stream = machine.getOutputStream();
                 if (stream == null) {
                     return Result.Continue;
@@ -1049,8 +1049,8 @@ abstract class Instruction {
             }
         },
         new Instruction("check_arg_count", false, false, true, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getValue();
                 if (((machine.state.frame.args & (1 << (a0 - 1))) != 0) == cond) {
                     return doBranch(machine, branch);
                 }
@@ -1061,64 +1061,64 @@ abstract class Instruction {
 
     private static final Instruction[] EXT = new Instruction[] {
         new Instruction("save", false, true, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                for (Operand operand : operands) {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                for (Operand operand : machine.operands) {
                     operand.getValue();
                 }
                 return doSave(machine, store, cond, branch);
             }
         },
         new Instruction("restore", false, true, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                for (Operand operand : operands) {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                for (Operand operand : machine.operands) {
                     operand.getValue();
                 }
                 return doRestore(machine, store);
             }
         },
         new Instruction("log_shift", false, true, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
-                int a1 = operands[1].getSignedValue();
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getValue();
+                int a1 = machine.operands[1].getSignedValue();
                 machine.state.storeVar(store, (a1 > 0 ? a0 << a1 : a0 >>> -a1) & 65535);
                 return Result.Continue;
             }
         },
         new Instruction("art_shift", false, true, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getSignedValue();
-                int a1 = operands[1].getSignedValue();
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getSignedValue();
+                int a1 = machine.operands[1].getSignedValue();
                 machine.state.storeVar(store, (a1 > 0 ? a0 << a1 : a0 >> -a1) & 65535);
                 return Result.Continue;
             }
         },
         new Instruction("set_font", false, true, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 throw new RuntimeException("unimplemented");
             }
         },
         new Instruction("draw_picture", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 throw new RuntimeException("unimplemented");
             }
         },
         new Instruction("picture_data", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 throw new RuntimeException("unimplemented");
             }
         },
         new Instruction("erase_picture", false, false, true, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 throw new RuntimeException("unimplemented");
             }
         },
         new Instruction("set_margins", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 throw new RuntimeException("unimplemented");
             }
         },
         new Instruction("save_undo", false, true, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 State undoState;
                 if (machine.undoStateIndex >= machine.undoStates.length) {
                     undoState = machine.undoStates[0];
@@ -1141,7 +1141,7 @@ abstract class Instruction {
             }
         },
         new Instruction("restore_undo", false, true, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 if (machine.undoStateIndex <= 0) {
                     machine.state.storeVar(store, 0);
                     return Result.Continue;
@@ -1152,14 +1152,14 @@ abstract class Instruction {
             }
         },
         new Instruction("print_unicode", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                machine.glk.glk.putCharUni(operands[0].getValue());
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                machine.glk.glk.putCharUni(machine.operands[0].getValue());
                 return Result.Continue;
             }
         },
         new Instruction("check_unicode", false, true, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getValue();
                 int result = 0;
                 if (machine.glk.glk.gestalt(GlkGestalt.CharOutput, a0) != 0) {
                     result |= 1;
@@ -1172,10 +1172,10 @@ abstract class Instruction {
             }
         },
         new Instruction("set_true_color", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
-                int a0 = operands[0].getValue();
-                int a1 = operands[1].getValue();
-                int a2 = operands.length > 2 ? operands[2].getValue() : -1;
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+                int a0 = machine.operands[0].getValue();
+                int a1 = machine.operands[1].getValue();
+                int a2 = machine.operands[2].getValue(-1);
                 int fg = a0 < 0 ? a0 : (a0 & 31) << 19 | (a0 & 992) << 6 | (a0 & 31744) >>> 7;
                 int bg = a1 < 0 ? a1 : (a1 & 31) << 19 | (a1 & 992) << 6 | (a1 & 31744) >>> 7;
                 setColors(machine, a2, fg, bg);
@@ -1185,72 +1185,72 @@ abstract class Instruction {
         null,
         null,
         new Instruction("move_window", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 throw new RuntimeException("unimplemented");
             }
         },
         new Instruction("window_size", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 throw new RuntimeException("unimplemented");
             }
         },
         new Instruction("window_style", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 throw new RuntimeException("unimplemented");
             }
         },
         new Instruction("get_wind_prop", false, true, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 throw new RuntimeException("unimplemented");
             }
         },
         new Instruction("scroll_window", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 throw new RuntimeException("unimplemented");
             }
         },
         new Instruction("pop_stack", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 throw new RuntimeException("unimplemented");
             }
         },
         new Instruction("read_mouse", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 throw new RuntimeException("unimplemented");
             }
         },
         new Instruction("mouse_window", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 throw new RuntimeException("unimplemented");
             }
         },
         new Instruction("push_stack", false, false, true, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 throw new RuntimeException("unimplemented");
             }
         },
         new Instruction("put_wind_prop", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 throw new RuntimeException("unimplemented");
             }
         },
         new Instruction("print_form", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 throw new RuntimeException("unimplemented");
             }
         },
         new Instruction("make_menu", false, false, true, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 throw new RuntimeException("unimplemented");
             }
         },
         new Instruction("picture_table", false, false, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 throw new RuntimeException("unimplemented");
             }
         },
         new Instruction("buffer_screen", false, true, false, false) {
-            @Override Result execute(Machine machine, Operand[] operands, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
+            @Override Result execute(Machine machine, int store, boolean cond, int branch, StringBuilder literalString, int oldPc) throws IOException {
                 throw new RuntimeException("unimplemented");
             }
         },
@@ -1265,58 +1265,121 @@ abstract class Instruction {
         int opcode = machine.state.read8(machine.state.pc);
         machine.state.pc++;
         Instruction insn;
-        Operand[] operands;
         switch (opcode & 240) {
         case 0: case 16:
             insn = _2OP[opcode&31];
-            operands = new Operand[] { new Operand(machine, Operand.SMALL), new Operand(machine, Operand.SMALL) };
+            machine.operands[0].setType(Operand.SMALL);
+            machine.operands[1].setType(Operand.SMALL);
+            machine.operands[2].setType(Operand.NONE);
+            machine.operands[3].setType(Operand.NONE);
+            machine.operands[4].setType(Operand.NONE);
+            machine.operands[5].setType(Operand.NONE);
+            machine.operands[6].setType(Operand.NONE);
+            machine.operands[7].setType(Operand.NONE);
+            machine.noperands = 2;
             break;
         case 32: case 48:
             insn = _2OP[opcode&31];
-            operands = new Operand[] { new Operand(machine, Operand.SMALL), new Operand(machine, Operand.VAR) };
+            machine.operands[0].setType(Operand.SMALL);
+            machine.operands[1].setType(Operand.VAR);
+            machine.operands[2].setType(Operand.NONE);
+            machine.operands[3].setType(Operand.NONE);
+            machine.operands[4].setType(Operand.NONE);
+            machine.operands[5].setType(Operand.NONE);
+            machine.operands[6].setType(Operand.NONE);
+            machine.operands[7].setType(Operand.NONE);
+            machine.noperands = 2;
             break;
         case 64: case 80:
             insn = _2OP[opcode&31];
-            operands = new Operand[] { new Operand(machine, Operand.VAR), new Operand(machine, Operand.SMALL) };
+            machine.operands[0].setType(Operand.VAR);
+            machine.operands[1].setType(Operand.SMALL);
+            machine.operands[2].setType(Operand.NONE);
+            machine.operands[3].setType(Operand.NONE);
+            machine.operands[4].setType(Operand.NONE);
+            machine.operands[5].setType(Operand.NONE);
+            machine.operands[6].setType(Operand.NONE);
+            machine.operands[7].setType(Operand.NONE);
+            machine.noperands = 2;
             break;
         case 96: case 112:
             insn = _2OP[opcode&31];
-            operands = new Operand[] { new Operand(machine, Operand.VAR), new Operand(machine, Operand.VAR) };
+            machine.operands[0].setType(Operand.VAR);
+            machine.operands[1].setType(Operand.VAR);
+            machine.operands[2].setType(Operand.NONE);
+            machine.operands[3].setType(Operand.NONE);
+            machine.operands[4].setType(Operand.NONE);
+            machine.operands[5].setType(Operand.NONE);
+            machine.operands[6].setType(Operand.NONE);
+            machine.operands[7].setType(Operand.NONE);
+            machine.noperands = 2;
             break;
         case 128:
             insn = _1OP[opcode&15];
-            operands = new Operand[] { new Operand(machine, Operand.LARGE) };
+            machine.operands[0].setType(Operand.LARGE);
+            machine.operands[1].setType(Operand.NONE);
+            machine.operands[2].setType(Operand.NONE);
+            machine.operands[3].setType(Operand.NONE);
+            machine.operands[4].setType(Operand.NONE);
+            machine.operands[5].setType(Operand.NONE);
+            machine.operands[6].setType(Operand.NONE);
+            machine.operands[7].setType(Operand.NONE);
+            machine.noperands = 1;
             break;
         case 144:
             insn = _1OP[opcode&15];
-            operands = new Operand[] { new Operand(machine, Operand.SMALL) };
+            machine.operands[0].setType(Operand.SMALL);
+            machine.operands[1].setType(Operand.NONE);
+            machine.operands[2].setType(Operand.NONE);
+            machine.operands[3].setType(Operand.NONE);
+            machine.operands[4].setType(Operand.NONE);
+            machine.operands[5].setType(Operand.NONE);
+            machine.operands[6].setType(Operand.NONE);
+            machine.operands[7].setType(Operand.NONE);
+            machine.noperands = 1;
             break;
         case 160:
             insn = _1OP[opcode&15];
-            operands = new Operand[] { new Operand(machine, Operand.VAR) };
+            machine.operands[0].setType(Operand.VAR);
+            machine.operands[1].setType(Operand.NONE);
+            machine.operands[2].setType(Operand.NONE);
+            machine.operands[3].setType(Operand.NONE);
+            machine.operands[4].setType(Operand.NONE);
+            machine.operands[5].setType(Operand.NONE);
+            machine.operands[6].setType(Operand.NONE);
+            machine.operands[7].setType(Operand.NONE);
+            machine.noperands = 1;
             break;
         case 176:
             if (opcode != 190) {
                 insn = _0OP[opcode&15];
-                operands = new Operand[0];
+                machine.operands[0].setType(Operand.NONE);
+                machine.operands[1].setType(Operand.NONE);
+                machine.operands[2].setType(Operand.NONE);
+                machine.operands[3].setType(Operand.NONE);
+                machine.operands[4].setType(Operand.NONE);
+                machine.operands[5].setType(Operand.NONE);
+                machine.operands[6].setType(Operand.NONE);
+                machine.operands[7].setType(Operand.NONE);
+                machine.noperands = 0;
             } else {
                 insn = EXT[machine.state.read8(machine.state.pc)];
                 machine.state.pc++;
-                operands = null;
+                machine.noperands = -1;
             }
             break;
         case 192: case 208:
             insn = _2OP[opcode&31];
-            operands = null;
+            machine.noperands = -1;
             break;
         case 224: case 240:
             insn = VAR[opcode&31];
-            operands = null;
+            machine.noperands = -1;
             break;
         default:
             throw new AssertionError();
         }
-        if (operands == null) {
+        if (machine.noperands < 0) {
             int count = 0;
             int types = machine.state.read8(machine.state.pc);
             for (int i = 0; i < 4; i++) {
@@ -1336,22 +1399,25 @@ abstract class Instruction {
                     types <<= 2;
                 }
             }
-            operands = new Operand[count];
+            machine.noperands = count;
             types = machine.state.read8(machine.state.pc);
             machine.state.pc++;
             if (!insn.call7) {
                 for (int i = 0; i < count; i++) {
-                    operands[i] = new Operand(machine, (types >> (6 - 2*i))&3);
+                    machine.operands[i].setType((types >> (6 - 2*i))&3);
                 }
             } else {
                 int types2 = machine.state.read8(machine.state.pc);
                 machine.state.pc++;
                 for (int i = 0; i < Math.min(count, 4); i++) {
-                    operands[i] = new Operand(machine, (types >> (6 - 2*i))&3);
+                    machine.operands[i].setType((types >> (6 - 2*i))&3);
                 }
                 for (int i = 4; i < count; i++) {
-                    operands[i] = new Operand(machine, (types2 >> (14 - 2*i))&3);
+                    machine.operands[i].setType((types2 >> (14 - 2*i))&3);
                 }
+            }
+            for (int i = count; i < 8; i++) {
+                machine.operands[i].setType(Operand.NONE);
             }
         }
         int store = 0;
@@ -1387,8 +1453,8 @@ abstract class Instruction {
         }
         if (TRACE) {
             System.out.print(String.format("%04x:%s", oldPc, insn.name));
-            for (int i = 0; i < operands.length; i++) {
-                System.out.print(String.format(" %s",operands[i].traceValue()));
+            for (int i = 0; i < machine.noperands; i++) {
+                System.out.print(machine.operands[i].traceValue());
             }
             if (insn.store(machine.state.version)) {
                 if (store == 0) {
@@ -1416,20 +1482,24 @@ abstract class Instruction {
             }
             System.out.println();
         }
-        return insn.execute(machine, operands, store, cond, branch, literalString, oldPc);
+        return insn.execute(machine, store, cond, branch, literalString, oldPc);
     }
 
-    private static class Operand {
+    static class Operand {
         static final int LARGE = 0;
         static final int SMALL = 1;
         static final int VAR = 2;
+        static final int NONE = 3;
 
         final Machine machine;
-        final int type;
-        final int value;
+        private int type;
+        private int value;
 
-        Operand(Machine machine, int type) {
+        Operand(Machine machine) {
             this.machine = machine;
+        }
+
+        void setType(int type) {
             this.type = type;
             switch (type) {
             case LARGE:
@@ -1440,6 +1510,8 @@ abstract class Instruction {
             case VAR:
                 value = machine.state.read8(machine.state.pc);
                 machine.state.pc++;
+                break;
+            case NONE:
                 break;
             default:
                 throw new AssertionError();
@@ -1452,6 +1524,21 @@ abstract class Instruction {
                 return value;
             case VAR:
                 return machine.state.readVar(value);
+            case NONE:
+                return 0;
+            default:
+                throw new AssertionError();
+            }
+        }
+
+        int getValue(int defaultValue) {
+            switch (type) {
+            case LARGE: case SMALL:
+                return value;
+            case VAR:
+                return machine.state.readVar(value);
+            case NONE:
+                return defaultValue;
             default:
                 throw new AssertionError();
             }
@@ -1465,9 +1552,11 @@ abstract class Instruction {
         String traceValue() {
             switch (type) {
             case LARGE: case SMALL:
-                return String.format("#%x", value);
+                return String.format(" #%x", value);
             case VAR:
-                return machine.state.traceVar(value);
+                return " "+machine.state.traceVar(value);
+            case NONE:
+                return "";
             default:
                 throw new AssertionError();
             }

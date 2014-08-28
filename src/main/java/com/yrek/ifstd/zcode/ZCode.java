@@ -30,7 +30,7 @@ public class ZCode implements Runnable, Serializable {
     public void run() {
         suspended = false;
         suspending = false;
-        machine.suspending = false;
+        machine.initForRun();
         try {
             for (;;) {
                 switch (Instruction.executeNext(machine)) {

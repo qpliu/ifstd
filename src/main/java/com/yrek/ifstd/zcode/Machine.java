@@ -43,6 +43,9 @@ class Machine implements Serializable {
     int upperWindowCurrentHeight = 0;
     int upperWindowTargetHeight = 0;
 
+    transient Instruction.Operand[] operands;
+    transient int noperands;
+
     Machine(byte[] byteData, File fileData, GlkDispatch glk) throws IOException {
         this.byteData = byteData;
         this.fileData = fileData;
@@ -115,6 +118,14 @@ class Machine implements Serializable {
         }
         // translate Glk-colors to Z-colors
         state.setScreen(screenWidth, screenHeight, foregroundColor, backgroundColor);
+    }
+
+    void initForRun() {
+        suspending = false;
+        operands = new Instruction.Operand[8];
+        for (int i = 0; i < operands.length; i++) {
+            operands[i] = new Instruction.Operand(this);
+        }
     }
 
     State load() throws IOException {
