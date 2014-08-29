@@ -45,6 +45,7 @@ class Machine implements Serializable {
 
     transient Instruction.Operand[] operands;
     transient int noperands;
+    transient StringBuilder string;
 
     Machine(byte[] byteData, File fileData, GlkDispatch glk) throws IOException {
         this.byteData = byteData;
@@ -126,6 +127,7 @@ class Machine implements Serializable {
         for (int i = 0; i < operands.length; i++) {
             operands[i] = new Instruction.Operand(this);
         }
+        string = new StringBuilder();
     }
 
     State load() throws IOException {
