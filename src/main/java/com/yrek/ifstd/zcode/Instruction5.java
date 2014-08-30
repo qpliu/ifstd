@@ -96,7 +96,7 @@ class Instruction5 {
             return insnCALL_2N(machine);
         case 27:
             operandsSS(machine);
-            return insnSET_COLOR(machine);
+            return insnSET_COLOR(machine, 2);
         case 28:
             operandsSS(machine);
             return insnTHROW(machine);
@@ -185,7 +185,7 @@ class Instruction5 {
             return insnCALL_2N(machine);
         case 59:
             operandsSV(machine);
-            return insnSET_COLOR(machine);
+            return insnSET_COLOR(machine, 2);
         case 60:
             operandsSV(machine);
             return insnTHROW(machine);
@@ -274,7 +274,7 @@ class Instruction5 {
             return insnCALL_2N(machine);
         case 91:
             operandsVS(machine);
-            return insnSET_COLOR(machine);
+            return insnSET_COLOR(machine, 2);
         case 92:
             operandsVS(machine);
             return insnTHROW(machine);
@@ -364,7 +364,7 @@ class Instruction5 {
             return insnCALL_2N(machine);
         case 123:
             operandsVV(machine);
-            return insnSET_COLOR(machine);
+            return insnSET_COLOR(machine, 2);
         case 124:
             operandsVV(machine);
             return insnTHROW(machine);
@@ -579,8 +579,7 @@ class Instruction5 {
             operandsVAR(machine);
             return insnCALL_2N(machine);
         case 219:
-            operandsVAR(machine);
-            return insnSET_COLOR(machine);
+            return insnSET_COLOR(machine, operandsVAR(machine));
         case 220:
             operandsVAR(machine);
             return insnTHROW(machine);
@@ -624,7 +623,7 @@ class Instruction5 {
             operandsVAR(machine);
             return insnSET_WINDOW(machine);
         case 236:
-            return insnCALL_VS(machine, operandsVAR(machine));
+            return insnCALL_VS(machine, operandsVAR2(machine));
         case 237:
             operandsVAR(machine);
             return insnERASE_WINDOW(machine);
@@ -657,8 +656,7 @@ class Instruction5 {
             operandsVAR(machine);
             return insnREAD_CHAR(machine,oldPc);
         case 247:
-            operandsVAR(machine);
-            return insnSCAN_TABLE(machine);
+            return insnSCAN_TABLE(machine, operandsVAR(machine));
         case 248:
             operandsVAR(machine);
             return insnNOT(machine);
@@ -667,17 +665,13 @@ class Instruction5 {
         case 250:
             return insnCALL_VN(machine, operandsVAR2(machine));
         case 251:
-            operandsVAR(machine);
-            return insnTOKENIZE(machine);
+            return insnTOKENIZE(machine, operandsVAR(machine));
         case 252:
-            operandsVAR(machine);
-            return insnENCODE_TEXT(machine);
+            return insnENCODE_TEXT(machine, operandsVAR(machine));
         case 253:
-            operandsVAR(machine);
-            return insnCOPY_TABLE(machine);
+            return insnCOPY_TABLE(machine, operandsVAR(machine));
         case 254:
-            operandsVAR(machine);
-            return insnPRINT_TABLE(machine);
+            return insnPRINT_TABLE(machine, operandsVAR(machine));
         case 255:
             operandsVAR(machine);
             return insnCHECK_ARG_COUNT(machine);
@@ -709,7 +703,7 @@ class Instruction5 {
     private static int operandL(Machine machine) {
         int pc = machine.state.pc;
         machine.state.pc = pc + 2;
-        return machine.state.read8(pc);
+        return machine.state.read16(pc);
     }
 
     private static int operandS(Machine machine) {
@@ -731,11 +725,11 @@ class Instruction5 {
                 machine.operand[i] = machine.state.readVar(machine.state.read8(machine.state.pc++));
                 break;
             case 64:
-                machine.operand[i] = machine.state.read16(machine.state.pc);
-                machine.state.pc += 2;
+                machine.operand[i] = machine.state.read8(machine.state.pc++);
                 break;
             case 0:
-                machine.operand[i] = machine.state.read8(machine.state.pc++);
+                machine.operand[i] = machine.state.read16(machine.state.pc);
+                machine.state.pc += 2;
                 break;
             default:
                 throw new AssertionError();
@@ -758,11 +752,11 @@ class Instruction5 {
                 machine.operand[i] = machine.state.readVar(machine.state.read8(machine.state.pc++));
                 break;
             case 16384:
-                machine.operand[i] = machine.state.read16(machine.state.pc);
-                machine.state.pc += 2;
+                machine.operand[i] = machine.state.read8(machine.state.pc++);
                 break;
             case 0:
-                machine.operand[i] = machine.state.read8(machine.state.pc++);
+                machine.operand[i] = machine.state.read16(machine.state.pc);
+                machine.state.pc += 2;
                 break;
             default:
                 throw new AssertionError();
@@ -772,8 +766,8 @@ class Instruction5 {
         return 8;
     }
 
-    private static void store(Machine machine, int value) {
-        machine.state.storeVar(machine.state.read8(machine.state.pc++), value);
+    private static void store(State state, int value) {
+        state.storeVar(state.read8(state.pc++), value);
     }
 
     private static Instruction.Result branch(Machine machine, boolean result) {
@@ -800,6 +794,16 @@ class Instruction5 {
             machine.state.pc += branch - 2;
             return Instruction.Result.Tick;
         }
+    }
+
+    private static void literalString(Machine machine) throws IOException {
+        final State state = machine.state;
+        machine.string.setLength(0);
+        ZSCII.decode(machine.string, state, state.pc);
+        while (state.read8(state.pc) < 128) {
+            state.pc += 2;
+        }
+        state.pc += 2;
     }
 
     private static Instruction.Result retVal(Machine machine, int val) {
@@ -836,6 +840,105 @@ class Instruction5 {
         machine.state.frame = frame;
         machine.state.pc = addr;
         return Instruction.Result.Tick;
+    }
+
+    private static void setColors(Machine machine, int window, int foreground, int background) {
+        setColor(machine, GlkWindow.TypeTextBuffer, GlkStream.StyleHintTextColor, foreground);
+        setColor(machine, GlkWindow.TypeTextGrid, GlkStream.StyleHintTextColor, foreground);
+        setColor(machine, GlkWindow.TypeTextBuffer, GlkStream.StyleHintBackColor, background);
+        setColor(machine, GlkWindow.TypeTextGrid, GlkStream.StyleHintBackColor, background);
+    }
+
+    private static void setColor(Machine machine, int windowType, int styleHint, int color) {
+        if (color == -2) {
+            return;
+        }
+        if (color < 0) {
+            machine.glk.glk.styleHintClear(windowType, GlkStream.StyleNormal, styleHint);
+            machine.glk.glk.styleHintClear(windowType, GlkStream.StyleEmphasized, styleHint);
+            machine.glk.glk.styleHintClear(windowType, GlkStream.StylePreformatted, styleHint);
+            machine.glk.glk.styleHintClear(windowType, GlkStream.StyleHeader, styleHint);
+            machine.glk.glk.styleHintClear(windowType, GlkStream.StyleSubheader, styleHint);
+            machine.glk.glk.styleHintClear(windowType, GlkStream.StyleAlert, styleHint);
+            machine.glk.glk.styleHintClear(windowType, GlkStream.StyleNote, styleHint);
+            machine.glk.glk.styleHintClear(windowType, GlkStream.StyleBlockQuote, styleHint);
+            machine.glk.glk.styleHintClear(windowType, GlkStream.StyleInput, styleHint);
+            machine.glk.glk.styleHintClear(windowType, GlkStream.StyleUser1, styleHint);
+            machine.glk.glk.styleHintClear(windowType, GlkStream.StyleUser2, styleHint);
+        } else {
+            machine.glk.glk.styleHintSet(windowType, GlkStream.StyleNormal, styleHint, color);
+            machine.glk.glk.styleHintSet(windowType, GlkStream.StyleEmphasized, styleHint, color);
+            machine.glk.glk.styleHintSet(windowType, GlkStream.StylePreformatted, styleHint, color);
+            machine.glk.glk.styleHintSet(windowType, GlkStream.StyleHeader, styleHint, color);
+            machine.glk.glk.styleHintSet(windowType, GlkStream.StyleSubheader, styleHint, color);
+            machine.glk.glk.styleHintSet(windowType, GlkStream.StyleAlert, styleHint, color);
+            machine.glk.glk.styleHintSet(windowType, GlkStream.StyleNote, styleHint, color);
+            machine.glk.glk.styleHintSet(windowType, GlkStream.StyleBlockQuote, styleHint, color);
+            machine.glk.glk.styleHintSet(windowType, GlkStream.StyleInput, styleHint, color);
+            machine.glk.glk.styleHintSet(windowType, GlkStream.StyleUser1, styleHint, color);
+            machine.glk.glk.styleHintSet(windowType, GlkStream.StyleUser2, styleHint, color);
+        }
+    }
+
+    private static void updateWindowsPreInput(Machine machine) throws IOException {
+        if (machine.state.version <= 3) {
+            int vars = machine.state.read16(State.GLOBAL_VAR_TABLE);
+            int obj = machine.state.read16(vars);
+            int s1 = machine.state.read16(vars+2);
+            int s2 = machine.state.read16(vars+4);
+            int objProperties = machine.state.objProperties(obj);
+            StringBuilder sb = machine.string;
+            sb.setLength(0);
+            ZSCII.decode(sb, machine.state, objProperties+1);
+            if (machine.upperWindow == null) {
+                machine.upperWindow = machine.glk.glk.windowOpen(machine.mainWindow, GlkWindowArrangement.MethodAbove | GlkWindowArrangement.MethodFixed | GlkWindowArrangement.MethodNoBorder, 1, GlkWindow.TypeTextGrid, 1);
+                if (machine.upperWindow != null) {
+                    machine.glk.add(machine.upperWindow);
+                }
+            }
+            if (machine.upperWindow != null) {
+                String score;
+                if (machine.state.version < 3 || (machine.state.read8(State.FLAGS1) & 2) == 0) {
+                    score = " " + s1 + "/" + s2;
+                } else {
+                    score = String.format(" %d:%02d", s1 % 24, s2 % 60);
+                }
+                while (sb.length() + score.length() < machine.screenWidth) {
+                    sb.append(' ');
+                }
+                sb.setLength(Math.max(0,machine.screenWidth - score.length()));
+                sb.append(score);
+                machine.upperWindow.moveCursor(0, 0);
+                machine.upperWindow.getStream().putString(sb);
+            }
+        }
+    }
+
+    private static void updateWindowsPostInput(Machine machine) throws IOException {
+        if (machine.state.version > 3) {
+            if (machine.upperWindowCurrentHeight != machine.upperWindowTargetHeight) {
+                resizeUpperWindow(machine, machine.upperWindowTargetHeight);
+            }
+            machine.upperWindowInitialHeight = machine.upperWindowCurrentHeight;
+        }
+    }
+
+    private static void resizeUpperWindow(Machine machine, int height) throws IOException {
+        machine.upperWindowCurrentHeight = height;
+        if (height == 0) {
+            if (machine.upperWindow != null) {
+                machine.upperWindow.close();
+                machine.upperWindow = null;
+            }
+        } else if (machine.upperWindow == null) {
+            machine.upperWindow = machine.glk.glk.windowOpen(machine.mainWindow, GlkWindowArrangement.MethodAbove | GlkWindowArrangement.MethodFixed | GlkWindowArrangement.MethodNoBorder, height, GlkWindow.TypeTextGrid, 1);
+            machine.glk.add(machine.upperWindow);
+        } else {
+            machine.upperWindow.getParent().setArrangement(GlkWindowArrangement.MethodAbove | GlkWindowArrangement.MethodFixed | GlkWindowArrangement.MethodNoBorder, height, machine.upperWindow);
+            if (machine.state.version <= 3) {
+                machine.upperWindow.clear();
+            }
+        }
     }
 
     private static Instruction.Result insnJE(Machine machine, int argc) {
@@ -878,12 +981,12 @@ class Instruction5 {
     }
 
     private static Instruction.Result insnOR(Machine machine) {
-        store(machine, machine.operand[0] | machine.operand[1]);
+        store(machine.state, machine.operand[0] | machine.operand[1]);
         return Instruction.Result.Continue;
     }
 
     private static Instruction.Result insnAND(Machine machine) {
-        store(machine, machine.operand[0] & machine.operand[1]);
+        store(machine.state, machine.operand[0] & machine.operand[1]);
         return Instruction.Result.Continue;
     }
 
@@ -912,52 +1015,52 @@ class Instruction5 {
     }
 
     private static Instruction.Result insnLOADW(Machine machine) {
-        store(machine, machine.state.read16((machine.operand[0] + 2*machine.operand[1])&65535));
+        store(machine.state, machine.state.read16((machine.operand[0] + 2*machine.operand[1])&65535));
         return Instruction.Result.Continue;
     }
 
     private static Instruction.Result insnLOADB(Machine machine) {
-        store(machine, machine.state.read8((machine.operand[0] + machine.operand[1])&65535));
+        store(machine.state, machine.state.read8((machine.operand[0] + machine.operand[1])&65535));
         return Instruction.Result.Continue;
     }
 
     private static Instruction.Result insnGET_PROP(Machine machine) {
-        store(machine, machine.state.getProp(machine.operand[0], machine.operand[1]));
+        store(machine.state, machine.state.getProp(machine.operand[0], machine.operand[1]));
         return Instruction.Result.Continue;
     }
 
     private static Instruction.Result insnGET_PROP_ADDR(Machine machine) {
-        store(machine, machine.state.getPropAddr(machine.operand[0], machine.operand[1]));
+        store(machine.state, machine.state.getPropAddr(machine.operand[0], machine.operand[1]));
         return Instruction.Result.Continue;
     }
 
     private static Instruction.Result insnGET_NEXT_PROP(Machine machine) {
-        store(machine, machine.state.getNextProp(machine.operand[0], machine.operand[1]));
+        store(machine.state, machine.state.getNextProp(machine.operand[0], machine.operand[1]));
         return Instruction.Result.Continue;
     }
 
     private static Instruction.Result insnADD(Machine machine) {
-        store(machine, (machine.operand[0] + machine.operand[1])&65535);
+        store(machine.state, (machine.operand[0] + machine.operand[1])&65535);
         return Instruction.Result.Continue;
     }
 
     private static Instruction.Result insnSUB(Machine machine) {
-        store(machine, (machine.operand[0] - machine.operand[1])&65535);
+        store(machine.state, (machine.operand[0] - machine.operand[1])&65535);
         return Instruction.Result.Continue;
     }
 
     private static Instruction.Result insnMUL(Machine machine) {
-        store(machine, (((short) machine.operand[0]) * ((short) machine.operand[1]))&65535);
+        store(machine.state, (((short) machine.operand[0]) * ((short) machine.operand[1]))&65535);
         return Instruction.Result.Continue;
     }
 
     private static Instruction.Result insnDIV(Machine machine) {
-        store(machine, (((short) machine.operand[0]) / ((short) machine.operand[1]))&65535);
+        store(machine.state, (((short) machine.operand[0]) / ((short) machine.operand[1]))&65535);
         return Instruction.Result.Continue;
     }
 
     private static Instruction.Result insnMOD(Machine machine) {
-        store(machine, (((short) machine.operand[0]) % ((short) machine.operand[1]))&65535);
+        store(machine.state, (((short) machine.operand[0]) % ((short) machine.operand[1]))&65535);
         return Instruction.Result.Continue;
     }
 
@@ -970,200 +1073,509 @@ class Instruction5 {
         return doCall(machine, machine.operand[0], machine.operand[1], 0, 0, 0, 0, 0, 0, 1, -1);
     }
 
-    private static Instruction.Result insnSET_COLOR(Machine machine) {
-        throw new RuntimeException("unimplemented");
+    private static final int[] colors = new int[] {
+        -2, // current
+        -1, // default
+        0x00000000, // black
+        0x00e80000, // red
+        0x0000d000, // green
+        0x00e8e800, // yellow
+        0x000000d0, // blue
+        0x00f800f8, // magenta
+        0x0000e8e8, // cyan
+        0x00f8f8f8, // white
+        0x00b0b0b0, // light gray
+        0x00888888, // medium gray
+        0x00585858, // dark gray
+        -1,
+        -1,
+        -4, // transparent
+    };
+
+    private static Instruction.Result insnSET_COLOR(Machine machine, int argc) {
+        setColors(machine, argc > 2 ? machine.operand[2] : -1, colors[machine.operand[0]], colors[machine.operand[1]]);
+        return Instruction.Result.Continue;
     }
 
     private static Instruction.Result insnTHROW(Machine machine) {
-        throw new RuntimeException("unimplemented");
+        while (machine.state.frame.index > machine.operand[1]) {
+            machine.state.frame = machine.state.frame.parent;
+        }
+        return retVal(machine, machine.operand[0]);
     }
 
     private static Instruction.Result insnJZ(Machine machine, int operand) {
-        throw new RuntimeException("unimplemented");
+        return branch(machine, operand == 0);
     }
 
     private static Instruction.Result insnGET_SIBLING(Machine machine, int operand) {
-        throw new RuntimeException("unimplemented");
+        int result = machine.state.objSibling(operand);
+        store(machine.state, result);
+        return branch(machine, result != 0);
     }
 
     private static Instruction.Result insnGET_CHILD(Machine machine, int operand) {
-        throw new RuntimeException("unimplemented");
+        int result = machine.state.objChild(operand);
+        store(machine.state, result);
+        return branch(machine, result != 0);
     }
 
     private static Instruction.Result insnGET_PARENT(Machine machine, int operand) {
-        throw new RuntimeException("unimplemented");
+        store(machine.state, machine.state.objParent(operand));
+        return Instruction.Result.Continue;
     }
 
     private static Instruction.Result insnGET_PROP_LEN(Machine machine, int operand) {
-        throw new RuntimeException("unimplemented");
+        store(machine.state, machine.state.getPropLen(operand));
+        return Instruction.Result.Continue;
     }
 
     private static Instruction.Result insnINC(Machine machine, int operand) {
-        throw new RuntimeException("unimplemented");
+        machine.state.storeVar(operand, (machine.state.readVar(operand) + 1) & 65535);
+        return Instruction.Result.Continue;
     }
 
     private static Instruction.Result insnDEC(Machine machine, int operand) {
-        throw new RuntimeException("unimplemented");
+        machine.state.storeVar(operand, (machine.state.readVar(operand) - 1) & 65535);
+        return Instruction.Result.Continue;
     }
 
-    private static Instruction.Result insnPRINT_ADDR(Machine machine, int operand) {
-        throw new RuntimeException("unimplemented");
+    private static Instruction.Result insnPRINT_ADDR(Machine machine, int operand) throws IOException {
+        Stream3 stream3 = machine.getStream3();
+        if (stream3 != null) {
+            ZSCII.decode(stream3, machine.state, operand);
+            return Instruction.Result.Continue;
+        }
+        GlkStream stream = machine.getOutputStream();
+        if (stream != null) {
+            machine.string.setLength(0);
+            ZSCII.decode(machine.string, machine.state, operand);
+            stream.putStringUni(new UnicodeString.US(machine.string));
+        }
+        return Instruction.Result.Continue;
     }
 
     private static Instruction.Result insnCALL_1S(Machine machine, int operand) {
-        throw new RuntimeException("unimplemented");
+        int store = machine.state.read8(machine.state.pc++);
+        return doCall(machine, operand, 0, 0, 0, 0, 0, 0, 0, 0, store);
     }
 
     private static Instruction.Result insnREMOVE_OBJ(Machine machine, int operand) {
-        throw new RuntimeException("unimplemented");
+        machine.state.objMove(operand, 0);
+        return Instruction.Result.Continue;
     }
 
-    private static Instruction.Result insnPRINT_OBJ(Machine machine, int operand) {
-        throw new RuntimeException("unimplemented");
+    private static Instruction.Result insnPRINT_OBJ(Machine machine, int operand) throws IOException {
+        Stream3 stream3 = machine.getStream3();
+        if (stream3 != null) {
+            ZSCII.decode(stream3, machine.state, machine.state.objProperties(operand) + 1);
+            return Instruction.Result.Continue;
+        }
+        GlkStream stream = machine.getOutputStream();
+        if (stream != null) {
+            machine.string.setLength(0);
+            ZSCII.decode(machine.string, machine.state, machine.state.objProperties(operand) + 1);
+            stream.putStringUni(new UnicodeString.US(machine.string));
+        }
+        return Instruction.Result.Continue;
     }
 
     private static Instruction.Result insnRET(Machine machine, int operand) {
-        throw new RuntimeException("unimplemented");
+        return retVal(machine, operand);
     }
 
     private static Instruction.Result insnJUMP(Machine machine, int operand) {
-        throw new RuntimeException("unimplemented");
+        short offset = (short) operand;
+        machine.state.pc += (int) offset - 2;
+        return Instruction.Result.Tick;
     }
 
-    private static Instruction.Result insnPRINT_PADDR(Machine machine, int operand) {
-        throw new RuntimeException("unimplemented");
+    private static Instruction.Result insnPRINT_PADDR(Machine machine, int operand) throws IOException {
+        Stream3 stream3 = machine.getStream3();
+        if (stream3 != null) {
+            ZSCII.decode(stream3, machine.state, machine.state.unpack(operand, false));
+            return Instruction.Result.Continue;
+        }
+        GlkStream stream = machine.getOutputStream();
+        if (stream != null) {
+            machine.string.setLength(0);
+            ZSCII.decode(machine.string, machine.state, machine.state.unpack(operand, false));
+            stream.putStringUni(new UnicodeString.US(machine.string));
+        }
+        return Instruction.Result.Continue;
     }
 
     private static Instruction.Result insnLOAD(Machine machine, int operand) {
-        throw new RuntimeException("unimplemented");
+        store(machine.state, machine.state.peekVar(operand));
+        return Instruction.Result.Continue;
     }
 
     private static Instruction.Result insnCALL_1N(Machine machine, int operand) {
-        throw new RuntimeException("unimplemented");
+        return doCall(machine, operand, 0, 0, 0, 0, 0, 0, 0, 0, -1);
     }
 
     private static Instruction.Result insnRTRUE(Machine machine) {
-        throw new RuntimeException("unimplemented");
+        return retVal(machine, 1);
     }
 
     private static Instruction.Result insnRFALSE(Machine machine) {
-        throw new RuntimeException("unimplemented");
+        return retVal(machine, 0);
     }
 
-    private static Instruction.Result insnPRINT(Machine machine) {
-        throw new RuntimeException("unimplemented");
+    private static Instruction.Result insnPRINT(Machine machine) throws IOException {
+        literalString(machine);
+        Stream3 stream3 = machine.getStream3();
+        if (stream3 != null) {
+            stream3.append(machine.string);
+            return Instruction.Result.Continue;
+        }
+        GlkStream stream = machine.getOutputStream();
+        if (stream != null) {
+            stream.putString(machine.string);
+        }
+        return Instruction.Result.Continue;
     }
 
-    private static Instruction.Result insnPRINT_RET(Machine machine) {
-        throw new RuntimeException("unimplemented");
+    private static Instruction.Result insnPRINT_RET(Machine machine) throws IOException {
+        literalString(machine);
+        Stream3 stream3 = machine.getStream3();
+        if (stream3 != null) {
+            stream3.append(machine.string);
+            stream3.append('\n');
+            return retVal(machine, 1);
+        }
+        GlkStream stream = machine.getOutputStream();
+        if (stream != null) {
+            stream.putString(machine.string.append('\n'));
+        }
+        return retVal(machine, 1);
     }
 
-    private static Instruction.Result insnRESTART(Machine machine) {
-        throw new RuntimeException("unimplemented");
+    private static Instruction.Result insnRESTART(Machine machine) throws IOException {
+        machine.state.copyFrom(machine.load(), false, true);
+        return Instruction.Result.Continue;
     }
 
     private static Instruction.Result insnRET_POPPED(Machine machine) {
-        throw new RuntimeException("unimplemented");
+        return retVal(machine, machine.state.frame.pop());
     }
 
     private static Instruction.Result insnCATCH(Machine machine) {
-        throw new RuntimeException("unimplemented");
+        store(machine.state, machine.state.frame.index);
+        return Instruction.Result.Continue;
     }
 
     private static Instruction.Result insnQUIT(Machine machine) {
-        throw new RuntimeException("unimplemented");
+        return Instruction.Result.Quit;
     }
 
-    private static Instruction.Result insnNEW_LINE(Machine machine) {
-        throw new RuntimeException("unimplemented");
+    private static Instruction.Result insnNEW_LINE(Machine machine) throws IOException {
+        Stream3 stream3 = machine.getStream3();
+        if (stream3 != null) {
+            stream3.append('\n');
+            return Instruction.Result.Continue;
+        }
+        GlkStream stream = machine.getOutputStream();
+        if (stream != null) {
+            stream.putChar('\n');
+        }
+        return Instruction.Result.Continue;
     }
 
     private static Instruction.Result insnVERIFY(Machine machine) {
-        throw new RuntimeException("unimplemented");
+        return branch(machine, true);
     }
 
-    private static Instruction.Result insnEXTENDED(Machine machine) {
-        throw new RuntimeException("unimplemented");
+    private static Instruction.Result insnEXTENDED(Machine machine) throws IOException {
+        switch (machine.state.read8(machine.state.pc++)) {
+        case 0:
+            operandsVAR(machine);
+            return insnSAVE(machine);
+        case 1:
+            operandsVAR(machine);
+            return insnRESTORE(machine);
+        case 2:
+            operandsVAR(machine);
+            return insnLOG_SHIFT(machine);
+        case 3:
+            operandsVAR(machine);
+            return insnART_SHIFT(machine);
+        case 4:
+            operandsVAR(machine);
+            return insnSET_FONT(machine);
+        case 9:
+            operandsVAR(machine);
+            return insnSAVE_UNDO(machine);
+        case 10:
+            operandsVAR(machine);
+            return insnRESTORE_UNDO(machine);
+        case 11:
+            operandsVAR(machine);
+            return insnPRINT_UNICODE(machine);
+        case 12:
+            operandsVAR(machine);
+            return insnCHECK_UNICODE(machine);
+        case 13:
+            return insnSET_TRUE_COLOR(machine, operandsVAR(machine));
+        default:
+            throw new IllegalArgumentException();
+        }
     }
 
     private static Instruction.Result insnPIRACY(Machine machine) {
-        throw new RuntimeException("unimplemented");
+        return branch(machine, true);
     }
 
     private static Instruction.Result insnCALL_VS(Machine machine, int argc) {
-        throw new RuntimeException("unimplemented");
+        int store = machine.state.read8(machine.state.pc++);
+        return doCall(machine,
+                      machine.operand[0], machine.operand[1],
+                      machine.operand[2], machine.operand[3],
+                      machine.operand[4], machine.operand[5],
+                      machine.operand[6], machine.operand[7],
+                      argc - 1, store);
     }
 
     private static Instruction.Result insnSTOREW(Machine machine) {
-        throw new RuntimeException("unimplemented");
+        machine.state.store16((machine.operand[0] + 2*machine.operand[1])&65535, machine.operand[2]);
+        return Instruction.Result.Continue;
     }
 
     private static Instruction.Result insnSTOREB(Machine machine) {
-        throw new RuntimeException("unimplemented");
+        machine.state.store8((machine.operand[0] + machine.operand[1])&65535, machine.operand[2]);
+        return Instruction.Result.Continue;
     }
 
     private static Instruction.Result insnPUT_PROP(Machine machine) {
-        throw new RuntimeException("unimplemented");
+        int addr = machine.state.getPropAddr(machine.operand[0], machine.operand[1]);
+        switch (machine.state.getPropLen(addr)) {
+        case 1:
+            machine.state.store8(addr, machine.operand[2]);
+            break;
+        case 2:
+            machine.state.store16(addr, machine.operand[2]);
+            break;
+        default:
+            throw new IllegalArgumentException();
+        }
+        return Instruction.Result.Continue;
     }
 
-    private static Instruction.Result insnREAD(Machine machine, int argc, int oldPc) {
-        throw new RuntimeException("unimplemented");
+    private static Instruction.Result insnREAD(Machine machine, int argc, int oldPc) throws IOException {
+        int a0 = machine.operand[0];
+        int a1 = argc > 1 ? machine.operand[1] : 0;
+        int a2 = argc > 2 ? machine.operand[2] : 0;
+        int a3 = argc > 3 ? machine.operand[3] : 0;
+        updateWindowsPreInput(machine);
+        int bufferAddress = a0+2;
+        machine.mainWindow.requestLineEvent(machine.state.getBuffer(bufferAddress, machine.state.read8(a0)), 0);
+        GlkEvent event;
+        for (;;) {
+            event = machine.glk.glk.select();
+            if (event.type == GlkEvent.TypeLineInput) {
+                break;
+            } else if (machine.suspending) {
+                machine.state.pc = oldPc;
+                return Instruction.Result.Tick;
+            }
+            machine.handleEvent(event);
+        }
+        machine.state.store8(a0+1, event.val1);
+        for (int i = 0; i < event.val1; i++) {
+            machine.state.store8(bufferAddress+i, Character.toLowerCase(machine.state.read8(bufferAddress+i)));
+        }
+        if (a1 != 0) {
+            machine.state.getDictionary().parse(bufferAddress, event.val1, a1);
+        }
+        updateWindowsPostInput(machine);
+        store(machine.state, 13);
+        return Instruction.Result.Continue;
     }
 
-    private static Instruction.Result insnPRINT_CHAR(Machine machine) {
-        throw new RuntimeException("unimplemented");
+    private static Instruction.Result insnPRINT_CHAR(Machine machine) throws IOException {
+        Stream3 stream3 = machine.getStream3();
+        if (stream3 != null) {
+            ZSCII.appendZSCII(stream3, machine.state, machine.operand[0]);
+            return Instruction.Result.Continue;
+        }
+        GlkStream stream = machine.getOutputStream();
+        if (stream != null) {
+            machine.string.setLength(0);
+            ZSCII.appendZSCII(machine.string, machine.state, machine.operand[0]);
+            stream.putStringUni(new UnicodeString.US(machine.string));
+        }
+        return Instruction.Result.Continue;
     }
 
-    private static Instruction.Result insnPRINT_NUM(Machine machine) {
-        throw new RuntimeException("unimplemented");
+    private static Instruction.Result insnPRINT_NUM(Machine machine) throws IOException {
+        Stream3 stream3 = machine.getStream3();
+        if (stream3 != null) {
+            stream3.append(String.valueOf((short) machine.operand[0]));
+            return Instruction.Result.Continue;
+        }
+        GlkStream stream = machine.getOutputStream();
+        if (stream != null) {
+            stream.putString(String.valueOf((short) machine.operand[0]));
+        }
+        return Instruction.Result.Continue;
     }
 
     private static Instruction.Result insnRANDOM(Machine machine) {
-        throw new RuntimeException("unimplemented");
+        short a0 = (short) machine.operand[0];
+        if (a0 == 0) {
+            machine.random.setSeed(System.nanoTime());
+            store(machine.state, 0);
+        } else if (a0 < 0) {
+            machine.random.setSeed(-a0);
+            store(machine.state, 0);
+        } else {
+            store(machine.state, machine.random.nextInt(a0) + 1);
+        }
+        return Instruction.Result.Continue;
     }
 
     private static Instruction.Result insnPUSH(Machine machine) {
-        throw new RuntimeException("unimplemented");
+        machine.state.frame.push(machine.operand[0]);
+        return Instruction.Result.Continue;
     }
 
     private static Instruction.Result insnPULL(Machine machine) {
-        throw new RuntimeException("unimplemented");
+        machine.state.overwriteVar(machine.operand[0], machine.state.frame.pop());
+        return Instruction.Result.Continue;
     }
 
-    private static Instruction.Result insnSPLIT_WINDOW(Machine machine) {
-        throw new RuntimeException("unimplemented");
+    private static Instruction.Result insnSPLIT_WINDOW(Machine machine) throws IOException {
+        int a0 = machine.operand[0];
+        if (a0 >= machine.upperWindowCurrentHeight) {
+            resizeUpperWindow(machine, a0);
+        }
+        machine.upperWindowTargetHeight = a0;
+        if (machine.upperWindow != null) {
+            machine.upperWindow.moveCursor(0, 0);
+        }
+        return Instruction.Result.Continue;
     }
 
-    private static Instruction.Result insnSET_WINDOW(Machine machine) {
-        throw new RuntimeException("unimplemented");
+    private static Instruction.Result insnSET_WINDOW(Machine machine) throws IOException {
+        machine.currentWindow = machine.operand[0];
+        if (machine.currentWindow != 0 && machine.upperWindow != null) {
+            machine.upperWindow.moveCursor(0, 0);
+        }
+        return Instruction.Result.Continue;
     }
 
-    private static Instruction.Result insnERASE_WINDOW(Machine machine) {
-        throw new RuntimeException("unimplemented");
+    private static Instruction.Result insnERASE_WINDOW(Machine machine) throws IOException {
+        int a0 = machine.operand[0];
+        if (a0 == 0) {
+            machine.mainWindow.clear();
+        } else if (a0 == -1) {
+            if (machine.upperWindow != null) {
+                machine.upperWindow.close();
+                machine.upperWindow = null;
+            }
+            machine.mainWindow.clear();
+        } else if (a0 == -2) {
+            if (machine.upperWindow != null) {
+                machine.upperWindow.clear();
+                machine.upperWindow.moveCursor(0, 0);
+            }
+            machine.mainWindow.clear();
+        } else if (machine.upperWindow != null) {
+            machine.upperWindow.clear();
+            machine.upperWindow.moveCursor(0, 0);
+        }
+        return Instruction.Result.Continue;
     }
 
-    private static Instruction.Result insnERASE_LINE(Machine machine) {
-        throw new RuntimeException("unimplemented");
+    private static Instruction.Result insnERASE_LINE(Machine machine) throws IOException {
+        int a0 = machine.operand[0];
+        if (a0 != 1 || machine.currentWindow == 0 || machine.upperWindow == null) {
+            return Instruction.Result.Continue;
+        }
+        int x = machine.upperWindow.getCursorX();
+        int y = machine.upperWindow.getCursorY();
+        for (int i = y; i < machine.screenWidth; i++) {
+            machine.upperWindow.getStream().putChar(' ');
+        }
+        machine.upperWindow.moveCursor(x, y);
+        return Instruction.Result.Continue;
     }
 
-    private static Instruction.Result insnSET_CURSOR(Machine machine) {
-        throw new RuntimeException("unimplemented");
+    private static Instruction.Result insnSET_CURSOR(Machine machine) throws IOException {
+        int a0 = (short) machine.operand[0];
+        int a1 = (short) machine.operand[1];
+        if (machine.currentWindow != 0 && machine.upperWindow != null) {
+            GlkWindowSize size = machine.upperWindow.getSize();
+            int x = a1 > 0 ? a1 - 1 : a1 < 0 ? size.width + a1 : machine.upperWindow.getCursorX();
+            int y = a0 > 0 ? a0 - 1 : a0 < 0 ? size.height - a0 : machine.upperWindow.getCursorY();
+            machine.upperWindow.moveCursor(x, y);
+        }
+        return Instruction.Result.Continue;
     }
 
-    private static Instruction.Result insnGET_CURSOR(Machine machine) {
-        throw new RuntimeException("unimplemented");
+    private static Instruction.Result insnGET_CURSOR(Machine machine) throws IOException {
+        int a0 = machine.operand[0];
+        int x;
+        int y;
+        if (machine.currentWindow != 0 && machine.upperWindow != null) {
+            x = machine.upperWindow.getCursorX();
+            y = machine.upperWindow.getCursorY();
+        } else {
+            x = machine.mainWindow.getCursorX();
+            y = machine.mainWindow.getCursorY();
+        }
+        machine.state.store16(a0, y+1);
+        machine.state.store16(a0+2, x+1);
+        return Instruction.Result.Continue;
     }
 
-    private static Instruction.Result insnSET_TEXT_STYLE(Machine machine) {
-        throw new RuntimeException("unimplemented");
+    private static Instruction.Result insnSET_TEXT_STYLE(Machine machine) throws IOException {
+        int style;
+        switch (machine.operand[0]) {
+        case 0: style = GlkStream.StyleNormal; break;
+        case 1: style = GlkStream.StyleAlert; break;
+        case 2: style = GlkStream.StyleHeader; break;
+        case 3: style = GlkStream.StyleUser1; break;
+        case 4: style = GlkStream.StyleEmphasized; break;
+        case 5: style = GlkStream.StyleBlockQuote; break;
+        case 6: style = GlkStream.StyleSubheader; break;
+        case 7: style = GlkStream.StyleUser2; break;
+        default:
+            style = GlkStream.StylePreformatted;
+            break;
+        }
+        machine.mainWindow.getStream().setStyle(style);
+        if (machine.upperWindow != null) {
+            machine.upperWindow.getStream().setStyle(style);
+        }
+        return Instruction.Result.Continue;
     }
 
     private static Instruction.Result insnBUFFER_MODE(Machine machine) {
-        throw new RuntimeException("unimplemented");
+        return Instruction.Result.Continue;
     }
 
     private static Instruction.Result insnOUTPUT_STREAM(Machine machine) {
-        throw new RuntimeException("unimplemented");
+        short a0 = (short) machine.operand[0];
+        switch (a0) {
+        case 1:
+            machine.stream1 = true;
+            break;
+        case -1:
+            machine.stream1 = false;
+            break;
+        case 3:
+            machine.stream3[machine.stream3Index] = new Stream3(machine.operand[1]);
+            machine.stream3Index++;
+            break;
+        case -3:
+            machine.stream3Index--;
+            machine.stream3[machine.stream3Index].deselect(machine.state);
+            break;
+        default:
+            break;
+        }
+        return Instruction.Result.Continue;
     }
 
     private static Instruction.Result insnINPUT_STREAM(Machine machine) {
@@ -1174,56 +1586,206 @@ class Instruction5 {
         throw new RuntimeException("unimplemented");
     }
 
-    private static Instruction.Result insnREAD_CHAR(Machine machine, int oldPc) {
-        throw new RuntimeException("unimplemented");
+    private static Instruction.Result insnREAD_CHAR(Machine machine, int oldPc) throws IOException {
+        updateWindowsPreInput(machine);
+        machine.mainWindow.requestCharEvent();
+        GlkEvent event;
+        for (;;) {
+            event = machine.glk.glk.select();
+            if (event.type == GlkEvent.TypeCharInput) {
+                break;
+            } else if (machine.suspending) {
+                machine.state.pc = oldPc;
+                return Instruction.Result.Tick;
+            }
+            machine.handleEvent(event);
+        }
+        store(machine.state, event.val1);
+        updateWindowsPostInput(machine);
+        return Instruction.Result.Continue;
     }
 
-    private static Instruction.Result insnSCAN_TABLE(Machine machine) {
-        throw new RuntimeException("unimplemented");
+    private static Instruction.Result insnSCAN_TABLE(Machine machine, int argc) {
+        int a0 = argc > 0 ? machine.operand[0] : 0;
+        int a1 = argc > 1 ? machine.operand[1] : 0;
+        int a2 = argc > 2 ? machine.operand[2] : 0;
+        int a3 = argc > 3 ? machine.operand[3] : 0x82;
+        int table = a1;
+        int entrySize = a3 & 127;
+        int result = 0;
+        if ((a3 & 128) != 0) {
+            for (int i = 0; i < a2; i++) {
+                if (a0 == machine.state.read16(table)) {
+                    result = table;
+                    break;
+                }
+                table += entrySize;
+            }
+        } else {
+            for (int i = 0; i < a2; i++) {
+                if (a0 == machine.state.read8(table)) {
+                    result = table;
+                    break;
+                }
+                table += entrySize;
+            }
+        }
+        store(machine.state, result);
+        return branch(machine, table != 0);
     }
 
     private static Instruction.Result insnNOT(Machine machine) {
-        throw new RuntimeException("unimplemented");
+        store(machine.state, machine.operand[0]^65535);
+        return Instruction.Result.Continue;
     }
 
     private static Instruction.Result insnCALL_VN(Machine machine, int argc) {
-        throw new RuntimeException("unimplemented");
+        return doCall(machine,
+                      machine.operand[0], machine.operand[1],
+                      machine.operand[2], machine.operand[3],
+                      machine.operand[4], machine.operand[5],
+                      machine.operand[6], machine.operand[7],
+                      argc - 1, -1);
     }
 
-    private static Instruction.Result insnTOKENIZE(Machine machine) {
-        throw new RuntimeException("unimplemented");
+    private static Instruction.Result insnTOKENIZE(Machine machine, int argc) {
+        int a0 = argc > 0 ? machine.operand[0] : 0;
+        int a1 = argc > 1 ? machine.operand[1] : 0;
+        int a2 = argc > 2 ? machine.operand[2] : 0;
+        int a3 = argc > 3 ? machine.operand[3] : 0;
+        int bufferAddress = a0+2;
+        int bufferLength = machine.state.read8(bufferAddress-1);
+        machine.state.getDictionary().parse(a2, bufferAddress, bufferLength, a1, a3 != 0);
+        return Instruction.Result.Continue;
     }
 
-    private static Instruction.Result insnENCODE_TEXT(Machine machine) {
-        throw new RuntimeException("unimplemented");
+    private static Instruction.Result insnENCODE_TEXT(Machine machine, int argc) throws IOException {
+        int a0 = argc > 0 ? machine.operand[0] : 0;
+        int a1 = argc > 1 ? machine.operand[1] : 0;
+        int a2 = argc > 2 ? machine.operand[2] : 0;
+        int a3 = argc > 3 ? machine.operand[3] : 0;
+        machine.string.setLength(0);
+        for (int i = a2; i < a1 + a2; i++) {
+            ZSCII.appendZSCII(machine.string, machine.state, machine.state.read8(i));
+        }
+        long encoded = ZSCII.encode(machine.state, machine.string.toString());
+        machine.state.store16(a3, (int) (encoded >> 32));
+        machine.state.store16(a3 + 2, (int) (encoded >> 16));
+        machine.state.store16(a3 + 4, (int) encoded);
+        return Instruction.Result.Continue;
     }
 
-    private static Instruction.Result insnCOPY_TABLE(Machine machine) {
-        throw new RuntimeException("unimplemented");
+    private static Instruction.Result insnCOPY_TABLE(Machine machine, int argc) {
+        int a0 = argc > 0 ? machine.operand[0] : 0;
+        int a1 = argc > 1 ? machine.operand[1] : 0;
+        int a2 = argc > 2 ? machine.operand[2] : 0;
+        boolean forward = false;
+        if (a2 >= 32768) {
+            a2 = 65536 - a2;
+            forward = true;
+        }
+        if (a1 == 0) {
+            for (int i = 0; i < a2; i++) {
+                machine.state.store8(a0+i, 0);
+            }
+        } else if (forward || a0 < a1) {
+            for (int i = 0; i < a2; i++) {
+                machine.state.store8(a0+i, machine.state.read8(a1+i));
+            }
+        } else {
+            for (int i = a2-1; i >= 0; i--) {
+                machine.state.store8(a0+i, machine.state.read8(a1+i));
+            }
+        }
+        return Instruction.Result.Continue;
     }
 
-    private static Instruction.Result insnPRINT_TABLE(Machine machine) {
-        throw new RuntimeException("unimplemented");
+    private static Instruction.Result insnPRINT_TABLE(Machine machine, int argc) throws IOException {
+        int a0 = argc > 0 ? machine.operand[0] : 0;
+        int a1 = argc > 1 ? machine.operand[1] : 0;
+        int a2 = argc > 2 ? machine.operand[2] : 1;
+        int a3 = argc > 3 ? machine.operand[3] : 0;
+        GlkStream stream = machine.getOutputStream();
+        if (stream == null) {
+            return Instruction.Result.Continue;
+        }
+        GlkWindow window = machine.currentWindow == 0 || machine.upperWindow == null ? machine.mainWindow : machine.upperWindow;
+        int x = window.getCursorX();
+        int y = window.getCursorY();
+        machine.string.setLength(0);
+        StringBuilder sb = machine.string;
+        for (int i = 0; i < a2; i++) {
+            sb.setLength(0);
+            for (int j = 0; j < a1; j++) {
+                ZSCII.appendZSCII(sb, machine.state, machine.state.read8(a0));
+                a0++;
+            }
+            window.moveCursor(x, y + i);
+            stream.putStringUni(new UnicodeString.US(sb));
+            a0 += a3;
+        }
+        return Instruction.Result.Continue;
     }
 
     private static Instruction.Result insnCHECK_ARG_COUNT(Machine machine) {
-        throw new RuntimeException("unimplemented");
+        return branch(machine, (machine.state.frame.args & (1 << (machine.operand[0] - 1))) != 0);
     }
 
-    private static Instruction.Result insnSAVE(Machine machine) {
-        throw new RuntimeException("unimplemented");
+    private static Instruction.Result insnSAVE(Machine machine) throws IOException {
+        GlkFile file = machine.glk.glk.fileCreateByPrompt(GlkFile.UsageSavedGame, GlkFile.ModeWrite, 0);
+        GlkStream stream = null;
+        if (file != null) {
+            stream = machine.glk.glk.streamOpenFile(file, GlkFile.ModeWrite, 0);
+        }
+        if (stream == null) {
+            store(machine.state, 0);
+            return Instruction.Result.Continue;
+        }
+        try {
+            State saveState = new State();
+            saveState.copyFrom(machine.state, true, false);
+            store(saveState, 2);
+            saveState.writeSave(stream.getDataOutput());
+            store(machine.state, 1);
+        } finally {
+            stream.close();
+        }
+        return Instruction.Result.Continue;
     }
 
-    private static Instruction.Result insnRESTORE(Machine machine) {
-        throw new RuntimeException("unimplemented");
+    private static Instruction.Result insnRESTORE(Machine machine) throws IOException {
+        GlkFile file = machine.glk.glk.fileCreateByPrompt(GlkFile.UsageSavedGame, GlkFile.ModeRead, 0);
+        GlkStream stream = null;
+        if (file != null) {
+            stream = machine.glk.glk.streamOpenFile(file, GlkFile.ModeRead, 0);
+        }
+        if (stream == null) {
+            store(machine.state, 0);
+            return Instruction.Result.Continue;
+        }
+        try {
+            if (!machine.state.loadSave(stream.getDataInput(), true)) {
+                store(machine.state, 0);
+                return Instruction.Result.Continue;
+            }
+        } finally {
+            stream.close();
+        }
+        return Instruction.Result.Continue;
     }
 
     private static Instruction.Result insnLOG_SHIFT(Machine machine) {
-        throw new RuntimeException("unimplemented");
+        int a0 = machine.operand[0];
+        short a1 = (short) machine.operand[1];
+        store(machine.state, (a1 > 0 ? a0 << a1 : a0 >>> -a1) & 65535);
+        return Instruction.Result.Continue;
     }
 
     private static Instruction.Result insnART_SHIFT(Machine machine) {
-        throw new RuntimeException("unimplemented");
+        short a0 = (short) machine.operand[0];
+        short a1 = (short) machine.operand[1];
+        store(machine.state, (a1 > 0 ? a0 << a1 : a0 >> -a1) & 65535);
+        return Instruction.Result.Continue;
     }
 
     private static Instruction.Result insnSET_FONT(Machine machine) {
@@ -1231,22 +1793,62 @@ class Instruction5 {
     }
 
     private static Instruction.Result insnSAVE_UNDO(Machine machine) {
-        throw new RuntimeException("unimplemented");
+        State undoState;
+        if (machine.undoStateIndex >= machine.undoStates.length) {
+            undoState = machine.undoStates[0];
+            for (int i = 0; i < machine.undoStates.length-1; i++) {
+                machine.undoStates[i] = machine.undoStates[i+1];
+            }
+            machine.undoStates[machine.undoStates.length-1] = undoState;
+        } else {
+            undoState = machine.undoStates[machine.undoStateIndex];
+            if (undoState == null) {
+                undoState = new State();
+            }
+            machine.undoStates[machine.undoStateIndex] = undoState;
+            machine.undoStateIndex++;
+        }
+        undoState.copyFrom(machine.state, true, false);
+        store(undoState, 2);
+        store(machine.state, 1);
+        return Instruction.Result.Continue;
     }
 
     private static Instruction.Result insnRESTORE_UNDO(Machine machine) {
-        throw new RuntimeException("unimplemented");
+        if (machine.undoStateIndex <= 0) {
+            store(machine.state, 0);
+            return Instruction.Result.Continue;
+        }
+        machine.undoStateIndex--;
+        machine.state.copyFrom(machine.undoStates[machine.undoStateIndex], true, false);
+        return Instruction.Result.Continue;
     }
 
-    private static Instruction.Result insnPRINT_UNICODE(Machine machine) {
-        throw new RuntimeException("unimplemented");
+    private static Instruction.Result insnPRINT_UNICODE(Machine machine) throws IOException {
+        machine.glk.glk.putCharUni(machine.operand[0]);
+        return Instruction.Result.Continue;
     }
 
     private static Instruction.Result insnCHECK_UNICODE(Machine machine) {
-        throw new RuntimeException("unimplemented");
+        int a0 = machine.operand[0];
+        int result = 0;
+        if (machine.glk.glk.gestalt(GlkGestalt.CharOutput, a0) != 0) {
+            result |= 1;
+        }
+        if (machine.glk.glk.gestalt(GlkGestalt.CharInput, a0) != 0) {
+            result |= 2;
+        }
+        store(machine.state, result);
+        return Instruction.Result.Continue;
     }
 
-    private static Instruction.Result insnSET_TRUE_COLOR(Machine machine) {
-        throw new RuntimeException("unimplemented");
+    private static Instruction.Result insnSET_TRUE_COLOR(Machine machine, int argc) {
+        int a0 = argc > 0 ? machine.operand[0] : 0;
+        int a1 = argc > 1 ? machine.operand[1] : 0;
+        int a2 = argc > 2 ? machine.operand[2] : -1;
+        int fg = a0 < 0 ? a0 : (a0 & 31) << 19 | (a0 & 992) << 6 | (a0 & 31744) >>> 7;
+        int bg = a1 < 0 ? a1 : (a1 & 31) << 19 | (a1 & 992) << 6 | (a1 & 31744) >>> 7;
+        setColors(machine, a2, fg, bg);
+        return Instruction.Result.Continue;
     }
 }

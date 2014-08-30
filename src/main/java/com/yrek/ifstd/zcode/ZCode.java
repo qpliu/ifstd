@@ -32,22 +32,44 @@ public class ZCode implements Runnable, Serializable {
         suspending = false;
         machine.initForRun();
         try {
-            for (;;) {
-                switch (Instruction.executeNext(machine)) {
-                case Continue:
-                    break;
-                case Tick:
-                    machine.glk.glk.tick();
-                    if (suspending) {
-                        synchronized (machine) {
-                            suspended = true;
-                            machine.notifyAll();
+            switch (machine.state.version) {
+            case 5: case 7: case 8:
+                for (;;) {
+                    switch (Instruction5.executeNext(machine)) {
+                    case Continue:
+                        break;
+                    case Tick:
+                        machine.glk.glk.tick();
+                        if (suspending) {
+                            synchronized (machine) {
+                                suspended = true;
+                                machine.notifyAll();
+                            }
+                            return;
                         }
+                        break;
+                    case Quit:
                         return;
                     }
-                    break;
-                case Quit:
-                    return;
+                }
+            default:
+                for (;;) {
+                    switch (Instruction.executeNext(machine)) {
+                    case Continue:
+                        break;
+                    case Tick:
+                        machine.glk.glk.tick();
+                        if (suspending) {
+                            synchronized (machine) {
+                                suspended = true;
+                                machine.notifyAll();
+                            }
+                            return;
+                        }
+                        break;
+                    case Quit:
+                        return;
+                    }
                 }
             }
         } catch (IOException e) {
