@@ -253,8 +253,33 @@ class ZSCII {
                 }
             }
             if (zchar == -1) {
-                //... try looking up in unicode table
-                throw new RuntimeException("unimplemented");
+                if (ch >= 32 && ch < 127) {
+                    zchar = ch;
+                } else {
+                    //... try looking up in extra table
+                }
+                if (zchar == -1) {
+                    throw new RuntimeException("unimplemented");
+                }
+                if (shiftLock != 2) {
+                    if (state.version >= 3) {
+                        chars[j] = 5;
+                        j++;
+                        if (j >= chars.length) {
+                            break;
+                        }
+                    } else {
+                        throw new RuntimeException("unimplemented");
+                    }
+                }
+                chars[j] = (zchar >> 5) & 31;
+                j++;
+                if (j >= chars.length) {
+                    break;
+                }
+                chars[j] = zchar & 31;
+                j++;
+                continue;
             }
             int shift = zchar/26;
             zchar = zchar%26 + 6;
