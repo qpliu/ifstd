@@ -1106,20 +1106,20 @@ class Insn {
 
     private static void operandsLS(Machine machine) {
         int modes = machine.state.load8(machine.state.pc++) & 255;
-        machine.operand[0].setLoad(modes >> 4);
-        machine.operand[1].setStore(modes & 15);
+        machine.operand[0].setLoad(modes & 15);
+        machine.operand[1].setStore(modes >> 4);
     }
 
     private static void operands8LS(Machine machine) {
         int modes = machine.state.load8(machine.state.pc++) & 255;
-        machine.operand[0].setLoad8(modes >> 4);
-        machine.operand[1].setStore16(modes & 15);
+        machine.operand[0].setLoad8(modes & 15);
+        machine.operand[1].setStore16(modes >> 4);
     }
 
     private static void operands16LS(Machine machine) {
         int modes = machine.state.load8(machine.state.pc++) & 255;
-        machine.operand[0].setLoad16(modes >> 4);
-        machine.operand[1].setStore16(modes & 15);
+        machine.operand[0].setLoad16(modes & 15);
+        machine.operand[1].setStore16(modes >> 4);
     }
 
     private static void operandsL2S(Machine machine) {
@@ -1238,25 +1238,174 @@ class Insn {
             dest.store(accelerated.call(machine, arg0, arg1, machine.acceleration.parameters));
             return Result.Tick;
         }
-        pushCallStub(machine.state, dest.getDestType(), dest.getDestAddr());
-        throw new RuntimeException("unimplemented");
+        final State state = machine.state;
+        pushCallStub(state, dest.getDestType(), dest.getDestAddr());
+        state.fp = state.sp;
+        boolean pushArgs;
+        switch (state.load8(addr)) {
+        case -64: pushArgs = true; break;
+        case -63: pushArgs = false; break;
+        default: throw new IllegalArgumentException(String.format("Invalid call %x", addr));
+        }
+        int localsPos = 8;
+        int localsSize = 0;
+        loop:
+        for (int i = 1;; i += 2) {
+            int localType = state.load8(addr + i) & 255;
+            int localCount = state.load8(addr + i + 1) & 255;
+            localsPos += 2;
+            switch (localType) {
+            case 1: case 2:
+                throw new RuntimeException("unimplemented");
+            case 4:
+                localsSize = align(localsSize, localType);
+                localsSize += localType * localCount;
+                break;
+            case 0:
+                if (localCount != 0) {
+                    throw new IllegalArgumentException("Invalid locals format");
+                }
+                state.pc = addr + i + 2;
+                break loop;
+            default:
+                throw new IllegalArgumentException("Invalid locals format");
+            }
+        }
+        localsPos = align(localsPos, 4);
+        state.localsp = state.fp + localsPos;
+        localsSize = align(localsSize, 4);
+        state.push32(localsPos + localsSize);
+        state.push32(localsPos);
+        assert localsPos >= 12;
+        for (int i = 0; i < localsPos - 12; i += 4) {
+            state.push32(state.load32(addr + 1 + i));
+        }
+        state.push32(state.load32(addr + 1 + localsPos - 12) & 0xffff0000);
+        int argIndex = 0;
+        loop2:
+        for (int i = 1;; i += 2) {
+            int localType = state.load8(addr + i) & 255;
+            int localCount = state.load8(addr + 1 + i) & 255;
+            switch (localType) {
+            case 4:
+                for (int j = 0; j < localCount; j++) {
+                    if (!pushArgs && argIndex < argc) {
+                        switch (argIndex) {
+                        case 0: state.push32(arg0); break;
+                        case 1: state.push32(arg1); break;
+                        case 2: state.push32(arg2); break;
+                        default: throw new AssertionError();
+                        }
+                        argIndex++;
+                    } else {
+                        state.push32(0);
+                    }
+                }
+                break;
+            case 0:
+                break loop2;
+            default:
+                throw new AssertionError();
+            }
+        }
+        if (pushArgs) {
+            switch (argc) {
+            case 3: state.push32(arg2); state.push32(arg1); state.push32(arg0); break;
+            case 2: state.push32(arg1); state.push32(arg0); break;
+            case 1: state.push32(arg0); break;
+            case 0: break;
+            default: throw new AssertionError();
+            }
+            state.push32(argc);
+        }
+        return Result.Tick;
     }
 
     private static Result call(Machine machine, int addr, int argc, Operand dest, boolean tailcall) {
-        int[] args = new int[argc];
+        final State state = machine.state;
+        final int[] args = new int[argc];
         for (int i = 0; i < argc; i++) {
-            args[i] = machine.state.pop32();
+            args[i] = state.pop32();
         }
         if (tailcall) {
-            machine.state.sp = machine.state.fp;
+            state.sp = state.fp;
         } else {
-            pushCallStub(machine.state, dest.getDestType(), dest.getDestAddr());
+            pushCallStub(state, dest.getDestType(), dest.getDestAddr());
         }
         Acceleration.Function accelerated = machine.acceleration.get(addr);
         if (accelerated != null) {
             return returnValue(machine, accelerated.call(machine, argc > 0 ? args[0] : 0, argc > 1 ? args[1] : 0, machine.acceleration.parameters));
         }
-        throw new RuntimeException("unimplemented");
+        state.fp = state.sp;
+        boolean pushArgs;
+        switch (state.load8(addr)) {
+        case -64: pushArgs = true; break;
+        case -63: pushArgs = false; break;
+        default: throw new IllegalArgumentException(String.format("Invalid call %x", addr));
+        }
+        int localsPos = 8;
+        int localsSize = 0;
+        loop:
+        for (int i = 1;; i += 2) {
+            int localType = state.load8(addr + i) & 255;
+            int localCount = state.load8(addr + i + 1) & 255;
+            localsPos += 2;
+            switch (localType) {
+            case 1: case 2:
+                throw new RuntimeException("unimplemented");
+            case 4:
+                localsSize = align(localsSize, localType);
+                localsSize += localType * localCount;
+                break;
+            case 0:
+                if (localCount != 0) {
+                    throw new IllegalArgumentException("Invalid locals format");
+                }
+                state.pc = addr + i + 2;
+                break loop;
+            default:
+                throw new IllegalArgumentException("Invalid locals format");
+            }
+        }
+        localsPos = align(localsPos, 4);
+        state.localsp = state.fp + localsPos;
+        localsSize = align(localsSize, 4);
+        state.push32(localsPos + localsSize);
+        state.push32(localsPos);
+        assert localsPos >= 12;
+        for (int i = 0; i < localsPos - 12; i += 4) {
+            state.push32(state.load32(addr + 1 + i));
+        }
+        state.push32(state.load32(addr + 1 + localsPos - 12) & 0xffff0000);
+        int argIndex = 0;
+        loop2:
+        for (int i = 1;; i += 2) {
+            int localType = state.load8(addr + i) & 255;
+            int localCount = state.load8(addr + 1 + i) & 255;
+            switch (localType) {
+            case 4:
+                for (int j = 0; j < localCount; j++) {
+                    if (!pushArgs && argIndex < argc) {
+                        state.push32(args[argIndex]);
+                        argIndex++;
+                    } else {
+                        state.push32(0);
+                    }
+                }
+                break;
+            case 0:
+                break loop2;
+            default:
+                throw new AssertionError();
+            }
+        }
+        if (pushArgs) {
+            for (int i = argc - 1; i >= 0; i--) {
+                state.push32(args[i]);
+            }
+            state.push32(argc);
+        }
+        return Result.Tick;
     }
 
     static void pushCallStub(State state, int destType, int destAddr) {
