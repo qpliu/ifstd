@@ -16,6 +16,7 @@ class State implements Serializable {
     byte[] memory;
     int[] stack;
     int ramStart;
+    transient int localsp;
 
     void readFile(DataInput in, int protectStart, int protectLength) throws IOException {
         byte[] protect = null;

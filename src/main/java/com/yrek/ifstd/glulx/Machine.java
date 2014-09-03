@@ -26,13 +26,14 @@ class Machine implements Serializable {
     IOSys ioSys = new NullIOSys(0);
     StringTable stringTable;
     Acceleration acceleration = new Acceleration();
+    transient Insn.Operand[] operand;
 
     Machine(byte[] byteData, File fileData, GlkDispatch glk) throws IOException {
         this.byteData = byteData;
         this.fileData = fileData;
-        this.glk = glk;
         state = load();
         stringTable = StringTable.create(state, state.load32(28));
+        resume(glk);
     }
 
     State load() throws IOException {
@@ -47,6 +48,14 @@ class Machine implements Serializable {
             return new DataInputStream(new ByteArrayInputStream(byteData));
         } else {
             return new DataInputStream(new FileInputStream(fileData));
+        }
+    }
+
+    void resume(GlkDispatch glk) {
+        this.glk = glk;
+        operand = new Insn.Operand[8];
+        for (int i = 0; i < operand.length; i++) {
+            operand[i] = new Insn.Operand(this);
         }
     }
 }

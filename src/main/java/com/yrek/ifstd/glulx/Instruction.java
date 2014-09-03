@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.yrek.ifstd.glk.GlkDispatchArgument;
+import com.yrek.ifstd.glulx.Glulx.Result;
 
 abstract class Instruction {
     private static final boolean TRACE = false;
@@ -58,10 +59,6 @@ abstract class Instruction {
 
     protected Result execute(Machine machine, Operand arg1, Operand arg2, Operand arg3, Operand arg4, Operand arg5, Operand arg6, Operand arg7, Operand arg8) {
         throw new AssertionError();
-    }
-
-    public enum Result {
-        Continue, Tick, Quit;
     }
 
     public static Result executeNext(Machine machine) {
@@ -1632,7 +1629,7 @@ abstract class Instruction {
     static void call(Machine machine, int addr, int[] args) {
         Acceleration.Function accelerated = machine.acceleration.get(addr);
         if (accelerated != null) {
-            returnValue(machine, accelerated.call(machine, args, machine.acceleration.parameters));
+            returnValue(machine, accelerated.call(machine, args.length > 0 ? args[0] : 0, args.length > 1 ? args[1] : 0, machine.acceleration.parameters));
         } else {
             call(machine.state, addr, args);
         }
@@ -1669,6 +1666,7 @@ abstract class Instruction {
             }
         }
         localsPos = align(localsPos, 4);
+        state.localsp = state.fp + localsPos;
         localsSize = align(localsSize, 4);
         if (TRACE && Glulx.trace != null) {
             Glulx.trace.println();
@@ -1802,25 +1800,30 @@ abstract class Instruction {
             case 0:
                 machine.state.fp = fp;
                 machine.state.pc = pc;
+                machine.state.localsp = fp + machine.state.sload32(fp + 4);
                 return;
             case 1:
                 machine.state.fp = fp;
                 machine.state.pc = pc;
+                machine.state.localsp = fp + machine.state.sload32(fp + 4);
                 machine.state.store32(destAddr, value);
                 return;
             case 2:
                 machine.state.fp = fp;
                 machine.state.pc = pc;
+                machine.state.localsp = fp + machine.state.sload32(fp + 4);
                 int localsPos = machine.state.sload32(fp + 4);
                 machine.state.sstore32(fp + localsPos + destAddr, value);
                 return;
             case 3:
                 machine.state.fp = fp;
                 machine.state.pc = pc;
+                machine.state.localsp = fp + machine.state.sload32(fp + 4);
                 machine.state.push32(value);
                 return;
             case 10:
                 machine.state.fp = fp;
+                machine.state.localsp = fp + machine.state.sload32(fp + 4);
                 machine.ioSys.resumePrintCompressed(machine, pc, destAddr);
                 break;
             case 11:
@@ -1829,14 +1832,17 @@ abstract class Instruction {
                 return;
             case 12:
                 machine.state.fp = fp;
+                machine.state.localsp = fp + machine.state.sload32(fp + 4);
                 machine.ioSys.resumePrintNumber(machine, pc, destAddr);
                 break;
             case 13:
                 machine.state.fp = fp;
+                machine.state.localsp = fp + machine.state.sload32(fp + 4);
                 machine.ioSys.resumePrint(machine, pc);
                 break;
             case 14:
                 machine.state.fp = fp;
+                machine.state.localsp = fp + machine.state.sload32(fp + 4);
                 machine.ioSys.resumePrintUnicode(machine, pc);
                 break;
             default:

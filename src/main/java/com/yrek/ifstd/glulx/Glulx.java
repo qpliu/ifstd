@@ -37,6 +37,10 @@ public class Glulx implements Runnable, Serializable {
         machine = new Machine(null, fileData, new GlkDispatch(glk));
     }
 
+    enum Result {
+        Continue, Tick, Quit;
+    }
+
     @Override
     public void run() {
         suspended = false;
@@ -74,7 +78,7 @@ public class Glulx implements Runnable, Serializable {
 
     public void resume(GlkDispatch glk) {
         assert suspended;
-        machine.glk = glk;
+        machine.resume(glk);
     }
 
     public boolean suspending() {

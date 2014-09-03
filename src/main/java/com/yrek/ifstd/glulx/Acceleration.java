@@ -353,77 +353,73 @@ class Acceleration implements Serializable {
             table[index] = this;
         }
 
-        abstract int call(Machine machine, int[] args, int[] parameters);
-    }
-
-    private static int arg(int[] args, int index) {
-        return args.length > index ? args[index] : 0;
+        abstract int call(Machine machine, int arg0, int arg1, int[] parameters);
     }
 
     static {
         new Function("FUNC_1_Z__Region", 1) {
-            @Override int call(Machine machine, int[] args, int[] parameters) {
-                return FUNC_1_Z__Region(machine, arg(args, 0), parameters);
+            @Override int call(Machine machine, int arg0, int arg1, int[] parameters) {
+                return FUNC_1_Z__Region(machine, arg0, parameters);
             }
         };
         new Function("FUNC_2_CP__Tab", 2) {
-            @Override int call(Machine machine, int[] args, int[] parameters) {
-                return FUNC_2_CP__Tab(machine, arg(args, 0), arg(args, 1), parameters);
+            @Override int call(Machine machine, int arg0, int arg1, int[] parameters) {
+                return FUNC_2_CP__Tab(machine, arg0, arg1, parameters);
             }
         };
         new Function("FUNC_3_RA__Pr", 3) {
-            @Override int call(Machine machine, int[] args, int[] parameters) {
-                return FUNC_3_RA__Pr(machine, arg(args, 0), arg(args, 1), parameters);
+            @Override int call(Machine machine, int arg0, int arg1, int[] parameters) {
+                return FUNC_3_RA__Pr(machine, arg0, arg1, parameters);
             }
         };
         new Function("FUNC_4_RL__Pr", 4) {
-            @Override int call(Machine machine, int[] args, int[] parameters) {
-                return FUNC_4_RL__Pr(machine, arg(args, 0), arg(args, 1), parameters);
+            @Override int call(Machine machine, int arg0, int arg1, int[] parameters) {
+                return FUNC_4_RL__Pr(machine, arg0, arg1, parameters);
             }
         };
         new Function("FUNC_5_OC__Cl", 5) {
-            @Override int call(Machine machine, int[] args, int[] parameters) {
-                return FUNC_5_OC__Cl(machine, arg(args, 0), arg(args, 1), parameters);
+            @Override int call(Machine machine, int arg0, int arg1, int[] parameters) {
+                return FUNC_5_OC__Cl(machine, arg0, arg1, parameters);
             }
         };
         new Function("FUNC_6_RV__Pr", 6) {
-            @Override int call(Machine machine, int[] args, int[] parameters) {
-                return FUNC_6_RV__Pr(machine, arg(args, 0), arg(args, 1), parameters);
+            @Override int call(Machine machine, int arg0, int arg1, int[] parameters) {
+                return FUNC_6_RV__Pr(machine, arg0, arg1, parameters);
             }
         };
         new Function("FUNC_7_OP__Pr", 7) {
-            @Override int call(Machine machine, int[] args, int[] parameters) {
-                return FUNC_7_OP__Pr(machine, arg(args, 0), arg(args, 1), parameters);
+            @Override int call(Machine machine, int arg0, int arg1, int[] parameters) {
+                return FUNC_7_OP__Pr(machine, arg0, arg1, parameters);
             }
         };
         new Function("FUNC_8_CP__Tab", 8) {
-            @Override int call(Machine machine, int[] args, int[] parameters) {
-                return FUNC_8_CP__Tab(machine, arg(args, 0), arg(args, 1), parameters);
+            @Override int call(Machine machine, int arg0, int arg1, int[] parameters) {
+                return FUNC_8_CP__Tab(machine, arg0, arg1, parameters);
             }
         };
         new Function("FUNC_9_RA__Pr", 9) {
-            @Override int call(Machine machine, int[] args, int[] parameters) {
-                return FUNC_9_RA__Pr(machine, arg(args, 0), arg(args, 1), parameters);
+            @Override int call(Machine machine, int arg0, int arg1, int[] parameters) {
+                return FUNC_9_RA__Pr(machine, arg0, arg1, parameters);
             }
         };
         new Function("FUNC_10_RL__Pr", 10) {
-            @Override int call(Machine machine, int[] args, int[] parameters) {
-                return FUNC_10_RL__Pr(machine, arg(args, 0), arg(args, 1), parameters);
+            @Override int call(Machine machine, int arg0, int arg1, int[] parameters) {
+                return FUNC_10_RL__Pr(machine, arg0, arg1, parameters);
             }
         };
         new Function("FUNC_11_OC__Cl", 11) {
-            @Override int call(Machine machine, int[] args, int[] parameters) {
-                return FUNC_11_OC__Cl(machine, arg(args, 0), arg(args, 1), parameters);
+            @Override int call(Machine machine, int arg0, int arg1, int[] parameters) {
+                return FUNC_11_OC__Cl(machine, arg0, arg1, parameters);
             }
         };
         new Function("FUNC_12_RV__Pr", 12) {
-            @Override int call(Machine machine, int[] args, int[] parameters) {
-                return FUNC_12_RV__Pr(machine, arg(args, 0), arg(args, 1), parameters);
+            @Override int call(Machine machine, int arg0, int arg1, int[] parameters) {
+                return FUNC_12_RV__Pr(machine, arg0, arg1, parameters);
             }
         };
         new Function("FUNC_13_OP__Pr", 13) {
-            @Override int call(Machine machine, int[] args, int[] parameters) {
-                return FUNC_13_OP__Pr(machine, arg(args, 0), arg(args, 1), parameters);
+            @Override int call(Machine machine, int arg0, int arg1, int[] parameters) {
+                return FUNC_13_OP__Pr(machine, arg0, arg1, parameters);
             }
         };
     }
