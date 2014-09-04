@@ -131,17 +131,17 @@ class StringTable implements Serializable {
                 Glulx.trace.print(String.format("[indirect function:%x]", tableAddr+1));
             }
             if (!resuming) {
-                Instruction.pushCallStub(machine.state, 11, 0);
+                Insn.pushCallStub(machine.state, 11, 0);
             }
             machine.state.pc = resumeAddr;
-            Instruction.pushCallStub(machine.state, 10, bit);
+            Insn.pushCallStub(machine.state, 10, bit);
             int[] args = new int[nargs];
             for (int i = 0; i < nargs; i++) {
                 args[i] = machine.state.load32(argsAddr + 4*i);
             }
             Instruction.call(machine.state, tableAddr, args);
             if (resuming) {
-                Instruction.pushCallStub(machine.state, 11, 0);
+                Insn.pushCallStub(machine.state, 11, 0);
             }
             return true;
         case 0xe0:
@@ -154,13 +154,13 @@ class StringTable implements Serializable {
                 Glulx.trace.print(String.format("[indirect encoded string:%x]", tableAddr+1));
             }
             if (!resuming) {
-                Instruction.pushCallStub(machine.state, 11, 0);
+                Insn.pushCallStub(machine.state, 11, 0);
             }
             machine.state.pc = resumeAddr;
-            Instruction.pushCallStub(machine.state, 10, bit);
+            Insn.pushCallStub(machine.state, 10, bit);
             print(machine, tableAddr+1, 0, true);
             if (!resuming) {
-                Instruction.returnValue(machine, 0);
+                Insn.returnValue(machine, 0);
             }
             return true;
         case 0xe2:

@@ -65,7 +65,7 @@ class Insn {
             case 29: // sshiftr
                 operandsL2S(machine);
                 a1 = machine.operand[1].val;
-                machine.operand[2].store(a1 == (a1 & 31) ? machine.operand[0].val >> a1 : -1);
+                machine.operand[2].store(a1 == (a1 & 31) ? machine.operand[0].val >> a1 : machine.operand[0].val < 0 ? -1 : 0);
                 return Result.Continue;
             case 30: // ushiftr
                 operandsL2S(machine);
@@ -126,7 +126,7 @@ class Insn {
             case 42: // jltu
                 operandsL3(machine);
                 long la1 = machine.operand[0].val & 0xfffffffffL;
-                long la2 = machine.operand[0].val & 0xfffffffffL;
+                long la2 = machine.operand[1].val & 0xfffffffffL;
                 if (la1 < la2) {
                     return branch(machine, machine.operand[2].val);
                 }
@@ -134,7 +134,7 @@ class Insn {
             case 43: // jgeu
                 operandsL3(machine);
                 la1 = machine.operand[0].val & 0xfffffffffL;
-                la2 = machine.operand[0].val & 0xfffffffffL;
+                la2 = machine.operand[1].val & 0xfffffffffL;
                 if (la1 >= la2) {
                     return branch(machine, machine.operand[2].val);
                 }
@@ -142,7 +142,7 @@ class Insn {
             case 44: // jgtu
                 operandsL3(machine);
                 la1 = machine.operand[0].val & 0xfffffffffL;
-                la2 = machine.operand[0].val & 0xfffffffffL;
+                la2 = machine.operand[1].val & 0xfffffffffL;
                 if (la1 > la2) {
                     return branch(machine, machine.operand[2].val);
                 }
@@ -150,7 +150,7 @@ class Insn {
             case 45: // jleu
                 operandsL3(machine);
                 la1 = machine.operand[0].val & 0xfffffffffL;
-                la2 = machine.operand[0].val & 0xfffffffffL;
+                la2 = machine.operand[1].val & 0xfffffffffL;
                 if (la1 <= la2) {
                     return branch(machine, machine.operand[2].val);
                 }
@@ -795,14 +795,14 @@ class Insn {
                 operandsL2(machine);
                 f1 = Float.intBitsToFloat(machine.operand[0].val);
                 if (Float.isNaN(f1)) {
-                    return branch(machine, machine.operand[2].val);
+                    return branch(machine, machine.operand[1].val);
                 }
                 return Result.Continue;
             case 457: // jisinf
                 operandsL2(machine);
                 f1 = Float.intBitsToFloat(machine.operand[0].val);
                 if (Float.isInfinite(f1)) {
-                    return branch(machine, machine.operand[2].val);
+                    return branch(machine, machine.operand[1].val);
                 }
                 return Result.Continue;
             default:
@@ -829,19 +829,19 @@ class Insn {
             case 0:
                 break;
             case 5:
-                machine.state.store32(val, result);
+                state.store32(val, result);
                 break;
             case 8:
-                machine.state.push32(result);
+                state.push32(result);
                 break;
             case 9:
-                machine.state.sstore32(machine.state.localsp + val, result);
+                state.sstore32(machine.state.localsp + val, result);
                 break;
             case 21:
-                machine.state.store8(val, result);
+                state.store8(val, result);
                 break;
             case 37:
-                machine.state.store16(val, result);
+                state.store16(val, result);
                 break;
             default:
                 throw new AssertionError();
@@ -1015,7 +1015,7 @@ class Insn {
                 val = machine.state.advancePC32();
                 break;
             case 13:
-                mode = 5;
+                this.mode = 5;
                 val = machine.state.ramStart + (machine.state.advancePC8() & 255);
                 break;
             case 14:
@@ -1113,7 +1113,7 @@ class Insn {
     private static void operands8LS(Machine machine) {
         int modes = machine.state.load8(machine.state.pc++) & 255;
         machine.operand[0].setLoad8(modes & 15);
-        machine.operand[1].setStore16(modes >> 4);
+        machine.operand[1].setStore8(modes >> 4);
     }
 
     private static void operands16LS(Machine machine) {

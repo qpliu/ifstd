@@ -208,6 +208,7 @@ class State implements Serializable {
         pc = saveState.pc;
         sp = saveState.sp;
         fp = saveState.fp;
+        localsp = saveState.localsp;
     }
 
     int advancePC8() {

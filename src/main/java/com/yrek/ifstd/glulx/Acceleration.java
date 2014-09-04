@@ -79,7 +79,7 @@ class Acceleration implements Serializable {
             return 0;
         }
         int max = machine.state.load32(otab);
-        return Instruction.binarySearch(machine.state, id, 2, otab+4, 10, max, 0, 0);
+        return Insn.binarySearch(machine.state, id, 2, otab+4, 10, max, 0, 0);
     }
 
     private static int FUNC_3_RA__Pr(Machine machine, int obj, int id, int[] parameters) {
@@ -217,7 +217,7 @@ class Acceleration implements Serializable {
             return 0;
         }
         int max = machine.state.load32(otab);
-        return Instruction.binarySearch(machine.state, id, 2, otab+4, 10, max, 0, 0);
+        return Insn.binarySearch(machine.state, id, 2, otab+4, 10, max, 0, 0);
     }
 
     private static int FUNC_9_RA__Pr(Machine machine, int obj, int id, int[] parameters) {

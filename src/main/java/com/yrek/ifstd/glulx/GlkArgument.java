@@ -79,10 +79,10 @@ class GlkArgument implements GlkDispatchArgument, GlkByteArray, GlkIntArray {
         return new Runnable() {
             @Override public void run() {
                 int fp = machine.state.fp;
-                Instruction.pushCallStub(machine.state, 0, 0);
+                Insn.pushCallStub(machine.state, 0, 0);
                 Instruction.call(machine.state, value, new int[0]);
                 while (machine.state.fp > fp) {
-                    switch (Instruction.executeNext(machine)) {
+                    switch (Insn.executeNext(machine)) {
                     case Quit:
                         throw new IllegalArgumentException("Illegal quit");
                     default:
