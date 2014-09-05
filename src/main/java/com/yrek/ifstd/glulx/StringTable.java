@@ -135,11 +135,27 @@ class StringTable implements Serializable {
             }
             machine.state.pc = resumeAddr;
             Insn.pushCallStub(machine.state, 10, bit);
-            int[] args = new int[nargs];
-            for (int i = 0; i < nargs; i++) {
-                args[i] = machine.state.load32(argsAddr + 4*i);
+            switch (nargs) {
+            case 0:
+                Insn.resumeCallf(machine.state, tableAddr, 0, 0, 0, 0);
+                break;
+            case 1:
+                Insn.resumeCallf(machine.state, tableAddr, machine.state.load32(argsAddr), 0, 0, 1);
+                break;
+            case 2:
+                Insn.resumeCallf(machine.state, tableAddr, machine.state.load32(argsAddr), machine.state.load32(argsAddr + 4), 0, 2);
+                break;
+            case 3:
+                Insn.resumeCallf(machine.state, tableAddr, machine.state.load32(argsAddr), machine.state.load32(argsAddr + 4), machine.state.load32(argsAddr + 8), 3);
+                break;
+            default:
+                int[] args = new int[nargs];
+                for (int i = 0; i < nargs; i++) {
+                    args[i] = machine.state.load32(argsAddr + 4*i);
+                }
+                Insn.resumeCall(machine.state, tableAddr, args);
+                break;
             }
-            Instruction.call(machine.state, tableAddr, args);
             if (resuming) {
                 Insn.pushCallStub(machine.state, 11, 0);
             }

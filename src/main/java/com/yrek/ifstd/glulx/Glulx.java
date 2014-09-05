@@ -46,7 +46,7 @@ public class Glulx implements Runnable, Serializable {
         suspended = false;
         suspend = false;
         for (;;) {
-            switch (Instruction.executeNext(machine)) {
+            switch (Insn.executeNext(machine)) {
             case Continue:
                 break;
             case Tick:

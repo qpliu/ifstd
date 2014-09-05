@@ -13,7 +13,7 @@ class FilterIOSys extends IOSys {
         if (pos < num.length()) {
             machine.state.pc = number;
             Insn.pushCallStub(machine.state, 12, pos+1);
-            Instruction.call(machine.state, rock, new int[] { (int) num.charAt(pos) });
+            Insn.resumeCallf(machine.state, rock, (int) num.charAt(pos), 0, 0, 1);
             Insn.pushCallStub(machine.state, 11, 0);
         }
     }
@@ -24,7 +24,7 @@ class FilterIOSys extends IOSys {
         if (ch != 0) {
             machine.state.pc = addr+1;
             Insn.pushCallStub(machine.state, 13, 0);
-            Instruction.call(machine.state, rock, new int[] { ch });
+            Insn.resumeCallf(machine.state, rock, ch, 0, 0, 1);
             Insn.pushCallStub(machine.state, 11, 0);
         }
     }
@@ -35,7 +35,7 @@ class FilterIOSys extends IOSys {
         if (ch != 0) {
             machine.state.pc = addr+4;
             Insn.pushCallStub(machine.state, 14, 0);
-            Instruction.call(machine.state, rock, new int[] { ch });
+            Insn.resumeCallf(machine.state, rock, ch, 0, 0, 1);
             Insn.pushCallStub(machine.state, 11, 0);
         }
     }
@@ -43,13 +43,13 @@ class FilterIOSys extends IOSys {
     @Override
     void streamChar(Machine machine, int ch) {
         Insn.pushCallStub(machine.state, 0, 0);
-        Instruction.call(machine.state, rock, new int[] { ch });
+        Insn.resumeCallf(machine.state, rock, ch, 0, 0, 1);
     }
 
     @Override
     void streamUnichar(Machine machine, int ch) {
         Insn.pushCallStub(machine.state, 0, 0);
-        Instruction.call(machine.state, rock, new int[] { ch });
+        Insn.resumeCallf(machine.state, rock, ch, 0, 0, 1);
     }
 
     @Override
@@ -77,7 +77,7 @@ class FilterIOSys extends IOSys {
         }
         machine.state.pc = resumeAddr;
         Insn.pushCallStub(machine.state, 10, bit);
-        Instruction.call(machine.state, rock, new int[] { ch });
+        Insn.resumeCallf(machine.state, rock, ch, 0, 0, 1);
         if (resuming) {
             Insn.pushCallStub(machine.state, 11, 0);
         }
@@ -91,7 +91,7 @@ class FilterIOSys extends IOSys {
         }
         machine.state.pc = resumeAddr;
         Insn.pushCallStub(machine.state, 10, bit);
-        Instruction.call(machine.state, rock, new int[] { ch });
+        Insn.resumeCallf(machine.state, rock, ch, 0, 0, 1);
         if (resuming) {
             Insn.pushCallStub(machine.state, 11, 0);
         }
@@ -111,7 +111,7 @@ class FilterIOSys extends IOSys {
         Insn.pushCallStub(machine.state, 10, bit);
         machine.state.pc = addr+1;
         Insn.pushCallStub(machine.state, 13, 0);
-        Instruction.call(machine.state, rock, new int[] { ch });
+        Insn.resumeCallf(machine.state, rock, ch, 0, 0, 1);
         if (resuming) {
             Insn.pushCallStub(machine.state, 11, 0);
         }
@@ -131,7 +131,7 @@ class FilterIOSys extends IOSys {
         Insn.pushCallStub(machine.state, 10, bit);
         machine.state.pc = addr+4;
         Insn.pushCallStub(machine.state, 14, 0);
-        Instruction.call(machine.state, rock, new int[] { ch });
+        Insn.resumeCallf(machine.state, rock, ch, 0, 0, 1);
         if (resuming) {
             Insn.pushCallStub(machine.state, 11, 0);
         }

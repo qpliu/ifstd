@@ -26,7 +26,15 @@ class Machine implements Serializable {
     IOSys ioSys = new NullIOSys(0);
     StringTable stringTable;
     Acceleration acceleration = new Acceleration();
-    transient Insn.Operand[] operand;
+    transient int operandL0;
+    transient int operandL1;
+    transient int operandL2;
+    transient int operandL3;
+    transient int operandL4;
+    transient int operandL5;
+    transient int operandL6;
+    transient Insn.Operand operandS0;
+    transient Insn.Operand operandS1;
 
     Machine(byte[] byteData, File fileData, GlkDispatch glk) throws IOException {
         this.byteData = byteData;
@@ -39,7 +47,7 @@ class Machine implements Serializable {
     State load() throws IOException {
         State newState = new State();
         newState.readFile(getData(), 0, 0);
-        Instruction.call(newState, newState.load32(24), new int[0]);
+        Insn.resumeCallf(newState, newState.load32(24), 0, 0, 0, 0);
         return newState;
     }
 
@@ -53,9 +61,7 @@ class Machine implements Serializable {
 
     void resume(GlkDispatch glk) {
         this.glk = glk;
-        operand = new Insn.Operand[8];
-        for (int i = 0; i < operand.length; i++) {
-            operand[i] = new Insn.Operand(this);
-        }
+        operandS0 = new Insn.Operand(this);
+        operandS1 = new Insn.Operand(this);
     }
 }

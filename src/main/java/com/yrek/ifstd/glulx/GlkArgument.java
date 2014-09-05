@@ -80,7 +80,7 @@ class GlkArgument implements GlkDispatchArgument, GlkByteArray, GlkIntArray {
             @Override public void run() {
                 int fp = machine.state.fp;
                 Insn.pushCallStub(machine.state, 0, 0);
-                Instruction.call(machine.state, value, new int[0]);
+                Insn.resumeCallf(machine.state, value, 0, 0, 0, 0);
                 while (machine.state.fp > fp) {
                     switch (Insn.executeNext(machine)) {
                     case Quit:
