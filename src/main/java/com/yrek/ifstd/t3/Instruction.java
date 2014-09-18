@@ -152,6 +152,182 @@ class Instruction {
             throw new RuntimeException("unimplemented");
         case 0x7f: // GETARGN3
             throw new RuntimeException("unimplemented");
+        case 0x80: // GETLCL1
+            throw new RuntimeException("unimplemented");
+        case 0x81: // GETLCL2
+            throw new RuntimeException("unimplemented");
+        case 0x82: // GETARG1
+            throw new RuntimeException("unimplemented");
+        case 0x83: // GETARG2
+            throw new RuntimeException("unimplemented");
+        case 0x84: // PUSHSELF
+            throw new RuntimeException("unimplemented");
+        case 0x85: // GETDBLCL
+            throw new RuntimeException("unimplemented");
+        case 0x86: // GETDBARG
+            throw new RuntimeException("unimplemented");
+        case 0x87: // GETARGC
+            throw new RuntimeException("unimplemented");
+        case 0x88: // DUP
+            throw new RuntimeException("unimplemented");
+        case 0x89: // DISC
+            throw new RuntimeException("unimplemented");
+        case 0x8a: // DISC1
+            throw new RuntimeException("unimplemented");
+        case 0x8b: // GETR0
+            throw new RuntimeException("unimplemented");
+        case 0x8c: // GETDBARGC
+            throw new RuntimeException("unimplemented");
+        case 0x8d: // SWAP
+            throw new RuntimeException("unimplemented");
+        case 0x8e: // PUSHCTXELE
+            throw new RuntimeException("unimplemented");
+        case 0x8f: // DUP2
+            throw new RuntimeException("unimplemented");
+        case 0x90: // SWITCH
+            throw new RuntimeException("unimplemented");
+        case 0x91: // JMP
+            throw new RuntimeException("unimplemented");
+        case 0x92: // JT
+            throw new RuntimeException("unimplemented");
+        case 0x93: // JF
+            throw new RuntimeException("unimplemented");
+        case 0x94: // JE
+            throw new RuntimeException("unimplemented");
+        case 0x95: // JNE
+            throw new RuntimeException("unimplemented");
+        case 0x96: // JGT
+            throw new RuntimeException("unimplemented");
+        case 0x97: // JGE
+            throw new RuntimeException("unimplemented");
+        case 0x98: // JLT
+            throw new RuntimeException("unimplemented");
+        case 0x99: // JLE
+            throw new RuntimeException("unimplemented");
+        case 0x9a: // JST
+            throw new RuntimeException("unimplemented");
+        case 0x9b: // JSF
+            throw new RuntimeException("unimplemented");
+        case 0x9c: // LJSR
+            throw new RuntimeException("unimplemented");
+        case 0x9d: // LRET
+            throw new RuntimeException("unimplemented");
+        case 0x9e: // JNIL
+            throw new RuntimeException("unimplemented");
+        case 0x9f: // JNOTNIL
+            throw new RuntimeException("unimplemented");
+        case 0xa0: // JR0T
+            throw new RuntimeException("unimplemented");
+        case 0xa1: // JR0F
+            throw new RuntimeException("unimplemented");
+        case 0xa6: // GETSPN
+            throw new RuntimeException("unimplemented");
+        case 0xaa: // GETSPGETLCLN0
+            throw new RuntimeException("unimplemented");
+        case 0xab: // GETSPGETLCLN1
+            throw new RuntimeException("unimplemented");
+        case 0xac: // GETSPGETLCLN2
+            throw new RuntimeException("unimplemented");
+        case 0xad: // GETSPGETLCLN3
+            throw new RuntimeException("unimplemented");
+        case 0xae: // GETSPGETLCLN4
+            throw new RuntimeException("unimplemented");
+        case 0xaf: // GETSPGETLCLN5
+            throw new RuntimeException("unimplemented");
+        case 0xb0: // GETSPGETLCLNSAY
+            throw new RuntimeException("unimplemented");
+        case 0xb1: // BUILTIN_A
+            throw new RuntimeException("unimplemented");
+        case 0xb2: // BUILTIN_B
+            throw new RuntimeException("unimplemented");
+        case 0xb3: // BUILTIN_C
+            throw new RuntimeException("unimplemented");
+        case 0xb4: // BUILTIN_D
+            throw new RuntimeException("unimplemented");
+        case 0xb5: // BUILTIN1
+            throw new RuntimeException("unimplemented");
+        case 0xb6: // BUILTIN2
+            throw new RuntimeException("unimplemented");
+        case 0xb7: // CALLEXT
+            throw new RuntimeException("unimplemented");
+        case 0xb8: // THROW
+            throw new RuntimeException("unimplemented");
+        case 0xb9: // SAYVAL
+            throw new RuntimeException("unimplemented");
+        case 0xba: // INDEX
+            throw new RuntimeException("unimplemented");
+        case 0xbb: // IDXLCLINT8
+            throw new RuntimeException("unimplemented");
+        case 0xbc: // IDXINT8
+            throw new RuntimeException("unimplemented");
+        case 0xc0: // NEW1
+            throw new RuntimeException("unimplemented");
+        case 0xc1: // NEW2
+            throw new RuntimeException("unimplemented");
+        case 0xc2: // TRNEW1
+            throw new RuntimeException("unimplemented");
+        case 0xc3: // TRNEW2
+            throw new RuntimeException("unimplemented");
+        case 0xd0: // INCLCL
+            throw new RuntimeException("unimplemented");
+        case 0xd1: // DECLCL
+            throw new RuntimeException("unimplemented");
+        case 0xd2: // ADDILCL1
+            throw new RuntimeException("unimplemented");
+        case 0xd3: // ADDILCL4
+            throw new RuntimeException("unimplemented");
+        case 0xd4: // ADDTOLCL
+            throw new RuntimeException("unimplemented");
+        case 0xd5: // SUBFROMLCL
+            throw new RuntimeException("unimplemented");
+        case 0xd6: // ZEROLCL1
+            throw new RuntimeException("unimplemented");
+        case 0xd7: // ZEROLCL2
+            throw new RuntimeException("unimplemented");
+        case 0xd8: // NILLCL1
+            throw new RuntimeException("unimplemented");
+        case 0xd9: // NILLCL2
+            throw new RuntimeException("unimplemented");
+        case 0xda: // ONELCL1
+            throw new RuntimeException("unimplemented");
+        case 0xdb: // ONELCL2
+            throw new RuntimeException("unimplemented");
+        case 0xe0: // SETLCL1
+            throw new RuntimeException("unimplemented");
+        case 0xe1: // SETLCL2
+            throw new RuntimeException("unimplemented");
+        case 0xe2: // SETARG1
+            throw new RuntimeException("unimplemented");
+        case 0xe3: // SETARG2
+            throw new RuntimeException("unimplemented");
+        case 0xe4: // SETIND
+            throw new RuntimeException("unimplemented");
+        case 0xe5: // SETPROP
+            throw new RuntimeException("unimplemented");
+        case 0xe6: // PTRSETPROP
+            throw new RuntimeException("unimplemented");
+        case 0xe7: // SETPROPSELF
+            throw new RuntimeException("unimplemented");
+        case 0xe8: // OBJSETPROP
+            throw new RuntimeException("unimplemented");
+        case 0xe9: // SETDBLCL
+            throw new RuntimeException("unimplemented");
+        case 0xea: // SETDBARG
+            throw new RuntimeException("unimplemented");
+        case 0xeb: // SETSELF
+            throw new RuntimeException("unimplemented");
+        case 0xec: // LOADCTX
+            throw new RuntimeException("unimplemented");
+        case 0xed: // STORECTX
+            throw new RuntimeException("unimplemented");
+        case 0xee: // SETLCL1R0
+            throw new RuntimeException("unimplemented");
+        case 0xef: // SETINDLCL1I8
+            throw new RuntimeException("unimplemented");
+        case 0xf1: // BP
+            throw new RuntimeException("unimplemented");
+        case 0xf2: // NOP
+            throw new RuntimeException("unimplemented");
         default:
             throw new IllegalArgumentException();
         }
