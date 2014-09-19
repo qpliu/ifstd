@@ -5,9 +5,11 @@ class Instruction {
         int insn = 0;
         switch (insn) {
         case 0x1: // PUSH_0
-            throw new RuntimeException("unimplemented");
+            machine.stack.push(T3Value.INT0);
+            break;
         case 0x2: // PUSH_1
-            throw new RuntimeException("unimplemented");
+            machine.stack.push(T3Value.INT1);
+            break;
         case 0x3: // PUSHINT8
             throw new RuntimeException("unimplemented");
         case 0x4: // PUSHINT
@@ -19,9 +21,11 @@ class Instruction {
         case 0x7: // PUSHOBJ
             throw new RuntimeException("unimplemented");
         case 0x8: // PUSHNIL
-            throw new RuntimeException("unimplemented");
+            machine.stack.push(T3Value.NIL);
+            break;
         case 0x9: // PUSHTRUE
-            throw new RuntimeException("unimplemented");
+            machine.stack.push(T3Value.TRUE);
+            break;
         case 0xa: // PUSHPROPID
             throw new RuntimeException("unimplemented");
         case 0xb: // PUSHFNPTR
@@ -83,13 +87,20 @@ class Instruction {
         case 0x45: // GE
             throw new RuntimeException("unimplemented");
         case 0x50: // RETVAL
-            throw new RuntimeException("unimplemented");
+            machine.r0 = machine.stack.removeLast();
+            ret(machine);
+            break;
         case 0x51: // RETNIL
-            throw new RuntimeException("unimplemented");
+            machine.r0 = T3Value.NIL;
+            ret(machine);
+            break;
         case 0x52: // RETTRUE
-            throw new RuntimeException("unimplemented");
+            machine.r0 = T3Value.TRUE;
+            ret(machine);
+            break;
         case 0x54: // RET
-            throw new RuntimeException("unimplemented");
+            ret(machine);
+            break;
         case 0x56: // NAMEDARGPTR
             throw new RuntimeException("unimplemented");
         case 0x57: // NAMEDARGTAB
@@ -332,4 +343,8 @@ class Instruction {
             throw new IllegalArgumentException();
         }
     }                
+
+    private static void ret(Machine machine) {
+        throw new RuntimeException("unimplemented");
+    }
 }
