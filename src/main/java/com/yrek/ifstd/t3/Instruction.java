@@ -146,7 +146,57 @@ class Instruction {
         case 0x75: // PTREXPINHERIT
             throw new RuntimeException("unimplemented");
         case 0x76: // VARARGC
-            throw new RuntimeException("unimplemented");
+            insn = insn;
+            switch (insn) {
+            case 0xb1: // BUILTIN_A
+                throw new RuntimeException("unimplemented");
+            case 0xb2: // BUILTIN_B
+                throw new RuntimeException("unimplemented");
+            case 0xb3: // BUILTIN_C
+                throw new RuntimeException("unimplemented");
+            case 0xb4: // BUILTIN_D
+                throw new RuntimeException("unimplemented");
+            case 0xb5: // BUILTIN1
+                throw new RuntimeException("unimplemented");
+            case 0xb6: // BUILTIN2
+                throw new RuntimeException("unimplemented");
+            case 0x58: // CALL
+                throw new RuntimeException("unimplemented");
+            case 0x61: // CALLPROP
+                throw new RuntimeException("unimplemented");
+            case 0x64: // CALLPROPSELF
+                throw new RuntimeException("unimplemented");
+            case 0x77: // DELEGATE
+                throw new RuntimeException("unimplemented");
+            case 0x74: // EXPINHERIT
+                throw new RuntimeException("unimplemented");
+            case 0x72: // INHERIT
+                throw new RuntimeException("unimplemented");
+            case 0xc0: // NEW1
+                throw new RuntimeException("unimplemented");
+            case 0xc1: // NEW2
+                throw new RuntimeException("unimplemented");
+            case 0x67: // OBJCALLPROP
+                throw new RuntimeException("unimplemented");
+            case 0x59: // PTRCALL
+                throw new RuntimeException("unimplemented");
+            case 0x62: // PTRCALLPROP
+                throw new RuntimeException("unimplemented");
+            case 0x65: // PTRCALLPROPSELF
+                throw new RuntimeException("unimplemented");
+            case 0x78: // PTRDELEGATE
+                throw new RuntimeException("unimplemented");
+            case 0x75: // PTREXPINHERIT
+                throw new RuntimeException("unimplemented");
+            case 0x73: // PTRINHERIT
+                throw new RuntimeException("unimplemented");
+            case 0xc2: // TRNEW1
+                throw new RuntimeException("unimplemented");
+            case 0xc3: // TRNEW2
+                throw new RuntimeException("unimplemented");
+            default:
+                throw new IllegalArgumentException();
+            }
         case 0x77: // DELEGATE
             throw new RuntimeException("unimplemented");
         case 0x78: // PTRDELEGATE
