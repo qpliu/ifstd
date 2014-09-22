@@ -2,8 +2,7 @@ package com.yrek.ifstd.t3;
 
 class Instruction {
     static void executeNext(Machine machine) {
-        int insn = 0;
-        switch (insn) {
+        switch (insn(machine)) {
         case 0x1: // PUSH_0
             machine.stack.push(T3Value.INT0);
             break;
@@ -146,8 +145,7 @@ class Instruction {
         case 0x75: // PTREXPINHERIT
             throw new RuntimeException("unimplemented");
         case 0x76: // VARARGC
-            insn = insn;
-            switch (insn) {
+            switch (insn(machine)) {
             case 0xb1: // BUILTIN_A
                 throw new RuntimeException("unimplemented");
             case 0xb2: // BUILTIN_B
@@ -393,6 +391,28 @@ class Instruction {
             throw new IllegalArgumentException();
         }
     }                
+
+    private static int insn(Machine machine) {
+        return machine.currentFunction.code[machine.ip++]&255;
+    }
+
+    private static int operandSbyte(Machine machine) {
+        return machine.currentFunction.code[machine.ip++];
+    }
+
+    private static int operandUbyte(Machine machine) {
+        return machine.currentFunction.code[machine.ip++]&255;
+    }
+
+    private static int operandUint2(Machine machine) {
+        machine.ip += 2;
+        return (machine.currentFunction.code[machine.ip - 2]&255) | ((machine.currentFunction.code[machine.ip - 1]&255) << 8);
+    }
+
+    private static int operandInt4(Machine machine) {
+        machine.ip += 4;
+        return (machine.currentFunction.code[machine.ip - 4]&255) | ((machine.currentFunction.code[machine.ip - 3]&255) << 8) | ((machine.currentFunction.code[machine.ip - 2]&255) << 16) | (machine.currentFunction.code[machine.ip - 1] << 24);
+    }
 
     private static void ret(Machine machine) {
         throw new RuntimeException("unimplemented");
