@@ -10,9 +10,11 @@ class Instruction {
             machine.stack.push(T3Value.INT1);
             break;
         case 0x3: // PUSHINT8
-            throw new RuntimeException("unimplemented");
+            machine.stack.push(new T3ValueInt(operandSbyte(machine)));
+            break;
         case 0x4: // PUSHINT
-            throw new RuntimeException("unimplemented");
+            machine.stack.push(new T3ValueInt(operandInt4(machine)));
+            break;
         case 0x5: // PUSHSTR
             throw new RuntimeException("unimplemented");
         case 0x6: // PUSHLST
@@ -415,6 +417,10 @@ class Instruction {
     }
 
     private static void ret(Machine machine) {
+        throw new RuntimeException("unimplemented");
+    }
+
+    private static void throwException(Machine machine, T3Value value) {
         throw new RuntimeException("unimplemented");
     }
 }

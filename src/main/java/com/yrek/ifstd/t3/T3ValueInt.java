@@ -2,12 +2,12 @@ package com.yrek.ifstd.t3;
 
 import java.io.Serializable;
 
-class T3Function extends T3Value {
+class T3ValueInt extends T3Value {
     private static final long serialVersionUID = 0L;
 
-    final byte[] code;
+    final int value;
 
-    T3Function() {
-        code = null;
+    T3ValueInt(int value) {
+        this.value = value;
     }
 }
