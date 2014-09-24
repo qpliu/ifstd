@@ -1,6 +1,7 @@
 package com.yrek.ifstd.t3;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.LinkedList;
 
 class Machine implements Serializable {

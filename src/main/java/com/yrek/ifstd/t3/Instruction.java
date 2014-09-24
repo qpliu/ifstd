@@ -1,20 +1,20 @@
 package com.yrek.ifstd.t3;
 
 class Instruction {
-    static void executeNext(Machine machine) {
+    static T3.Result executeNext(Machine machine) {
         switch (insn(machine)) {
         case 0x1: // PUSH_0
             machine.stack.push(T3Value.INT0);
-            break;
+            return T3.Result.Continue;
         case 0x2: // PUSH_1
             machine.stack.push(T3Value.INT1);
-            break;
+            return T3.Result.Continue;
         case 0x3: // PUSHINT8
             machine.stack.push(new T3ValueInt(operandSbyte(machine)));
-            break;
+            return T3.Result.Continue;
         case 0x4: // PUSHINT
             machine.stack.push(new T3ValueInt(operandInt4(machine)));
-            break;
+            return T3.Result.Continue;
         case 0x5: // PUSHSTR
             throw new RuntimeException("unimplemented");
         case 0x6: // PUSHLST
@@ -23,10 +23,10 @@ class Instruction {
             throw new RuntimeException("unimplemented");
         case 0x8: // PUSHNIL
             machine.stack.push(T3Value.NIL);
-            break;
+            return T3.Result.Continue;
         case 0x9: // PUSHTRUE
             machine.stack.push(T3Value.TRUE);
-            break;
+            return T3.Result.Continue;
         case 0xa: // PUSHPROPID
             throw new RuntimeException("unimplemented");
         case 0xb: // PUSHFNPTR
@@ -89,19 +89,15 @@ class Instruction {
             throw new RuntimeException("unimplemented");
         case 0x50: // RETVAL
             machine.r0 = machine.stack.removeLast();
-            ret(machine);
-            break;
+            return ret(machine);
         case 0x51: // RETNIL
             machine.r0 = T3Value.NIL;
-            ret(machine);
-            break;
+            return ret(machine);
         case 0x52: // RETTRUE
             machine.r0 = T3Value.TRUE;
-            ret(machine);
-            break;
+            return ret(machine);
         case 0x54: // RET
-            ret(machine);
-            break;
+            return ret(machine);
         case 0x56: // NAMEDARGPTR
             throw new RuntimeException("unimplemented");
         case 0x57: // NAMEDARGTAB
@@ -416,11 +412,11 @@ class Instruction {
         return (machine.currentFunction.code[machine.ip - 4]&255) | ((machine.currentFunction.code[machine.ip - 3]&255) << 8) | ((machine.currentFunction.code[machine.ip - 2]&255) << 16) | (machine.currentFunction.code[machine.ip - 1] << 24);
     }
 
-    private static void ret(Machine machine) {
+    private static T3.Result ret(Machine machine) {
         throw new RuntimeException("unimplemented");
     }
 
-    private static void throwException(Machine machine, T3Value value) {
+    private static T3.Result throwException(Machine machine, T3Value value) {
         throw new RuntimeException("unimplemented");
     }
 }
