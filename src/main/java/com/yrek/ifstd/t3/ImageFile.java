@@ -9,6 +9,9 @@ class ImageFile {
     private final long startPosition;
     final int version;
     final String timestamp;
+    DataBlockEntrypoint entrypoint = null;
+    DataBlockConstantPoolDefinition codePoolDef = null;
+    DataBlockConstantPoolDefinition constantPoolDef = null;
 
     ImageFile(File file) throws IOException {
         this(new RandomAccessFile(file, "r"));
@@ -40,17 +43,16 @@ class ImageFile {
     DataBlock nextDataBlock() throws IOException {
         for (;;) {
             int id = file.readInt();
-            int size = file.readInt();
-            size += file.readInt() << 8;
-            size += file.readInt() << 16;
-            size += file.readInt() << 24;
-            int flags = file.readShort();
+            int size = readInt4();
+            int flags = readUint2();
             switch (id) {
             case 0x454f4620: // EOF
                 return null;
             case 0x454e5450: // ENTP
+                return new DataBlockEntrypoint(size, flags);
             case 0x4f424a53: // OBJS
             case 0x43504446: // CPDF
+                return new DataBlockConstantPoolDefinition(size, flags);
             case 0x43505047: // CPPG
             case 0x4d524553: // MRES
             case 0x4d52454c: // MREL
@@ -68,6 +70,81 @@ class ImageFile {
         }
     }
 
+    int readSint2() throws IOException {
+        int i = file.readUnsignedByte();
+        return i | (file.readByte() << 8);
+    }
+
+    int readUint2() throws IOException {
+        int i = file.readUnsignedByte();
+        return i | (file.readUnsignedByte() << 8);
+    }
+
+    int readInt4() throws IOException {
+        int i = file.readUnsignedByte();
+        i |= file.readUnsignedByte() << 8;
+        i |= file.readUnsignedByte() << 16;
+        return i | (file.readUnsignedByte() << 24);
+    }
+
     class DataBlock {
+        final int size;
+        final int flags;
+        final long blockStart;
+
+        DataBlock(int size, int flags) throws IOException {
+            this.size = size;
+            this.flags = flags;
+            this.blockStart = file.getFilePointer();
+        }
+
+        void seekToEnd() throws IOException {
+            file.seek(blockStart + size);
+        }
+    }
+
+    class DataBlockEntrypoint extends DataBlock {
+        final int codePoolOffset;
+        final int exceptionTableSize;
+
+        DataBlockEntrypoint(int size, int flags) throws IOException {
+            super(size, flags);
+            this.codePoolOffset = readInt4();
+            this.exceptionTableSize = readUint2();
+            seekToEnd();
+            if (entrypoint != null) {
+                throw new IOException("multiple ENTP blocks");
+            }
+            entrypoint = this;
+        }
+    }
+
+    class DataBlockConstantPoolDefinition extends DataBlock {
+        final int pageCount;
+        final int pageSize;
+
+        DataBlockConstantPoolDefinition(int size, int flags) throws IOException {
+            super(size, flags);
+            int identifier = readUint2();
+            this.pageCount = readInt4();
+            this.pageSize = readInt4();
+            seekToEnd();
+            switch (identifier) {
+            case 1:
+                if (codePoolDef != null) {
+                    throw new IOException("Multiple CPDF byte code pool blocks");
+                }
+                codePoolDef = this;
+                break;
+            case 2:
+                if (constantPoolDef != null) {
+                    throw new IOException("Multiple CPDF constant pool blocks");
+                }
+                constantPoolDef = this;
+                break;
+            default:
+                break;
+            }
+        }
     }
 }
