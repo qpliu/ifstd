@@ -12,6 +12,8 @@ class ImageFile {
     DataBlockEntrypoint entrypoint = null;
     DataBlockConstantPoolDefinition codePoolDef = null;
     DataBlockConstantPoolDefinition constantPoolDef = null;
+    DataBlockMetaclassDependency metaclassDependency = null;
+    DataBlockFunctionSetDependency functionSetDependency = null;
 
     ImageFile(File file) throws IOException {
         this(new RandomAccessFile(file, "r"));
@@ -51,13 +53,17 @@ class ImageFile {
             case 0x454e5450: // ENTP
                 return new DataBlockEntrypoint(size, flags);
             case 0x4f424a53: // OBJS
+                throw new RuntimeException("unimplemented");
             case 0x43504446: // CPDF
                 return new DataBlockConstantPoolDefinition(size, flags);
             case 0x43505047: // CPPG
             case 0x4d524553: // MRES
             case 0x4d52454c: // MREL
+                throw new RuntimeException("unimplemented");
             case 0x4d434c44: // MCLD
+                return new DataBlockMetaclassDependency(size, flags);
             case 0x464e5244: // FNSD
+                return new DataBlockFunctionSetDependency(size, flags);
             case 0x53594d44: // SYMD
             case 0x53494e49: // SINI
                 throw new RuntimeException("unimplemented");
@@ -145,6 +151,61 @@ class ImageFile {
             default:
                 break;
             }
+        }
+    }
+
+    class DataBlockMetaclassDependency extends DataBlock {
+        final Entry[] entries;
+
+        DataBlockMetaclassDependency(int size, int flags) throws IOException {
+            super(size, flags);
+            int count = readUint2();
+            this.entries = new Entry[count];
+            for (int i = 0; i < count; i++) {
+                this.entries[i] = new Entry();
+            }
+            if (metaclassDependency != null) {
+                throw new IOException("Multiple MCLD blocks");
+            }
+            metaclassDependency = this;
+        }
+
+        class Entry {
+            final String name;
+            final int[] propertyIDs;
+
+            Entry() throws IOException {
+                file.readShort();
+                byte[] name = new byte[file.readUnsignedByte()];
+                file.readFully(name);
+                this.name = new String(name, "US-ASCII");
+                int count = readUint2();
+                file.readShort();
+                this.propertyIDs = new int[count];
+                for (int i = 0; i < count; i++) {
+                    this.propertyIDs[i] = readUint2();
+                }
+            }
+        }
+    }
+
+    class DataBlockFunctionSetDependency extends DataBlock {
+        final String[] entries;
+
+        DataBlockFunctionSetDependency(int size, int flags) throws IOException {
+            super(size, flags);
+            int count = readUint2();
+            this.entries = new String[count];
+            byte[] buffer = new byte[256];
+            for (int i = 0; i < count; i++) {
+                int length = file.readUnsignedByte();
+                file.readFully(buffer, 0, length);
+                this.entries[i] = new String(buffer, 0, length, "US-ASCII");
+            }
+            if (functionSetDependency != null) {
+                throw new IOException("Multiple FNSD blocks");
+            }
+            functionSetDependency = this;
         }
     }
 }
