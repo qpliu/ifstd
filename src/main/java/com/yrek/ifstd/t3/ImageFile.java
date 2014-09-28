@@ -65,8 +65,9 @@ class ImageFile {
             case 0x464e5244: // FNSD
                 return new DataBlockFunctionSetDependency(size, flags);
             case 0x53594d44: // SYMD
-            case 0x53494e49: // SINI
                 throw new RuntimeException("unimplemented");
+            case 0x53494e49: // SINI
+                return new DataBlockStaticInitializer(size, flags);
             default:
                 if ((flags & 1) != 0) {
                     throw new IOException(String.format("unknown block type: %08x", id));
@@ -206,6 +207,24 @@ class ImageFile {
                 throw new IOException("Multiple FNSD blocks");
             }
             functionSetDependency = this;
+        }
+    }
+
+    class DataBlockStaticInitializer extends DataBlock {
+        final long[] objectPropertyIDs; // upper 32 bits is object ID, lower 16 bits is property ID
+        final int offset;
+
+        DataBlockStaticInitializer(int size, int flags) throws IOException {
+            super(size, flags);
+            int headerSize = readInt4();
+            this.offset = readInt4();
+            int count = readInt4();
+            file.seek(blockStart + headerSize);
+            this.objectPropertyIDs = new long[count];
+            for (int i = 0; i < count; i++) {
+                this.objectPropertyIDs[i] = ((long) readInt4()) << 32;
+                this.objectPropertyIDs[i] |= readUint2();
+            }
         }
     }
 }
