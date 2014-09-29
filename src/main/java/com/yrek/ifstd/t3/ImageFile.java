@@ -3,6 +3,7 @@ package com.yrek.ifstd.t3;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.HashMap;
 
 class ImageFile {
     private final RandomAccessFile file;
@@ -65,7 +66,7 @@ class ImageFile {
             case 0x464e5244: // FNSD
                 return new DataBlockFunctionSetDependency(size, flags);
             case 0x53594d44: // SYMD
-                throw new RuntimeException("unimplemented");
+                return new DataBlockSymbolicNames(size, flags);
             case 0x53494e49: // SINI
                 return new DataBlockStaticInitializer(size, flags);
             default:
@@ -92,6 +93,17 @@ class ImageFile {
         i |= file.readUnsignedByte() << 8;
         i |= file.readUnsignedByte() << 16;
         return i | (file.readUnsignedByte() << 24);
+    }
+
+    byte[] asciiBuffer = new byte[256];
+    String readAscii() throws IOException {
+        int length = file.readUnsignedByte();
+        file.readFully(asciiBuffer, 0, length);
+        return new String(asciiBuffer, 0, length, "US-ASCII");
+    }
+
+    T3Value readDataHolder() throws IOException {
+        throw new RuntimeException("unimplemented");
     }
 
     class DataBlock {
@@ -177,9 +189,7 @@ class ImageFile {
 
             Entry() throws IOException {
                 file.readShort();
-                byte[] name = new byte[file.readUnsignedByte()];
-                file.readFully(name);
-                this.name = new String(name, "US-ASCII");
+                this.name = readAscii();
                 int count = readUint2();
                 file.readShort();
                 this.propertyIDs = new int[count];
@@ -197,11 +207,8 @@ class ImageFile {
             super(size, flags);
             int count = readUint2();
             this.entries = new String[count];
-            byte[] buffer = new byte[256];
             for (int i = 0; i < count; i++) {
-                int length = file.readUnsignedByte();
-                file.readFully(buffer, 0, length);
-                this.entries[i] = new String(buffer, 0, length, "US-ASCII");
+                this.entries[i] = readAscii();
             }
             if (functionSetDependency != null) {
                 throw new IOException("Multiple FNSD blocks");
@@ -224,6 +231,19 @@ class ImageFile {
             for (int i = 0; i < count; i++) {
                 this.objectPropertyIDs[i] = ((long) readInt4()) << 32;
                 this.objectPropertyIDs[i] |= readUint2();
+            }
+        }
+    }
+
+    class DataBlockSymbolicNames extends DataBlock {
+        final HashMap<String,T3Value> entries = new HashMap<String,T3Value>();
+
+        DataBlockSymbolicNames(int size, int flags) throws IOException {
+            super(size, flags);
+            int count = readUint2();
+            for (int i = 0; i < count; i++) {
+                T3Value value = readDataHolder();
+                entries.put(readAscii(), value);
             }
         }
     }
