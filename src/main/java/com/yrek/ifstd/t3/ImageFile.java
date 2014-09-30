@@ -103,7 +103,39 @@ class ImageFile {
     }
 
     T3Value readDataHolder() throws IOException {
-        throw new RuntimeException("unimplemented");
+        int typeID = file.readUnsignedByte();
+        int value = readInt4();
+        switch (typeID) {
+        case 1:
+            return T3Value.NIL;
+        case 2:
+            return T3Value.TRUE;
+        case 5:
+        case 6:
+            throw new RuntimeException("unimplemented");
+        case 7:
+            switch (value) {
+            case 0:
+                return T3Value.INT0;
+            case 1:
+                return T3Value.INT1;
+            default:
+                return new T3ValueInt(value);
+            }
+        case 8:
+        case 9:
+        case 10:
+        case 11:
+        case 12:
+            throw new RuntimeException("unimplemented");
+        case 13:
+            return null;
+        case 15:
+        case 16:
+            throw new RuntimeException("unimplemented");
+        default:
+            throw new IOException("Unrecognized typeID="+typeID);
+        }
     }
 
     class DataBlock {
