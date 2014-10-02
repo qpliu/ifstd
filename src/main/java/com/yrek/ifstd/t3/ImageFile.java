@@ -58,6 +58,7 @@ class ImageFile {
             case 0x43504446: // CPDF
                 return new DataBlockConstantPoolDefinition(size, flags);
             case 0x43505047: // CPPG
+                return new DataBlockConstantPoolPage(size, flags);
             case 0x4d524553: // MRES
             case 0x4d52454c: // MREL
                 throw new RuntimeException("unimplemented");
@@ -173,12 +174,14 @@ class ImageFile {
     class DataBlockConstantPoolDefinition extends DataBlock {
         final int pageCount;
         final int pageSize;
+        final DataBlockConstantPoolPage[] pages;
 
         DataBlockConstantPoolDefinition(int size, int flags) throws IOException {
             super(size, flags);
             int identifier = readUint2();
             this.pageCount = readInt4();
             this.pageSize = readInt4();
+            this.pages = new DataBlockConstantPoolPage[this.pageCount];
             seekToEnd();
             switch (identifier) {
             case 1:
@@ -192,6 +195,41 @@ class ImageFile {
                     throw new IOException("Multiple CPDF constant pool blocks");
                 }
                 constantPoolDef = this;
+                break;
+            default:
+                break;
+            }
+        }
+    }
+
+    class DataBlockConstantPoolPage extends DataBlock {
+        final int index;
+        final byte[] bytes;
+
+        DataBlockConstantPoolPage(int size, int flags) throws IOException {
+            super(size, flags);
+            int identifier = readUint2();
+            this.index = readInt4();
+            int mask = file.readUnsignedByte();
+            this.bytes = new byte[size - 5];
+            file.readFully(this.bytes);
+            if (mask != 0) {
+                for (int i = 0; i < bytes.length; i++) {
+                    bytes[i] ^= (byte) mask;
+                }
+            }
+            switch (identifier) {
+            case 1:
+                if (codePoolDef.pages[index] != null) {
+                    throw new IOException("Duplicate code pool page:"+index);
+                }
+                codePoolDef.pages[index] = this;
+                break;
+            case 2:
+                if (constantPoolDef.pages[index] != null) {
+                    throw new IOException("Duplicate constant pool page:"+index);
+                }
+                constantPoolDef.pages[index] = this;
                 break;
             default:
                 break;
