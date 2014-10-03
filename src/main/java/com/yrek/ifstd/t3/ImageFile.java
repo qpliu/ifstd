@@ -3,6 +3,7 @@ package com.yrek.ifstd.t3;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 class ImageFile {
@@ -10,6 +11,7 @@ class ImageFile {
     private final long startPosition;
     final int version;
     final String timestamp;
+    ArrayList<DataBlockStaticInitializer> staticInitializers = null;
     DataBlockEntrypoint entrypoint = null;
     DataBlockConstantPoolDefinition codePoolDef = null;
     DataBlockConstantPoolDefinition constantPoolDef = null;
@@ -41,9 +43,26 @@ class ImageFile {
         byte[] buffer = new byte[24];
         file.readFully(buffer);
         this.timestamp = new String(buffer, "US-ASCII");
+        while (nextDataBlock() != null) {
+        }
+        if (entrypoint == null) {
+            throw new IOException("ENTP block missing");
+        }
+        if (codePoolDef == null) {
+            throw new IOException("Byte-code pool missing");
+        }
+        if (constantPoolDef == null) {
+            throw new IOException("Constant pool missing");
+        }
+        if (metaclassDependency == null) {
+            throw new IOException("MCLD block missing");
+        }
+        if (functionSetDependency == null) {
+            throw new IOException("FNSD block missing");
+        }
     }
 
-    DataBlock nextDataBlock() throws IOException {
+    private DataBlock nextDataBlock() throws IOException {
         for (;;) {
             int id = file.readInt();
             int size = readInt4();
@@ -302,6 +321,11 @@ class ImageFile {
                 this.objectPropertyIDs[i] = ((long) readInt4()) << 32;
                 this.objectPropertyIDs[i] |= readUint2();
             }
+
+            if (staticInitializers == null) {
+                staticInitializers = new ArrayList<DataBlockStaticInitializer>();
+            }
+            staticInitializers.add(this);
         }
     }
 
