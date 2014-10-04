@@ -73,7 +73,7 @@ class ImageFile {
             case 0x454e5450: // ENTP
                 return new DataBlockEntrypoint(size, flags);
             case 0x4f424a53: // OBJS
-                throw new RuntimeException("unimplemented");
+                return new DataBlockStaticObjects(size, flags);
             case 0x43504446: // CPDF
                 return new DataBlockConstantPoolDefinition(size, flags);
             case 0x43505047: // CPPG
@@ -98,31 +98,31 @@ class ImageFile {
         }
     }
 
-    int readSint2() throws IOException {
+    private int readSint2() throws IOException {
         int i = file.readUnsignedByte();
         return i | (file.readByte() << 8);
     }
 
-    int readUint2() throws IOException {
+    private int readUint2() throws IOException {
         int i = file.readUnsignedByte();
         return i | (file.readUnsignedByte() << 8);
     }
 
-    int readInt4() throws IOException {
+    private int readInt4() throws IOException {
         int i = file.readUnsignedByte();
         i |= file.readUnsignedByte() << 8;
         i |= file.readUnsignedByte() << 16;
         return i | (file.readUnsignedByte() << 24);
     }
 
-    byte[] asciiBuffer = new byte[256];
-    String readAscii() throws IOException {
+    private byte[] asciiBuffer = new byte[256];
+    private String readAscii() throws IOException {
         int length = file.readUnsignedByte();
         file.readFully(asciiBuffer, 0, length);
         return new String(asciiBuffer, 0, length, "US-ASCII");
     }
 
-    T3Value readDataHolder() throws IOException {
+    private T3Value readDataHolder() throws IOException {
         int typeID = file.readUnsignedByte();
         int value = readInt4();
         switch (typeID) {
@@ -187,6 +187,36 @@ class ImageFile {
                 throw new IOException("multiple ENTP blocks");
             }
             entrypoint = this;
+        }
+    }
+
+    class DataBlockStaticObjects extends DataBlock {
+        final boolean transientObjects;
+        final StaticObject[] objects;
+
+        DataBlockStaticObjects(int size, int flags) throws IOException {
+            super(size, flags);
+            int count = readUint2();
+            int index = readUint2();
+            int objsFlags = readUint2();
+            boolean largeObjs = (objsFlags & 1) != 0;
+            this.transientObjects = (objsFlags & 2) != 0;
+            this.objects = new StaticObject[count];
+            for (int i = 0; i < count; i++) {
+                objects[i] = new StaticObject(largeObjs);
+            }
+            metaclassDependency.entries[index].staticObjects.add(this);
+        }
+
+        class StaticObject {
+            final int objectID;
+            final byte[] data;
+
+            StaticObject(boolean largeObjs) throws IOException {
+                this.objectID = readInt4();
+                this.data = new byte[largeObjs ? readInt4() : readUint2()];
+                file.readFully(data, 0, data.length);
+            }
         }
     }
 
@@ -275,6 +305,7 @@ class ImageFile {
         class Entry {
             final String name;
             final int[] propertyIDs;
+            final ArrayList<DataBlockStaticObjects> staticObjects;
 
             Entry() throws IOException {
                 file.readShort();
@@ -285,6 +316,7 @@ class ImageFile {
                 for (int i = 0; i < count; i++) {
                     this.propertyIDs[i] = readUint2();
                 }
+                this.staticObjects = new ArrayList<DataBlockStaticObjects>();
             }
         }
     }
