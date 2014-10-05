@@ -17,6 +17,7 @@ class ImageFile {
     DataBlockConstantPoolDefinition constantPoolDef = null;
     DataBlockMetaclassDependency metaclassDependency = null;
     DataBlockFunctionSetDependency functionSetDependency = null;
+    DataBlockMultimediaResource multimediaResource = null;
 
     ImageFile(File file) throws IOException {
         this(new RandomAccessFile(file, "r"));
@@ -79,6 +80,11 @@ class ImageFile {
             case 0x43505047: // CPPG
                 return new DataBlockConstantPoolPage(size, flags);
             case 0x4d524553: // MRES
+                if (multimediaResource == null) {
+                    multimediaResource = new DataBlockMultimediaResource(size, flags);
+                }
+                multimediaResource.readBlock(size);
+                return multimediaResource;
             case 0x4d52454c: // MREL
                 throw new RuntimeException("unimplemented");
             case 0x4d434c44: // MCLD
@@ -119,6 +125,14 @@ class ImageFile {
     private String readAscii() throws IOException {
         int length = file.readUnsignedByte();
         file.readFully(asciiBuffer, 0, length);
+        return new String(asciiBuffer, 0, length, "US-ASCII");
+    }
+    private String readAscii(int xor) throws IOException {
+        int length = file.readUnsignedByte();
+        file.readFully(asciiBuffer, 0, length);
+        for (int i = 0; i < length; i++) {
+            asciiBuffer[i] ^= xor;
+        }
         return new String(asciiBuffer, 0, length, "US-ASCII");
     }
 
@@ -370,6 +384,36 @@ class ImageFile {
             for (int i = 0; i < count; i++) {
                 T3Value value = readDataHolder();
                 entries.put(readAscii(), value);
+            }
+        }
+    }
+
+    class DataBlockMultimediaResource extends DataBlock {
+        final HashMap<String,Entry> entries;
+
+        DataBlockMultimediaResource(int size, int flags) throws IOException {
+            super(size, flags);
+            this.entries = new HashMap<String,Entry>();
+        }
+
+        void readBlock(int size) throws IOException {
+            long blockStart = file.getFilePointer();
+            int count = readUint2();
+            for (int i = 0; i < count; i++) {
+                int offset = readInt4();
+                int entrySize = readInt4();
+                entries.put(readAscii(255), new Entry(offset + blockStart, entrySize));
+            }
+            file.seek(blockStart + size);
+        }
+
+        class Entry {
+            final long offset;
+            final int size;
+
+            Entry(long offset, int size) {
+                this.offset = offset;
+                this.size = size;
             }
         }
     }
