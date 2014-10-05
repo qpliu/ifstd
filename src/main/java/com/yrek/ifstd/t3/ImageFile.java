@@ -2,6 +2,7 @@ package com.yrek.ifstd.t3;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -414,6 +415,18 @@ class ImageFile {
             Entry(long offset, int size) {
                 this.offset = offset;
                 this.size = size;
+            }
+
+            void read(OutputStream out) throws IOException {
+                byte[] buffer = new byte[8192];
+                int count = 0;
+                file.seek(offset);
+                while (count < size) {
+                    int n = Math.min(buffer.length, size - count);
+                    file.readFully(buffer, 0, n);
+                    out.write(buffer, 0, n);
+                    count += n;
+                }
             }
         }
     }
