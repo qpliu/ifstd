@@ -1,6 +1,7 @@
 package com.yrek.ifstd.t3;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
@@ -87,7 +88,11 @@ class ImageFile {
                 multimediaResource.readBlock(size);
                 return multimediaResource;
             case 0x4d52454c: // MREL
-                throw new RuntimeException("unimplemented");
+                if (multimediaResource == null) {
+                    multimediaResource = new DataBlockMultimediaResource(size, flags);
+                }
+                multimediaResource.readLinkBlock(size);
+                return multimediaResource;
             case 0x4d434c44: // MCLD
                 return new DataBlockMetaclassDependency(size, flags);
             case 0x464e5244: // FNSD
@@ -408,6 +413,15 @@ class ImageFile {
             file.seek(blockStart + size);
         }
 
+        void readLinkBlock(int size) throws IOException {
+            int count = readUint2();
+            for (int i = 0; i < count; i++) {
+                String name = readAscii();
+                String filename = readAscii();
+                entries.put(name, new LinkEntry(filename));
+            }
+        }
+
         class Entry {
             final long offset;
             final int size;
@@ -426,6 +440,28 @@ class ImageFile {
                     file.readFully(buffer, 0, n);
                     out.write(buffer, 0, n);
                     count += n;
+                }
+            }
+        }
+
+        class LinkEntry extends Entry {
+            final String filename;
+
+            LinkEntry(String filename) {
+                super(0, 0);
+                this.filename = filename;
+            }
+
+            @Override
+            void read(OutputStream out) throws IOException {
+                byte[] buffer = new byte[8192];
+                FileInputStream in = new FileInputStream(filename);
+                try {
+                    for (int n = in.read(buffer); n >= 0; n = in.read(buffer)) {
+                        out.write(buffer, 0, n);
+                    }
+                } finally {
+                    in.close();
                 }
             }
         }
