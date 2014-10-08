@@ -10,4 +10,9 @@ class T3Function extends T3Value {
     T3Function() {
         code = null;
     }
+
+    @Override
+    boolean t3equals(T3Value value) {
+        return value == this;
+    }
 }

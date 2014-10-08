@@ -10,4 +10,9 @@ class T3ValueInt extends T3Value {
     T3ValueInt(int value) {
         this.value = value;
     }
+
+    @Override
+    boolean t3equals(T3Value value) {
+        return value instanceof T3ValueInt && ((T3ValueInt) value).value == this.value;
+    }
 }
