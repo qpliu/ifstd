@@ -42,6 +42,7 @@ class Instruction {
         case 0x10: // PUSHBIFPTR
             throw new RuntimeException("unimplemented");
         case 0x20: // NEG
+            T3Value val1;
             throw new RuntimeException("unimplemented");
         case 0x21: // BNOT
             throw new RuntimeException("unimplemented");
@@ -50,6 +51,7 @@ class Instruction {
         case 0x23: // SUB
             throw new RuntimeException("unimplemented");
         case 0x24: // MUL
+            T3Value val2;
             throw new RuntimeException("unimplemented");
         case 0x25: // BAND
             throw new RuntimeException("unimplemented");
@@ -76,9 +78,15 @@ class Instruction {
         case 0x30: // LSHR
             throw new RuntimeException("unimplemented");
         case 0x40: // EQ
-            throw new RuntimeException("unimplemented");
+            val2 = machine.stack.removeLast();
+            val1 = machine.stack.removeLast();
+            machine.stack.push(val1.t3equals(val2) ? T3Value.TRUE : T3Value.NIL);
+            return T3.Result.Continue;
         case 0x41: // NE
-            throw new RuntimeException("unimplemented");
+            val2 = machine.stack.removeLast();
+            val1 = machine.stack.removeLast();
+            machine.stack.push(val1.t3equals(val2) ? T3Value.NIL : T3Value.TRUE);
+            return T3.Result.Continue;
         case 0x42: // LT
             throw new RuntimeException("unimplemented");
         case 0x43: // LE
