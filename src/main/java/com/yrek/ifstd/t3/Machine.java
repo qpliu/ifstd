@@ -12,4 +12,5 @@ class Machine implements Serializable {
     T3Value r0 = T3Value.NIL;
     int ip;
     int fp;
+    T3Error currentError;
 }

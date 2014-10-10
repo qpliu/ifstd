@@ -15,4 +15,18 @@ class T3ValueInt extends T3Value {
     boolean t3equals(T3Value value) {
         return value instanceof T3ValueInt && ((T3ValueInt) value).value == this.value;
     }
+
+    @Override
+    T3Result t3compare(T3Value value) {
+        if (value instanceof T3ValueInt) {
+            if (this.value > ((T3ValueInt) value).value) {
+                return T3Result.INT1;
+            } else if (this.value < ((T3ValueInt) value).value) {
+                return T3Result.INTM1;
+            } else {
+                return T3Result.INT0;
+            }
+        }
+        return T3Result.ERROR_INVALID_COMPARISON;
+    }
 }
