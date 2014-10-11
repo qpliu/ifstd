@@ -42,9 +42,14 @@ class Instruction {
         case 0x10: // PUSHBIFPTR
             throw new RuntimeException("unimplemented");
         case 0x20: // NEG
-            T3Value val1;
-            T3Result result;
-            throw new RuntimeException("unimplemented");
+            T3Value val1 = machine.stack.removeLast();
+            T3Result result = val1.t3negate();
+            if (result.error != null) {
+                machine.currentError = result.error;
+                return T3.Result.Throw;
+            }
+            machine.stack.push(result.result);
+            return T3.Result.Continue;
         case 0x21: // BNOT
             throw new RuntimeException("unimplemented");
         case 0x22: // AND

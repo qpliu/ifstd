@@ -21,4 +21,5 @@ class T3Result {
     static final T3Result TRUE = new T3Result(T3Value.TRUE);
 
     static final T3Result ERROR_INVALID_COMPARISON = new T3Result(T3Error.INVALID_COMPARISON);
+    static final T3Result ERROR_NUM_VAL_REQD = new T3Result(T3Error.NUM_VAL_REQD);
 }

@@ -29,4 +29,9 @@ class T3ValueInt extends T3Value {
         }
         return T3Result.ERROR_INVALID_COMPARISON;
     }
+
+    @Override
+    T3Result t3negate() {
+        return new T3Result(new T3ValueInt(-value));
+    }
 }
