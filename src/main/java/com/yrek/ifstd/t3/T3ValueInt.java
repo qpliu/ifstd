@@ -34,4 +34,9 @@ class T3ValueInt extends T3Value {
     T3Result t3negate() {
         return new T3Result(new T3ValueInt(-value));
     }
+
+    @Override
+    T3Result t3bnot() {
+        return new T3Result(new T3ValueInt(~value));
+    }
 }

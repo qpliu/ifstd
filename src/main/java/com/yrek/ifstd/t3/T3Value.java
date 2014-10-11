@@ -14,12 +14,14 @@ abstract class T3Value implements Serializable {
 
     static final T3Value INT0 = new T3ValueInt(0) {
         @Override T3Result t3negate() { return T3Result.INT0; }
+        @Override T3Result t3bnot() { return T3Result.INTM1; }
     };
     static final T3Value INT1 = new T3ValueInt(1) {
         @Override T3Result t3negate() { return T3Result.INTM1; }
     };
     static final T3Value INTM1 = new T3ValueInt(-1) {
         @Override T3Result t3negate() { return T3Result.INT1; }
+        @Override T3Result t3bnot() { return T3Result.INT0; }
     };
 
     static final T3Value TRUE = new T3Value() {
@@ -37,5 +39,9 @@ abstract class T3Value implements Serializable {
 
     T3Result t3negate() {
         return T3Result.ERROR_NUM_VAL_REQD;
+    }
+
+    T3Result t3bnot() {
+        return T3Result.ERROR_BAD_TYPE_BNOT;
     }
 }

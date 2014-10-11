@@ -51,7 +51,14 @@ class Instruction {
             machine.stack.push(result.result);
             return T3.Result.Continue;
         case 0x21: // BNOT
-            throw new RuntimeException("unimplemented");
+            val1 = machine.stack.removeLast();
+            result = val1.t3bnot();
+            if (result.error != null) {
+                machine.currentError = result.error;
+                return T3.Result.Throw;
+            }
+            machine.stack.push(result.result);
+            return T3.Result.Continue;
         case 0x22: // AND
             throw new RuntimeException("unimplemented");
         case 0x23: // SUB
@@ -101,7 +108,7 @@ class Instruction {
                 machine.currentError = result.error;
                 return T3.Result.Throw;
             }
-            machine.stack.push(result.result == T3Value.INTM1 ? T3Value.TRUE : T3Value.NIL);
+            machine.stack.push(result.result.t3equals(T3Value.INTM1) ? T3Value.TRUE : T3Value.NIL);
             return T3.Result.Continue;
         case 0x43: // LE
             val2 = machine.stack.removeLast();
@@ -111,7 +118,7 @@ class Instruction {
                 machine.currentError = result.error;
                 return T3.Result.Throw;
             }
-            machine.stack.push(result.result != T3Value.INT1 ? T3Value.TRUE : T3Value.NIL);
+            machine.stack.push(!result.result.t3equals(T3Value.INT1) ? T3Value.TRUE : T3Value.NIL);
             return T3.Result.Continue;
         case 0x44: // GT
             val2 = machine.stack.removeLast();
@@ -121,7 +128,7 @@ class Instruction {
                 machine.currentError = result.error;
                 return T3.Result.Throw;
             }
-            machine.stack.push(result.result == T3Value.INT1 ? T3Value.TRUE : T3Value.NIL);
+            machine.stack.push(result.result.t3equals(T3Value.INT1) ? T3Value.TRUE : T3Value.NIL);
             return T3.Result.Continue;
         case 0x45: // GE
             val2 = machine.stack.removeLast();
@@ -131,7 +138,7 @@ class Instruction {
                 machine.currentError = result.error;
                 return T3.Result.Throw;
             }
-            machine.stack.push(result.result != T3Value.INTM1 ? T3Value.TRUE : T3Value.NIL);
+            machine.stack.push(!result.result.t3equals(T3Value.INTM1) ? T3Value.TRUE : T3Value.NIL);
             return T3.Result.Continue;
         case 0x50: // RETVAL
             machine.r0 = machine.stack.removeLast();
