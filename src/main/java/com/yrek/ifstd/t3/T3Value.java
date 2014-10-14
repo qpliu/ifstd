@@ -13,13 +13,16 @@ abstract class T3Value implements Serializable {
     };
 
     static final T3Value INT0 = new T3ValueInt(0) {
+        private static final long serialVersionUID = 0L;
         @Override T3Result t3negate() { return T3Result.INT0; }
         @Override T3Result t3bnot() { return T3Result.INTM1; }
     };
     static final T3Value INT1 = new T3ValueInt(1) {
+        private static final long serialVersionUID = 0L;
         @Override T3Result t3negate() { return T3Result.INTM1; }
     };
     static final T3Value INTM1 = new T3ValueInt(-1) {
+        private static final long serialVersionUID = 0L;
         @Override T3Result t3negate() { return T3Result.INT1; }
         @Override T3Result t3bnot() { return T3Result.INT0; }
     };
