@@ -42,29 +42,16 @@ class Instruction {
         case 0x10: // PUSHBIFPTR
             throw new RuntimeException("unimplemented");
         case 0x20: // NEG
-            T3Value val1 = machine.stack.removeLast();
-            T3Result result = val1.t3negate();
-            if (result.error != null) {
-                machine.currentError = result.error;
-                return T3.Result.Throw;
-            }
-            machine.stack.push(result.result);
-            return T3.Result.Continue;
+            return pushResult(machine, machine.stack.removeLast().t3negate());
         case 0x21: // BNOT
-            val1 = machine.stack.removeLast();
-            result = val1.t3bnot();
-            if (result.error != null) {
-                machine.currentError = result.error;
-                return T3.Result.Throw;
-            }
-            machine.stack.push(result.result);
-            return T3.Result.Continue;
-        case 0x22: // AND
-            throw new RuntimeException("unimplemented");
+            return pushResult(machine, machine.stack.removeLast().t3bnot());
+        case 0x22: // ADD
+            T3Value val2 = machine.stack.removeLast();
+            T3Value val1 = machine.stack.removeLast();
+            return pushResult(machine, val1.t3add(val2));
         case 0x23: // SUB
             throw new RuntimeException("unimplemented");
         case 0x24: // MUL
-            T3Value val2;
             throw new RuntimeException("unimplemented");
         case 0x25: // BAND
             throw new RuntimeException("unimplemented");
@@ -103,7 +90,7 @@ class Instruction {
         case 0x42: // LT
             val2 = machine.stack.removeLast();
             val1 = machine.stack.removeLast();
-            result = val1.t3compare(val2);
+            T3Result result = val1.t3compare(val2);
             if (result.error != null) {
                 machine.currentError = result.error;
                 return T3.Result.Throw;
@@ -469,7 +456,12 @@ class Instruction {
         throw new RuntimeException("unimplemented");
     }
 
-    private static T3.Result throwException(Machine machine, T3Value value) {
-        throw new RuntimeException("unimplemented");
+    private static T3.Result pushResult(Machine machine, T3Result result) {
+        if (result.error != null) {
+            machine.currentError = result.error;
+            return T3.Result.Throw;
+        }
+        machine.stack.push(result.result);
+        return T3.Result.Continue;
     }
 }
