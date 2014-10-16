@@ -47,4 +47,12 @@ class T3ValueInt extends T3Value {
         }
         return T3Result.ERROR_NUM_VAL_REQD;
     }
+
+    @Override
+    T3Result t3sub(T3Value value) {
+        if (value instanceof T3ValueInt) {
+            return new T3Result(new T3ValueInt(this.value - ((T3ValueInt) value).value));
+        }
+        return T3Result.ERROR_NUM_VAL_REQD;
+    }
 }

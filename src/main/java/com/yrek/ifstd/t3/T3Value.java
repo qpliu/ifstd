@@ -51,4 +51,8 @@ abstract class T3Value implements Serializable {
     T3Result t3add(T3Value value) {
         return T3Result.ERROR_BAD_TYPE_ADD;
     }
+
+    T3Result t3sub(T3Value value) {
+        return T3Result.ERROR_BAD_TYPE_SUB;
+    }
 }
