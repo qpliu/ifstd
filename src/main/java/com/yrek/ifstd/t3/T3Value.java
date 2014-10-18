@@ -59,4 +59,8 @@ abstract class T3Value implements Serializable {
     T3Result t3mul(T3Value value) {
         return T3Result.ERROR_BAD_TYPE_MUL;
     }
+
+    T3Result t3band(T3Value value) {
+        return T3Result.ERROR_BAD_TYPE_BAND;
+    }
 }

@@ -21,6 +21,7 @@ class T3Result {
     static final T3Result TRUE = new T3Result(T3Value.TRUE);
 
     static final T3Result ERROR_BAD_TYPE_ADD = new T3Result(T3Error.BAD_TYPE_ADD);
+    static final T3Result ERROR_BAD_TYPE_BAND = new T3Result(T3Error.BAD_TYPE_BAND);
     static final T3Result ERROR_BAD_TYPE_BNOT = new T3Result(T3Error.BAD_TYPE_BNOT);
     static final T3Result ERROR_BAD_TYPE_MUL = new T3Result(T3Error.BAD_TYPE_MUL);
     static final T3Result ERROR_BAD_TYPE_SUB = new T3Result(T3Error.BAD_TYPE_SUB);

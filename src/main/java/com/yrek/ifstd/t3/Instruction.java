@@ -58,7 +58,9 @@ class Instruction {
             val1 = machine.stack.removeLast();
             return pushResult(machine, val1.t3mul(val2));
         case 0x25: // BAND
-            throw new RuntimeException("unimplemented");
+            val2 = machine.stack.removeLast();
+            val1 = machine.stack.removeLast();
+            return pushResult(machine, val1.t3band(val2));
         case 0x26: // BOR
             throw new RuntimeException("unimplemented");
         case 0x27: // SHL

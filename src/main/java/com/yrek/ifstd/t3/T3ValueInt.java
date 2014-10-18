@@ -63,4 +63,12 @@ class T3ValueInt extends T3Value {
         }
         return T3Result.ERROR_BAD_TYPE_MUL; // not NUM_VAL_REQD: http://www.tads.org/t3doc/doc/techman/t3spec/opcode.htm#opc_MUL
     }
+
+    @Override
+    T3Result t3band(T3Value value) {
+        if (value instanceof T3ValueInt) {
+            return new T3Result(new T3ValueInt(this.value & ((T3ValueInt) value).value));
+        }
+        return T3Result.ERROR_BAD_TYPE_BAND;
+    }
 }
