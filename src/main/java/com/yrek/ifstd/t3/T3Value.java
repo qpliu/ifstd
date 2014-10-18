@@ -63,4 +63,8 @@ abstract class T3Value implements Serializable {
     T3Result t3band(T3Value value) {
         return T3Result.ERROR_BAD_TYPE_BAND;
     }
+
+    T3Result t3bor(T3Value value) {
+        return T3Result.ERROR_BAD_TYPE_BOR;
+    }
 }
