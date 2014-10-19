@@ -25,6 +25,7 @@ class T3Result {
     static final T3Result ERROR_BAD_TYPE_BNOT = new T3Result(T3Error.BAD_TYPE_BNOT);
     static final T3Result ERROR_BAD_TYPE_BOR = new T3Result(T3Error.BAD_TYPE_BOR);
     static final T3Result ERROR_BAD_TYPE_MUL = new T3Result(T3Error.BAD_TYPE_MUL);
+    static final T3Result ERROR_BAD_TYPE_SHL = new T3Result(T3Error.BAD_TYPE_SHL);
     static final T3Result ERROR_BAD_TYPE_SUB = new T3Result(T3Error.BAD_TYPE_SUB);
     static final T3Result ERROR_INVALID_COMPARISON = new T3Result(T3Error.INVALID_COMPARISON);
     static final T3Result ERROR_NUM_VAL_REQD = new T3Result(T3Error.NUM_VAL_REQD);

@@ -66,7 +66,9 @@ class Instruction {
             val1 = machine.stack.removeLast();
             return pushResult(machine, val1.t3bor(val2));
         case 0x27: // SHL
-            throw new RuntimeException("unimplemented");
+            val2 = machine.stack.removeLast();
+            val1 = machine.stack.removeLast();
+            return pushResult(machine, val1.t3shl(val2));
         case 0x28: // ASHR
             throw new RuntimeException("unimplemented");
         case 0x29: // XOR

@@ -67,4 +67,8 @@ abstract class T3Value implements Serializable {
     T3Result t3bor(T3Value value) {
         return T3Result.ERROR_BAD_TYPE_BOR;
     }
+
+    T3Result t3shl(T3Value value) {
+        return T3Result.ERROR_BAD_TYPE_SHL;
+    }
 }
