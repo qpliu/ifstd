@@ -95,4 +95,13 @@ class T3ValueInt extends T3Value {
         }
         return T3Result.ERROR_BAD_TYPE_ASHR;
     }
+
+    @Override
+    T3Result t3xor(T3Value value) {
+        if (this.value == 0) {
+            return T3Value.NIL.t3xor(value);
+        } else {
+            return T3Value.TRUE.t3xor(value);
+        }
+    }
 }

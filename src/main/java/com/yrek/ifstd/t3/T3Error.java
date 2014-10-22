@@ -9,6 +9,7 @@ enum T3Error {
     BAD_TYPE_MUL,
     BAD_TYPE_SHL,
     BAD_TYPE_SUB,
+    BAD_TYPE_XOR,
     INVALID_COMPARISON,
     NUM_VAL_REQD,
         ;

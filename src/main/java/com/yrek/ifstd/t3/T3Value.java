@@ -10,6 +10,15 @@ abstract class T3Value implements Serializable {
         @Override boolean t3equals(T3Value value) {
             return value == NIL;
         }
+        @Override T3Result t3xor(T3Value value) {
+            if (value == NIL || (value instanceof T3ValueInt && ((T3ValueInt) value).value == 0)) {
+                return T3Result.NIL;
+            }
+            if (value == TRUE || (value instanceof T3ValueInt && ((T3ValueInt) value).value != 0)) {
+                return T3Result.TRUE;
+            }
+            return T3Result.ERROR_BAD_TYPE_XOR;
+        }
     };
 
     static final T3Value INT0 = new T3ValueInt(0) {
@@ -31,6 +40,15 @@ abstract class T3Value implements Serializable {
         private static final long serialVersionUID = 0L;
         @Override boolean t3equals(T3Value value) {
             return value == TRUE;
+        }
+        @Override T3Result t3xor(T3Value value) {
+            if (value == NIL || (value instanceof T3ValueInt && ((T3ValueInt) value).value == 0)) {
+                return T3Result.TRUE;
+            }
+            if (value == TRUE || (value instanceof T3ValueInt && ((T3ValueInt) value).value != 0)) {
+                return T3Result.NIL;
+            }
+            return T3Result.ERROR_BAD_TYPE_XOR;
         }
     };
 
@@ -74,5 +92,9 @@ abstract class T3Value implements Serializable {
 
     T3Result t3ashr(T3Value value) {
         return T3Result.ERROR_BAD_TYPE_ASHR;
+    }
+
+    T3Result t3xor(T3Value value) {
+        return T3Result.ERROR_BAD_TYPE_XOR;
     }
 }
