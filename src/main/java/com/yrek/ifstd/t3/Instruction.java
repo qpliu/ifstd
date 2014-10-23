@@ -78,7 +78,9 @@ class Instruction {
             val1 = machine.stack.removeLast();
             return pushResult(machine, val1.t3xor(val2));
         case 0x2a: // DIV
-            throw new RuntimeException("unimplemented");
+            val2 = machine.stack.removeLast();
+            val1 = machine.stack.removeLast();
+            return pushResult(machine, val1.t3div(val2));
         case 0x2b: // MOD
             throw new RuntimeException("unimplemented");
         case 0x2c: // NOT

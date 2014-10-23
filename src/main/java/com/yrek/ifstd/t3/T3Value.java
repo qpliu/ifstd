@@ -97,4 +97,8 @@ abstract class T3Value implements Serializable {
     T3Result t3xor(T3Value value) {
         return T3Result.ERROR_BAD_TYPE_XOR;
     }
+
+    T3Result t3div(T3Value value) {
+        return T3Result.ERROR_BAD_TYPE_DIV;
+    }
 }
