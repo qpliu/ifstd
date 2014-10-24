@@ -115,4 +115,15 @@ class T3ValueInt extends T3Value {
         }
         return T3Result.ERROR_BAD_TYPE_DIV;
     }
+
+    @Override
+    T3Result t3mod(T3Value value) {
+        if (value instanceof T3ValueInt) {
+            if (((T3ValueInt) value).value == 0) {
+                return T3Result.ERROR_DIVIDE_BY_ZERO;
+            }
+            return new T3Result(new T3ValueInt(this.value % ((T3ValueInt) value).value));
+        }
+        return T3Result.ERROR_NUM_VAL_REQD;
+    }
 }
