@@ -126,4 +126,14 @@ class T3ValueInt extends T3Value {
         }
         return T3Result.ERROR_NUM_VAL_REQD;
     }
+
+    @Override
+    T3Result t3not() {
+        return value == 0 ? T3Result.TRUE : T3Result.NIL;
+    }
+
+    @Override
+    T3Result t3boolize() {
+        return value == 0 ? T3Result.NIL : T3Result.TRUE;
+    }
 }
