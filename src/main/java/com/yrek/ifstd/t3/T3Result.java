@@ -33,5 +33,6 @@ class T3Result {
     static final T3Result ERROR_BAD_TYPE_XOR = new T3Result(T3Error.BAD_TYPE_XOR);
     static final T3Result ERROR_DIVIDE_BY_ZERO = new T3Result(T3Error.DIVIDE_BY_ZERO);
     static final T3Result ERROR_INVALID_COMPARISON = new T3Result(T3Error.INVALID_COMPARISON);
+    static final T3Result ERROR_NO_LOG_CONV = new T3Result(T3Error.NO_LOG_CONV);
     static final T3Result ERROR_NUM_VAL_REQD = new T3Result(T3Error.NUM_VAL_REQD);
 }

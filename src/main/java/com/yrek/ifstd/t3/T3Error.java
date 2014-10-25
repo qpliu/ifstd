@@ -14,6 +14,7 @@ enum T3Error {
     BAD_TYPE_XOR,
     DIVIDE_BY_ZERO,
     INVALID_COMPARISON,
+    NO_LOG_CONV,
     NUM_VAL_REQD,
         ;
 }

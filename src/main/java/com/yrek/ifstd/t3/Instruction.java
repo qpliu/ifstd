@@ -86,7 +86,7 @@ class Instruction {
             val1 = machine.stack.removeLast();
             return pushResult(machine, val1.t3mod(val2));
         case 0x2c: // NOT
-            throw new RuntimeException("unimplemented");
+            return pushResult(machine, machine.stack.removeLast().t3not());
         case 0x2d: // BOOLIZE
             throw new RuntimeException("unimplemented");
         case 0x2e: // INC

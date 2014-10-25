@@ -19,21 +19,27 @@ abstract class T3Value implements Serializable {
             }
             return T3Result.ERROR_BAD_TYPE_XOR;
         }
+        @Override T3Result t3not() {
+            return T3Result.TRUE;
+        }
     };
 
     static final T3Value INT0 = new T3ValueInt(0) {
         private static final long serialVersionUID = 0L;
         @Override T3Result t3negate() { return T3Result.INT0; }
         @Override T3Result t3bnot() { return T3Result.INTM1; }
+        @Override T3Result t3not() { return T3Result.TRUE; }
     };
     static final T3Value INT1 = new T3ValueInt(1) {
         private static final long serialVersionUID = 0L;
         @Override T3Result t3negate() { return T3Result.INTM1; }
+        @Override T3Result t3not() { return T3Result.NIL; }
     };
     static final T3Value INTM1 = new T3ValueInt(-1) {
         private static final long serialVersionUID = 0L;
         @Override T3Result t3negate() { return T3Result.INT1; }
         @Override T3Result t3bnot() { return T3Result.INT0; }
+        @Override T3Result t3not() { return T3Result.NIL; }
     };
 
     static final T3Value TRUE = new T3Value() {
@@ -49,6 +55,9 @@ abstract class T3Value implements Serializable {
                 return T3Result.NIL;
             }
             return T3Result.ERROR_BAD_TYPE_XOR;
+        }
+        @Override T3Result t3not() {
+            return T3Result.NIL;
         }
     };
 
@@ -104,5 +113,9 @@ abstract class T3Value implements Serializable {
 
     T3Result t3mod(T3Value value) {
         return T3Result.ERROR_BAD_TYPE_MOD;
+    }
+
+    T3Result t3not() {
+        return T3Result.ERROR_NO_LOG_CONV;
     }
 }
