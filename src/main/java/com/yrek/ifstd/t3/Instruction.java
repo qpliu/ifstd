@@ -90,7 +90,7 @@ class Instruction {
         case 0x2d: // BOOLIZE
             return pushResult(machine, machine.stack.removeLast().t3boolize());
         case 0x2e: // INC
-            throw new RuntimeException("unimplemented");
+            return pushResult(machine, machine.stack.removeLast().t3inc());
         case 0x2f: // DEC
             throw new RuntimeException("unimplemented");
         case 0x30: // LSHR

@@ -136,4 +136,9 @@ class T3ValueInt extends T3Value {
     T3Result t3boolize() {
         return value == 0 ? T3Result.NIL : T3Result.TRUE;
     }
+
+    @Override
+    T3Result t3inc() {
+        return new T3Result(new T3ValueInt(this.value + 1));
+    }
 }

@@ -29,6 +29,7 @@ abstract class T3Value implements Serializable {
         @Override T3Result t3bnot() { return T3Result.INTM1; }
         @Override T3Result t3not() { return T3Result.TRUE; }
         @Override T3Result t3boolize() { return T3Result.NIL; }
+        @Override T3Result t3inc() { return T3Result.INT1; }
     };
     static final T3Value INT1 = new T3ValueInt(1) {
         private static final long serialVersionUID = 0L;
@@ -42,6 +43,7 @@ abstract class T3Value implements Serializable {
         @Override T3Result t3bnot() { return T3Result.INT0; }
         @Override T3Result t3not() { return T3Result.NIL; }
         @Override T3Result t3boolize() { return T3Result.TRUE; }
+        @Override T3Result t3inc() { return T3Result.INT0; }
     };
 
     static final T3Value TRUE = new T3Value() {
@@ -122,5 +124,9 @@ abstract class T3Value implements Serializable {
 
     T3Result t3boolize() {
         return T3Result.ERROR_NO_LOG_CONV;
+    }
+
+    T3Result t3inc() {
+        return T3Result.ERROR_BAD_TYPE_ADD;
     }
 }
