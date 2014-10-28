@@ -141,4 +141,9 @@ class T3ValueInt extends T3Value {
     T3Result t3inc() {
         return new T3Result(new T3ValueInt(this.value + 1));
     }
+
+    @Override
+    T3Result t3dec() {
+        return new T3Result(new T3ValueInt(this.value - 1));
+    }
 }
