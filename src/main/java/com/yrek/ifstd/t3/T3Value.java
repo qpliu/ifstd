@@ -108,6 +108,10 @@ abstract class T3Value implements Serializable {
         return T3Result.ERROR_BAD_TYPE_ASHR;
     }
 
+    T3Result t3lshr(T3Value value) {
+        return T3Result.ERROR_BAD_TYPE_LSHR;
+    }
+
     T3Result t3xor(T3Value value) {
         return T3Result.ERROR_BAD_TYPE_XOR;
     }

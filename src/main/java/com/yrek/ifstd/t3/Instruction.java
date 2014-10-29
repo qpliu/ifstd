@@ -94,7 +94,9 @@ class Instruction {
         case 0x2f: // DEC
             return pushResult(machine, machine.stack.removeLast().t3dec());
         case 0x30: // LSHR
-            throw new RuntimeException("unimplemented");
+            val2 = machine.stack.removeLast();
+            val1 = machine.stack.removeLast();
+            return pushResult(machine, val1.t3lshr(val2));
         case 0x40: // EQ
             val2 = machine.stack.removeLast();
             val1 = machine.stack.removeLast();

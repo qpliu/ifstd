@@ -7,6 +7,7 @@ enum T3Error {
     BAD_TYPE_BNOT,
     BAD_TYPE_BOR,
     BAD_TYPE_DIV,
+    BAD_TYPE_LSHR,
     BAD_TYPE_MOD,
     BAD_TYPE_MUL,
     BAD_TYPE_SHL,

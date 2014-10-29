@@ -97,6 +97,14 @@ class T3ValueInt extends T3Value {
     }
 
     @Override
+    T3Result t3lshr(T3Value value) {
+        if (value instanceof T3ValueInt) {
+            return new T3Result(new T3ValueInt(this.value >>> ((T3ValueInt) value).value));
+        }
+        return T3Result.ERROR_BAD_TYPE_LSHR;
+    }
+
+    @Override
     T3Result t3xor(T3Value value) {
         if (this.value == 0) {
             return T3Value.NIL.t3xor(value);
