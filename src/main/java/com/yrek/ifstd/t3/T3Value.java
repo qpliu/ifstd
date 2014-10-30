@@ -139,4 +139,8 @@ abstract class T3Value implements Serializable {
     T3Result t3dec() {
         return T3Result.ERROR_BAD_TYPE_SUB;
     }
+
+    T3Value t3dup() {
+        return this;
+    }
 }

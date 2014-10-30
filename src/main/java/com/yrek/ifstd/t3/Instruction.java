@@ -286,7 +286,8 @@ class Instruction {
         case 0x87: // GETARGC
             throw new RuntimeException("unimplemented");
         case 0x88: // DUP
-            throw new RuntimeException("unimplemented");
+            machine.stack.push(machine.stack.getLast().t3dup());
+            return T3.Result.Continue;
         case 0x89: // DISC
             throw new RuntimeException("unimplemented");
         case 0x8a: // DISC1
