@@ -289,7 +289,8 @@ class Instruction {
             machine.stack.push(machine.stack.getLast().t3dup());
             return T3.Result.Continue;
         case 0x89: // DISC
-            throw new RuntimeException("unimplemented");
+            machine.stack.removeLast();
+            return T3.Result.Continue;
         case 0x8a: // DISC1
             throw new RuntimeException("unimplemented");
         case 0x8b: // GETR0
