@@ -292,7 +292,11 @@ class Instruction {
             machine.stack.removeLast();
             return T3.Result.Continue;
         case 0x8a: // DISC1
-            throw new RuntimeException("unimplemented");
+            int n = operandUbyte(machine);
+            for (int i = 0; i < n; i++) {
+                machine.stack.removeLast();
+            }
+            return T3.Result.Continue;
         case 0x8b: // GETR0
             throw new RuntimeException("unimplemented");
         case 0x8c: // GETDBARGC
